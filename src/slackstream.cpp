@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false), lastMessageId(1) {
+SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false), helloReceived(false), lastMessageId(1) {
     webSocket = new QtWebsocket::QWsSocket(this);
     checkTimer = new QTimer(this);
 
@@ -67,7 +67,6 @@ void SlackStream::handleListerStart() {
     qDebug() << "Socket connected";
     isConnected = true;
     checkTimer->start(15000);
-    emit connected();
 }
 
 void SlackStream::handleListerEnd() {
@@ -78,6 +77,14 @@ void SlackStream::handleListerEnd() {
     emit disconnected();
 }
 
+namespace {
+
+bool isHelloMessage(const QJsonObject &msg) {
+    return msg.value(QStringLiteral("type")).toString() == QLatin1String("hello");
+}
+
+}
+
 void SlackStream::handleMessage(QString message) {
     qDebug() << "Got message" << message;
 
@@ -85,6 +92,13 @@ void SlackStream::handleMessage(QString message) {
     QJsonDocument document = QJsonDocument::fromJson(message.toUtf8(), &error);
     if (error.error != QJsonParseError::NoError) {
         qDebug() << "Failed to parse message" << message;
+        return;
+    }
+
+    if (!helloReceived && isHelloMessage(document.object())) {
+        qDebug() << "Hello received";
+        helloReceived = true;
+        emit connected();
         return;
     }
 

@@ -38,6 +38,7 @@ private:
     QPointer<QTimer> checkTimer;
 
     bool isConnected;
+    bool helloReceived;
     QAtomicInteger<int> lastMessageId;
 };
 
