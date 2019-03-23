@@ -1,9 +1,11 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 Page {
     id: page
+
+    property Client slackClient
 
     property string channelId
     property variant channel
@@ -24,6 +26,7 @@ Page {
             id: listView
             channel: page.channel
             anchors.fill: parent
+            slackClient: page.slackClient
 
             onLoadCompleted: {
                 loader.visible = false
@@ -39,22 +42,26 @@ Page {
                 MenuItem {
                     text: qsTr("Upload image")
                     onClicked: {
-                        pageStack.push(Qt.resolvedUrl("FileSend.qml"), {"channelId": page.channelId})
+                        pageStack.push(Qt.resolvedUrl("FileSend.qml"), { "slackClient": page.slackClient, "channelId": page.channelId})
                     }
                 }
             }
         }
     }
 
-    ConnectionPanel {}
+    ConnectionPanel {
+        slackClient: parent.slackClient
+    }
 
     Component.onCompleted: {
-        page.channel = Slack.Client.getChannel(page.channelId)
+        console.log(slackClient)
+        page.channel = slackClient.getChannel(page.channelId)
     }
 
     onStatusChanged: {
+        console.log(slackClient)
         if (status === PageStatus.Active) {
-            Slack.Client.setActiveWindow(page.channelId)
+            slackClient.setActiveWindow(page.channelId)
 
             if (!initialized) {
                 initialized = true
@@ -62,7 +69,7 @@ Page {
             }
         }
         else if (status === PageStatus.Deactivating) {
-            Slack.Client.setActiveWindow("")
+            slackClient.setActiveWindow("")
             listView.markLatest()
         }
     }

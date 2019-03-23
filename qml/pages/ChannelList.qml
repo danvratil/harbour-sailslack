@@ -1,14 +1,16 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 Page {
     id: page
 
+    property var slackClient
+
     property bool appActive: Qt.application.state === Qt.ApplicationActive
 
     onAppActiveChanged: {
-        Slack.Client.setAppActive(appActive)
+        slackClient.setAppActive(appActive)
     }
 
     SilicaFlickable {
@@ -28,21 +30,21 @@ Page {
 
                 onClicked: {
                     logoutRemorse.execute(qsTr("Logout"), function() {
-                        Slack.Client.logout()
-                        pageStack.replace(Qt.resolvedUrl("Loader.qml"), {firstView: false})
+                        slackClient.logout()
+                        pageStack.pop()
                     })
                 }
             }
             MenuItem {
                 text: qsTr("Open chat")
                 onClicked: {
-                    pageStack.push(Qt.resolvedUrl("ChatSelect.qml"))
+                    pageStack.push(Qt.resolvedUrl("ChatSelect.qml"), { "slackClient": page.slackClient })
                 }
             }
             MenuItem {
                 text: qsTr("Join channel")
                 onClicked: {
-                    pageStack.push(Qt.resolvedUrl("ChannelSelect.qml"))
+                    pageStack.push(Qt.resolvedUrl("ChannelSelect.qml"), { "slackClient": page.slackClient })
                 }
             }
         }
@@ -54,8 +56,11 @@ Page {
         ChannelListView {
             id: listView
             anchors.fill: parent
+            slackClient: page.slackClient
         }
     }
 
-    ConnectionPanel {}
+    ConnectionPanel {
+        slackClient: parent.slackClient
+    }
 }

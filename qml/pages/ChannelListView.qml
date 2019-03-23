@@ -1,18 +1,21 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 import "ChannelList.js" as ChannelList
 import "Channel.js" as Channel
 
 SilicaListView {
     id: listView
+
+    property Client slackClient
+
     spacing: Theme.paddingMedium
 
     VerticalScrollDecorator {}
 
     header: PageHeader {
-        title: Slack.Client.config.teamName
+        title: slackClient === null ? "" : slackClient.config.teamName
     }
 
     model: ListModel {
@@ -59,7 +62,7 @@ SilicaListView {
         }
 
         onClicked: {
-            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"channelId": model.id})
+            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": model.id})
         }
 
         menu: ContextMenu {
@@ -70,18 +73,18 @@ SilicaListView {
                 onClicked: {
                     switch (model.type) {
                         case "channel":
-                            Slack.Client.leaveChannel(model.id)
+                            slackClient.leaveChannel(model.id)
                             break
 
                         case "group":
                             var dialog = pageStack.push(Qt.resolvedUrl("GroupLeaveDialog.qml"), {"name": model.name})
                             dialog.accepted.connect(function() {
-                                Slack.Client.leaveGroup(model.id)
+                                slackClient.leaveGroup(model.id)
                             })
                             break
 
                         case "im":
-                            Slack.Client.closeChat(model.id)
+                            slackClient.closeChat(model.id)
                     }
                 }
             }
@@ -89,11 +92,12 @@ SilicaListView {
     }
 
     Component.onCompleted: {
-        ChannelList.init()
+
+        ChannelList.init(slackClient)
     }
 
     Component.onDestruction: {
-        ChannelList.disconnect()
+        ChannelList.disconnect(slackClient)
     }
 
     function getSectionName(section) {

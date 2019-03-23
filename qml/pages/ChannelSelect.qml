@@ -1,10 +1,12 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 import "Channel.js" as Channel
 
 Page {
     id: page
+
+    property Client slackClient
 
     SilicaFlickable {
         anchors.fill: parent
@@ -47,7 +49,7 @@ Page {
             model: ListModel {
                 id: channelListModel
 
-                property var available: Slack.Client.getChannels().filter(Channel.isJoinableChannel)
+                property var available: slackClient.getChannels().filter(Channel.isJoinableChannel)
 
                 Component.onCompleted: update()
 
@@ -95,12 +97,14 @@ Page {
                 }
 
                 onClicked: {
-                    Slack.Client.joinChannel(model.id)
-                    pageStack.replace(Qt.resolvedUrl("Channel.qml"), {"channelId": model.id})
+                    slackClient.joinChannel(model.id)
+                    pageStack.replace(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": model.id})
                 }
             }
         }
     }
 
-    ConnectionPanel {}
+    ConnectionPanel {
+        slackClient: parent.slackClient
+    }
 }

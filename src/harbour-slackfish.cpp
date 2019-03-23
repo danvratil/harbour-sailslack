@@ -38,10 +38,11 @@ int main(int argc, char *argv[])
 
     SlackClientConfig::clearWebViewCache();
 
-    qmlRegisterSingletonType<SlackClient>("harbour.slackfish", 1, 0, "Client", slack_client_provider);
-    qmlRegisterUncreatableType<SlackClientConfig>("harbour.slackfish", 1, 0, "ClientConfig", "Use Client.config to access current config");
 
     qmlRegisterType<SlackAuthenticator>("harbour.slackfish", 1, 0, "Authenticator");
+    qmlRegisterType<SlackClient>("harbour.slackfish", 1, 0, "Client");
+    qmlRegisterUncreatableType<SlackClientConfig>("harbour.slackfish", 1, 0, "ClientConfig", "Use Client.config to access current config");
+
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
     view->rootContext()->setContextProperty("slackClientId", SLACK_CLIENT_ID);

@@ -1,10 +1,12 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 SilicaListView {
     property alias atBottom: listView.atYEnd
     property variant channel
+
+    property Client slackClient
 
     property bool appActive: Qt.application.state === Qt.ApplicationActive
     property bool inputEnabled: false
@@ -87,7 +89,7 @@ SilicaListView {
         visible: inputEnabled
         placeholder: qsTr("Message %1%2").arg("#").arg(channel.name)
         onSendMessage: {
-            Slack.Client.postMessage(channel.id, content)
+            slackClient.postMessage(channel.id, content)
         }
     }
 
@@ -114,22 +116,24 @@ SilicaListView {
     }
 
     Component.onCompleted: {
-        Slack.Client.onInitSuccess.connect(handleReload)
-        Slack.Client.onLoadMessagesSuccess.connect(handleLoadSuccess)
-        Slack.Client.onLoadHistorySuccess.connect(handleHistorySuccess)
-        Slack.Client.onMessageReceived.connect(handleMessageReceived)
+        if (slackClient) {
+            slackClient.onInitSuccess.connect(handleReload)
+            slackClient.onLoadMessagesSuccess.connect(handleLoadSuccess)
+            slackClient.onLoadHistorySuccess.connect(handleHistorySuccess)
+            slackClient.onMessageReceived.connect(handleMessageReceived)
+        }
     }
 
     Component.onDestruction: {
-        Slack.Client.onInitSuccess.disconnect(handleReload)
-        Slack.Client.onLoadMessagesSuccess.disconnect(handleLoadSuccess)
-        Slack.Client.onLoadHistorySuccess.disconnect(handleHistorySuccess)
-        Slack.Client.onMessageReceived.disconnect(handleMessageReceived)
+        slackClient.onInitSuccess.disconnect(handleReload)
+        slackClient.onLoadMessagesSuccess.disconnect(handleLoadSuccess)
+        slackClient.onLoadHistorySuccess.disconnect(handleHistorySuccess)
+        slackClient.onMessageReceived.disconnect(handleMessageReceived)
     }
 
     function markLatest() {
         if (latestRead != "") {
-            Slack.Client.markChannel(channel.type, channel.id, latestRead)
+            slackClient.markChannel(channel.type, channel.id, latestRead)
             latestRead = ""
         }
     }
@@ -142,13 +146,13 @@ SilicaListView {
 
     function loadMessages() {
         loading = true
-        Slack.Client.loadMessages(channel.type, channel.id)
+        slackClient.loadMessages(channel.type, channel.id)
     }
 
     function loadHistory() {
         if (messageListModel.count) {
             loading = true
-            Slack.Client.loadHistory(channel.type, channel.id, messageListModel.get(0).timestamp)
+            slackClient.loadHistory(channel.type, channel.id, messageListModel.get(0).timestamp)
         }
     }
 

@@ -1,9 +1,11 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 Page {
     id: page
+
+    property Client slackClient
 
     property bool loading: false
     property string errorMessage: ""
@@ -68,7 +70,7 @@ Page {
         if (status === PageStatus.Active) {
             errorMessage = ""
             if (!loading) {
-                if (Slack.Client.config.userId !== "") {
+                if (slackClient.config.userId !== "") {
                     initLoading()
                 } else {
                     errorMessage = qsTr("Not logged in")
@@ -78,33 +80,25 @@ Page {
     }
 
     Component.onCompleted: {
-        Slack.Client.onTestLoginSuccess.connect(handleLoginTestSuccess)
-        Slack.Client.onTestLoginFail.connect(handleLoginTestFail)
-        Slack.Client.onInitSuccess.connect(handleInitSuccess)
-        Slack.Client.onInitFail.connect(handleInitFail)
-        Slack.Client.onTestConnectionFail.connect(handleConnectionFail)
-    }
-
-    Component.onDestruction: {
-        Slack.Client.onTestLoginSuccess.disconnect(handleLoginTestSuccess)
-        Slack.Client.onTestLoginFail.disconnect(handleLoginTestFail)
-        Slack.Client.onInitSuccess.disconnect(handleInitSuccess)
-        Slack.Client.onInitFail.disconnect(handleInitFail)
-        Slack.Client.onTestConnectionFail.disconnect(handleConnectionFail)
+        slackClient.onTestLoginSuccess.connect(handleLoginTestSuccess)
+        slackClient.onTestLoginFail.connect(handleLoginTestFail)
+        slackClient.onInitSuccess.connect(handleInitSuccess)
+        slackClient.onInitFail.connect(handleInitFail)
+        slackClient.onTestConnectionFail.connect(handleConnectionFail)
     }
 
     function initLoading() {
         loading = true
-        Slack.Client.testLogin()
+        slackClient.testLogin()
     }
 
     function handleLoginTestSuccess() {
-        Slack.Client.init()
+        slackClient.init()
     }
 
     function handleLoginTestFail() {
         loading = false;
-        if (Slack.Client.config.userId !== "") {
+        if (slackClient.config.userId !== "") {
             startLogin()
         }
     }
@@ -119,11 +113,11 @@ Page {
     function handleLoginSuccess(userId, teamId, teamName, accessToken) {
         errorMessage = ""
         loadMessage = qsTr("Loading")
-        Slack.Client.config.userId = userId
-        Slack.Client.config.teamId = teamId
-        Slack.Client.config.teamName = teamName
-        Slack.Client.config.accessToken = accessToken
-        Slack.Client.init()
+        slackClient.config.userId = userId
+        slackClient.config.teamId = teamId
+        slackClient.config.teamName = teamName
+        slackClient.config.accessToken = accessToken
+        slackClient.init()
     }
 
     function handleLoginFail() {
@@ -132,7 +126,7 @@ Page {
     }
 
     function handleInitSuccess() {
-        pageStack.replace(Qt.resolvedUrl("ChannelList.qml"))
+        pageStack.replace(Qt.resolvedUrl("ChannelList.qml"), { "slackClient": page.slackClient })
     }
 
     function handleInitFail() {

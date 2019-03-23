@@ -1,9 +1,11 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 Page {
     id: page
+
+    property Client slackclient
 
     property variant channelId
     property double padding: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
@@ -73,7 +75,7 @@ Page {
                 visible: !page.uploading
                 onClicked: {
                     page.uploading = true
-                    Slack.Client.postImage(channelId, page.selectedImage, titleInput.text, commentInput.text)
+                    slackClient.postImage(channelId, page.selectedImage, titleInput.text, commentInput.text)
                 }
             }
 
@@ -90,14 +92,16 @@ Page {
         }
     }
 
-    Component.onCompleted: {
-        Slack.Client.onPostImageFail.connect(handleImagePostFail)
-        Slack.Client.onPostImageSuccess.connect(handleImagePostSuccess)
+    onSlackclientChanged: {
+        if (slackClient) {
+            slackClient.onPostImageFail.connect(handleImagePostFail)
+            slackClient.onPostImageSuccess.connect(handleImagePostSuccess)
+        }
     }
 
     Component.onDestruction: {
-        Slack.Client.onPostImageFail.disconnect(handleImagePostFail)
-        Slack.Client.onPostImageSuccess.disconnect(handleImagePostSuccess)
+        slackClient.onPostImageFail.disconnect(handleImagePostFail)
+        slackClient.onPostImageSuccess.disconnect(handleImagePostSuccess)
     }
 
     function handleImagePostFail() {

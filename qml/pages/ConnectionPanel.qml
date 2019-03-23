@@ -1,9 +1,12 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.slackfish 1.0
 
 DockedPanel {
     id: connectionPanel
+
+    property Client slackClient
+
     width: parent.width
     height: content.height + Theme.paddingLarge
 
@@ -42,25 +45,17 @@ DockedPanel {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Reconnect")
             onClicked: {
-                Slack.Client.reconnect()
+                slackClient.reconnect()
             }
         }
     }
 
     Component.onCompleted: {
-        Slack.Client.onConnected.connect(hideConnectionPanel)
-        Slack.Client.onReconnecting.connect(showReconnectingMessage)
-        Slack.Client.onDisconnected.connect(showDisconnectedMessage)
-        Slack.Client.onNetworkOff.connect(showNoNetworkMessage)
-        Slack.Client.onNetworkOn.connect(hideConnectionPanel)
-    }
-
-    Component.onDestruction: {
-        Slack.Client.onConnected.disconnect(hideConnectionPanel)
-        Slack.Client.onReconnecting.disconnect(showReconnectingMessage)
-        Slack.Client.onDisconnected.disconnect(showDisconnectedMessage)
-        Slack.Client.onNetworkOff.disconnect(showNoNetworkMessage)
-        Slack.Client.onNetworkOn.disconnect(hideConnectionPanel)
+        slackClient.onConnected.connect(hideConnectionPanel)
+        slackClient.onReconnecting.connect(showReconnectingMessage)
+        slackClient.onDisconnected.connect(showDisconnectedMessage)
+        slackClient.onNetworkOff.connect(showNoNetworkMessage)
+        slackClient.onNetworkOn.connect(hideConnectionPanel)
     }
 
     function hideConnectionPanel() {

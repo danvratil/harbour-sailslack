@@ -1,23 +1,22 @@
-.import harbour.slackfish 1.0 as Slack
 .import "Channel.js" as Channel
 
-function init() {
-    reloadChannels()
-    Slack.Client.onInitSuccess.connect(reloadChannels)
-    Slack.Client.onChannelUpdated.connect(handleChannelUpdate)
-    Slack.Client.onChannelJoined.connect(handleChannelJoined)
-    Slack.Client.onChannelLeft.connect(handleChannelLeft)
+function init(slackClient) {
+    reloadChannels(slackClient)
+    slackClient.onInitSuccess.connect(reloadChannels)
+    slackClient.onChannelUpdated.connect(handleChannelUpdate)
+    slackClient.onChannelJoined.connect(handleChannelJoined)
+    slackClient.onChannelLeft.connect(handleChannelLeft)
 }
 
-function disconnect() {
-    Slack.Client.onInitSuccess.disconnect(reloadChannels)
-    Slack.Client.onChannelUpdated.disconnect(handleChannelUpdate)
-    Slack.Client.onChannelJoined.disconnect(handleChannelJoined)
-    Slack.Client.onChannelLeft.disconnect(handleChannelLeft)
+function disconnect(slackClient) {
+    slackClient.onInitSuccess.disconnect(reloadChannels)
+    slackClient.onChannelUpdated.disconnect(handleChannelUpdate)
+    slackClient.onChannelJoined.disconnect(handleChannelJoined)
+    slackClient.onChannelLeft.disconnect(handleChannelLeft)
 }
 
-function reloadChannels() {
-    var channels = Slack.Client.getChannels().filter(Channel.isOpen)
+function reloadChannels(slackClient) {
+    var channels = slackClient.getChannels().filter(Channel.isOpen)
     channels.sort(compareChannels)
 
     channelListModel.clear()
@@ -28,11 +27,12 @@ function reloadChannels() {
 }
 
 function handleChannelUpdate(channel) {
-    reloadChannels()
+    // FIXME: Find some way to pass around the client explicitly
+    reloadChannels(slackClient)
 }
 
 function handleChannelJoined(channel) {
-    reloadChannels()
+    reloadChannels(slackClient)
 }
 
 function handleChannelLeft(channel) {
