@@ -2,9 +2,9 @@
 #include <QDir>
 #include <QStandardPaths>
 
-#include "slackconfig.h"
+#include "slackclientconfig.h"
 
-SlackConfig::SlackConfig(QObject *parent)
+SlackClientConfig::SlackClientConfig(QObject *parent)
     : QObject(parent), settings(this) {
     // FIXME: Technically we could read those on demand each time, but I've been getting weird
     // crashes inside of the QML engine when reading from the properties, possibly due to the
@@ -15,16 +15,16 @@ SlackConfig::SlackConfig(QObject *parent)
     teamName = settings.value("user/teamName").toString();
 }
 
-QString SlackConfig::getAccessToken() const {
+QString SlackClientConfig::getAccessToken() const {
     return accessToken;
 }
 
-void SlackConfig::setAccessToken(QString accessToken) {
+void SlackClientConfig::setAccessToken(QString accessToken) {
     this->accessToken = accessToken;
     settings.setValue("user/accessToken", this->accessToken);
 }
 
-void SlackConfig::clear() {
+void SlackClientConfig::clear() {
     settings.remove("user/accessToken");
     accessToken.clear();
     settings.remove("user/userId");
@@ -39,11 +39,11 @@ void SlackConfig::clear() {
     Q_EMIT teamNameChanged(teamName);
 }
 
-QString SlackConfig::getUserId() const {
+QString SlackClientConfig::getUserId() const {
     return userId;
 }
 
-void SlackConfig::setUserId(QString userId) {
+void SlackClientConfig::setUserId(QString userId) {
     if (this->userId != userId) {
         this->userId = userId;
         settings.setValue("user/userId", this->userId);
@@ -51,11 +51,11 @@ void SlackConfig::setUserId(QString userId) {
     }
 }
 
-QString SlackConfig::getTeamId() const {
+QString SlackClientConfig::getTeamId() const {
     return teamId;
 }
 
-void SlackConfig::setTeamId(const QString &teamId) {
+void SlackClientConfig::setTeamId(const QString &teamId) {
     if (this->teamId != teamId) {
         this->teamId = teamId;
         settings.setValue("user/teamId", this->teamId);
@@ -63,11 +63,11 @@ void SlackConfig::setTeamId(const QString &teamId) {
     }
 }
 
-QString SlackConfig::getTeamName() const {
+QString SlackClientConfig::getTeamName() const {
     return teamName;
 }
 
-void SlackConfig::setTeamName(const QString &teamName) {
+void SlackClientConfig::setTeamName(const QString &teamName) {
     if (this->teamName != teamName) {
         this->teamName = teamName;
         settings.setValue("user/teamName", this->teamName);
@@ -75,7 +75,7 @@ void SlackConfig::setTeamName(const QString &teamName) {
     }
 }
 
-void SlackConfig::clearWebViewCache() {
+void SlackClientConfig::clearWebViewCache() {
     QStringList dataPaths = QStandardPaths::standardLocations(QStandardPaths::DataLocation);
 
     if (dataPaths.size()) {

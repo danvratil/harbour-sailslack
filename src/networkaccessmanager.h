@@ -5,7 +5,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 
-#include "slackconfig.h"
+#include "slackclientconfig.h"
 
 class NetworkAccessManager : public QNetworkAccessManager
 {
@@ -16,7 +16,7 @@ protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request, QIODevice *outgoingData = 0);
 
 private:
-    QPointer<SlackConfig> config;
+    QPointer<SlackClientConfig> config;
 };
 
 #endif // NETWORKACCESSMANAGER_H

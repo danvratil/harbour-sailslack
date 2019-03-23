@@ -11,14 +11,15 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
-#include "slackconfig.h"
+#include "slackclientconfig.h"
 #include "slackstream.h"
 
 class SlackClient : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(SlackConfig* config READ getConfig CONSTANT)
+    Q_PROPERTY(SlackClientConfig* config READ getConfig CONSTANT)
+
 public:
     explicit SlackClient(QObject *parent = 0);
 
@@ -28,7 +29,7 @@ public:
     Q_INVOKABLE QVariantList getChannels();
     Q_INVOKABLE QVariant getChannel(QString channelId);
 
-    SlackConfig *getConfig() const { return this->config; }
+    SlackClientConfig *getConfig() const { return this->config; }
 signals:
     void testConnectionFail();
     void testLoginSuccess();
@@ -143,7 +144,7 @@ private:
     QString markMethod(QString type);
 
     QPointer<QNetworkAccessManager> networkAccessManager;
-    QPointer<SlackConfig> config;
+    QPointer<SlackClientConfig> config;
     QPointer<SlackStream> stream;
     QPointer<QTimer> reconnectTimer;
 

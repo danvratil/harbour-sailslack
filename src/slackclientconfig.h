@@ -1,10 +1,10 @@
-#ifndef SLACKCONFIG_H
-#define SLACKCONFIG_H
+#ifndef SLACKCLIENTCONFIG_H
+#define SLACKCLIENTCONFIG_H
 
 #include <QObject>
 #include <QSettings>
 
-class SlackConfig : public QObject
+class SlackClientConfig : public QObject
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ class SlackConfig : public QObject
     Q_PROPERTY(QString teamId READ getTeamId WRITE setTeamId NOTIFY teamIdChanged)
     Q_PROPERTY(QString teamName READ getTeamName WRITE setTeamName NOTIFY teamNameChanged)
 public:
-    explicit SlackConfig(QObject *parent = 0);
+    explicit SlackClientConfig(QObject *parent = 0);
 
     void clear();
 
@@ -45,4 +45,4 @@ private:
     QString teamName;
 };
 
-#endif // SLACKCONFIG_H
+#endif // SLACKCLIENTCONFIG_H

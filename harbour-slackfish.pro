@@ -47,7 +47,6 @@ DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
 
 SOURCES += src/harbour-slackfish.cpp \
     src/slackclient.cpp \
-    src/slackconfig.cpp \
     src/QtWebsocket/QWsSocket.cpp \
     src/QtWebsocket/QWsFrame.cpp \
     src/QtWebsocket/functions.cpp \
@@ -61,7 +60,8 @@ SOURCES += src/harbour-slackfish.cpp \
     src/dbusadaptor.cpp \
     src/filemodel.cpp \
     src/slackauthenticator.cpp \
-    src/requestutils.cpp
+    src/requestutils.cpp \
+    src/slackclientconfig.cpp
 
 OTHER_FILES += qml/harbour-slackfish.qml \
     qml/cover/CoverPage.qml \
@@ -74,7 +74,6 @@ OTHER_FILES += qml/harbour-slackfish.qml \
 
 HEADERS += \
     src/slackclient.h \
-    src/slackconfig.h \
     src/QtWebsocket/QWsSocket.h \
     src/QtWebsocket/QWsFrame.h \
     src/QtWebsocket/functions.h \
@@ -88,7 +87,8 @@ HEADERS += \
     src/dbusadaptor.h \
     src/filemodel.h \
     src/slackauthenticator.h \
-    src/requestutils.h
+    src/requestutils.h \
+    src/slackclientconfig.h
 
 DISTFILES += \
     qml/pages/LoginPage.qml \

@@ -25,7 +25,7 @@ SlackClient::SlackClient(QObject *parent)
     , appActive(true)
     , activeWindow("init")
     , networkAccessManager(new QNetworkAccessManager(this))
-    , config(new SlackConfig(this))
+    , config(new SlackClientConfig(this))
     , stream(new SlackStream(this))
     , reconnectTimer(new QTimer(this))
 {

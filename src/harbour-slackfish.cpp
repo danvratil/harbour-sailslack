@@ -2,7 +2,7 @@
 #include <sailfishapp.h>
 
 #include "slackclient.h"
-#include "slackconfig.h"
+#include "slackclientconfig.h"
 #include "slackauthenticator.h"
 #include "networkaccessmanagerfactory.h"
 #include "notificationlistener.h"
@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
 
 
 
-    SlackConfig::clearWebViewCache();
+    SlackClientConfig::clearWebViewCache();
 
     qmlRegisterSingletonType<SlackClient>("harbour.slackfish", 1, 0, "Client", slack_client_provider);
-    qmlRegisterUncreatableType<SlackConfig>("harbour.slackfish", 1, 0, "Config", "Use Client.config to access current config");
+    qmlRegisterUncreatableType<SlackClientConfig>("harbour.slackfish", 1, 0, "ClientConfig", "Use Client.config to access current config");
 
     qmlRegisterType<SlackAuthenticator>("harbour.slackfish", 1, 0, "Authenticator");
 
