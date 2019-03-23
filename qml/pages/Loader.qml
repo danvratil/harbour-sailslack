@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.slackfish 1.0 as Slack
-import "Settings.js" as Settings
 
 Page {
     id: page
@@ -69,7 +68,7 @@ Page {
     onStatusChanged: {
         if (status === PageStatus.Active) {
             errorMessage = ""
-            if (firstView || Settings.hasUserInfo()) {
+            if (firstView || Slack.Client.config.userId !== "") {
                 firstView = false
                 initLoading()
             }
@@ -98,8 +97,7 @@ Page {
 
     function initLoading() {
         loading = true
-
-        if (Settings.hasUserInfo()) {
+        if (Slack.Client.config.userId !== "") {
             loadMessage = qsTr("Loading")
             Slack.Client.init()
         }
@@ -110,7 +108,10 @@ Page {
 
     function handleLoginTestSuccess(userId, teamId, teamName) {
         loadMessage = qsTr("Loading")
-        Settings.setUserInfo(userId, teamId, teamName)
+        var config = Slack.Client.config;
+        config.userId = userId;
+        config.teamId = teamId;
+        config.teamName = teamName;
         Slack.Client.init()
     }
 

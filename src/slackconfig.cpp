@@ -4,27 +4,64 @@
 
 #include "slackconfig.h"
 
-SlackConfig::SlackConfig(QObject *parent) : QObject(parent), settings(this), currentUserId() {
+SlackConfig::SlackConfig(QObject *parent)
+    : QObject(parent), settings(this) {
+    // FIXME: Technically we could read those on demand each time, but I've been getting weird
+    // crashes inside of the QML engine when reading from the properties, possibly due to the
+    // returned strings being temporaries
+    accessToken = settings.value("user/accessToken").toString();
+    userId = settings.value("user/userId").toString();
+    teamId = settings.value("user/teamId").toString();
+    teamName = settings.value("user/teamName").toString();
 }
 
-QString SlackConfig::accessToken() {
-    return settings.value("user/accessToken").toString();
+QString SlackConfig::getAccessToken() const {
+    return accessToken;
 }
 
 void SlackConfig::setAccessToken(QString accessToken) {
-    settings.setValue("user/accessToken", QVariant(accessToken));
+    this->accessToken = accessToken;
+    settings.setValue("user/accessToken", this->accessToken);
 }
 
 void SlackConfig::clearAccessToken() {
     settings.remove("user/accessToken");
 }
 
-QString SlackConfig::userId() {
-    return currentUserId;
+QString SlackConfig::getUserId() const {
+    return userId;
 }
 
 void SlackConfig::setUserId(QString userId) {
-    currentUserId = userId;
+    if (this->userId != userId) {
+        this->userId = userId;
+        settings.setValue("user/userId", this->userId);
+        Q_EMIT userIdChanged(this->userId);
+    }
+}
+
+QString SlackConfig::getTeamId() const {
+    return teamId;
+}
+
+void SlackConfig::setTeamId(const QString &teamId) {
+    if (this->teamId != teamId) {
+        this->teamId = teamId;
+        settings.setValue("user/teamId", this->teamId);
+        Q_EMIT teamIdChanged(this->teamId);
+    }
+}
+
+QString SlackConfig::getTeamName() const {
+    return teamName;
+}
+
+void SlackConfig::setTeamName(const QString &teamName) {
+    if (this->teamName != teamName) {
+        this->teamName = teamName;
+        settings.setValue("user/teamName", this->teamName);
+        Q_EMIT teamNameChanged(this->teamName);
+    }
 }
 
 void SlackConfig::clearWebViewCache() {

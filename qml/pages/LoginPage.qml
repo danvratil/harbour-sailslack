@@ -2,7 +2,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import QtWebKit 3.0
 import harbour.slackfish 1.0 as Slack
-import "Settings.js" as Settings
 
 Page {
     id: page
@@ -56,7 +55,10 @@ Page {
     }
 
     function handleAccessTokenSuccess(userId, teamId, teamName) {
-        Settings.setUserInfo(userId, teamId, teamName)
+        var config = Slack.Client.config
+        config.userId = userId;
+        config.teamId = teamId;
+        config.teamName = teamName;
         pageStack.pop(undefined, PageStackAction.Animated)
     }
 

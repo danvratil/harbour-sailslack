@@ -87,7 +87,6 @@ HEADERS += \
     src/filemodel.h
 
 DISTFILES += \
-    qml/pages/Settings.js \
     qml/pages/LoginPage.qml \
     qml/pages/Loader.qml \
     qml/pages/ChannelList.qml \

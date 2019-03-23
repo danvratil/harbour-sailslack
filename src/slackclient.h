@@ -17,6 +17,8 @@
 class SlackClient : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(SlackConfig* config READ getConfig CONSTANT)
 public:
     explicit SlackClient(QObject *parent = 0);
 
@@ -26,6 +28,7 @@ public:
     Q_INVOKABLE QVariantList getChannels();
     Q_INVOKABLE QVariant getChannel(QString channelId);
 
+    SlackConfig *getConfig() const { return this->config; }
 signals:
     void testConnectionFail();
     void testLoginSuccess(QString userId, QString teamId, QString team);

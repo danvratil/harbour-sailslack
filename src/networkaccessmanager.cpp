@@ -8,7 +8,7 @@ QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkR
     if (request.url().host() == "files.slack.com") {
         QNetworkRequest copy(request);
 
-        QString token = config->accessToken();
+        QString token = config->getAccessToken();
         if (!token.isEmpty()) {
             copy.setRawHeader(QString("Authorization").toUtf8(), QString("Bearer " + token).toUtf8());
         }

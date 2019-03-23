@@ -1,7 +1,6 @@
 import QtQuick 2.2
 import Sailfish.Silica 1.0
 import harbour.slackfish 1.0 as Slack
-import "Settings.js" as Settings
 
 Page {
     id: page
@@ -29,7 +28,6 @@ Page {
 
                 onClicked: {
                     logoutRemorse.execute(qsTr("Logout"), function() {
-                        Settings.unsetUserInfo()
                         Slack.Client.logout()
                         pageStack.replace(Qt.resolvedUrl("Loader.qml"), {firstView: false})
                     })

@@ -20,11 +20,15 @@
 #include "storage.h"
 #include "messageformatter.h"
 
-SlackClient::SlackClient(QObject *parent) : QObject(parent), appActive(true), activeWindow("init"), networkAccessible(QNetworkAccessManager::Accessible) {
-    networkAccessManager = new QNetworkAccessManager(this);
-    config = new SlackConfig(this);
-    stream = new SlackStream(this);
-    reconnectTimer = new QTimer(this);
+SlackClient::SlackClient(QObject *parent)
+    : QObject(parent)
+    , appActive(true)
+    , activeWindow("init")
+    , networkAccessManager(new QNetworkAccessManager(this))
+    , config(new SlackConfig(this))
+    , stream(new SlackStream(this))
+    , reconnectTimer(new QTimer(this))
+{
     networkAccessible = networkAccessManager->networkAccessible();
 
     connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
@@ -100,7 +104,7 @@ void SlackClient::handleStreamStart() {
 void SlackClient::handleStreamEnd() {
     qDebug() << "Stream ended";
 
-    if (!config->accessToken().isEmpty()) {
+    if (!config->getAccessToken().isEmpty()) {
         qDebug() << "Stream reconnect scheduled";
         emit reconnecting();
         reconnectTimer->setSingleShot(true);
@@ -308,7 +312,7 @@ QJsonObject SlackClient::getResult(QNetworkReply *reply) {
 QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> params) {
     QUrlQuery query;
 
-    QString token = config->accessToken();
+    QString token = config->getAccessToken();
     if (!token.isEmpty()) {
         query.addQueryItem("token", token);
     }
@@ -328,7 +332,7 @@ QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> pa
 QNetworkReply* SlackClient::executePost(QString method, const QMap<QString, QString>& data) {
     QUrlQuery query;
 
-    QString token = config->accessToken();
+    QString token = config->getAccessToken();
     if (!token.isEmpty()) {
         query.addQueryItem("token", token);
     }
@@ -356,7 +360,7 @@ QNetworkReply* SlackClient::executePostWithFile(QString method, const QMap<QStri
 
     QHttpPart tokenPart;
     tokenPart.setHeader(QNetworkRequest::ContentDispositionHeader, "from-data; name=\"token\"");
-    tokenPart.setBody(config->accessToken().toUtf8());
+    tokenPart.setBody(config->getAccessToken().toUtf8());
     dataParts->append(tokenPart);
 
     QHttpPart filePart;
@@ -437,7 +441,7 @@ void SlackClient::testLogin() {
         return;
     }
 
-    QString token = config->accessToken();
+    QString token = config->getAccessToken();
     if (token.isEmpty()) {
         emit testLoginFail();
         return;
@@ -549,7 +553,7 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
         foreach (const QJsonValue &member, memberList) {
             QVariant memberId = member.toVariant();
 
-            if (memberId != config->userId()) {
+            if (memberId != config->getUserId()) {
                 members << Storage::user(memberId).value("name").toString();
             }
         }
@@ -577,7 +581,7 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
   QVariantMap user = Storage::user(userId);
 
   QString name;
-  if (userId.toString() == config->userId()) {
+  if (userId.toString() == config->getUserId()) {
     name = user.value("name").toString() + " (you)";
   }
   else {

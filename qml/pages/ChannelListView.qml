@@ -2,7 +2,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.slackfish 1.0 as Slack
 
-import "Settings.js" as Settings
 import "ChannelList.js" as ChannelList
 import "Channel.js" as Channel
 
@@ -13,7 +12,7 @@ SilicaListView {
     VerticalScrollDecorator {}
 
     header: PageHeader {
-        title: Settings.getUserInfo().teamName
+        title: Slack.Client.config.teamName
     }
 
     model: ListModel {

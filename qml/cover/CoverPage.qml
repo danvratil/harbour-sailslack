@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.slackfish 1.0 as Slack
-import "../pages/Settings.js" as Settings
 
 CoverBackground {
     property int unreadMessageCount: 0
@@ -109,7 +108,7 @@ CoverBackground {
     }
 
     function reloadChannelList() {
-        title.text = Settings.getUserInfo().teamName
+        title.text = Slack.Client.config.teamName
         unreadMessageCount = 0
 
         Slack.Client.getChannels().forEach(function(channel) {
