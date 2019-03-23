@@ -31,14 +31,11 @@ public:
     SlackConfig *getConfig() const { return this->config; }
 signals:
     void testConnectionFail();
-    void testLoginSuccess(QString userId, QString teamId, QString team);
+    void testLoginSuccess();
     void testLoginFail();
 
     void loadUsersSuccess();
     void loadUsersFail();
-
-    void accessTokenSuccess(QString userId, QString teamId, QString team);
-    void accessTokenFail();
 
     void loadMessagesSuccess(QString channelId, QVariantList messages, bool hasMore);
     void loadMessagesFail();
@@ -71,9 +68,6 @@ public slots:
     void init();
     void start();
     void reconnect();
-
-    void fetchAccessToken(QUrl url);
-    void handleAccessTokenReply();
 
     void testLogin();
     void handleTestLoginReply();
@@ -110,10 +104,6 @@ private:
     QNetworkReply* executeGet(QString method, QMap<QString,QString> params = QMap<QString,QString>());
 
     static QString toString(const QJsonObject &data);
-
-    bool isOk(const QNetworkReply *reply);
-    bool isError(const QJsonObject &data);
-    QJsonObject getResult(QNetworkReply *reply);
 
     void loadConversations(QString cursor = QString());
 

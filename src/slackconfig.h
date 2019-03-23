@@ -15,9 +15,10 @@ class SlackConfig : public QObject
 public:
     explicit SlackConfig(QObject *parent = 0);
 
+    void clear();
+
     QString getAccessToken() const;
     void setAccessToken(QString accessToken);
-    Q_INVOKABLE void clearAccessToken();
 
     QString getUserId() const;
     void setUserId(QString userId);

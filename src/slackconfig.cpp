@@ -24,8 +24,19 @@ void SlackConfig::setAccessToken(QString accessToken) {
     settings.setValue("user/accessToken", this->accessToken);
 }
 
-void SlackConfig::clearAccessToken() {
+void SlackConfig::clear() {
     settings.remove("user/accessToken");
+    accessToken.clear();
+    settings.remove("user/userId");
+    userId.clear();
+    settings.remove("user/teamId");
+    teamId.clear();
+    settings.remove("user/teamName");
+    teamName.clear();
+    Q_EMIT userIdChanged(userId);
+    Q_EMIT accessTokenChanged(accessToken);
+    Q_EMIT teamIdChanged(teamId);
+    Q_EMIT teamNameChanged(teamName);
 }
 
 QString SlackConfig::getUserId() const {

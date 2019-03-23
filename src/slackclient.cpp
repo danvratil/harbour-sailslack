@@ -15,7 +15,7 @@
 #include <nemonotifications-qt5/notification.h>
 
 #include "asyncfuture.h"
-
+#include "requestutils.h"
 #include "slackclient.h"
 #include "storage.h"
 #include "messageformatter.h"
@@ -272,43 +272,6 @@ void SlackClient::parseNotification(QJsonObject message) {
   }
 }
 
-bool SlackClient::isOk(const QNetworkReply *reply) {
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-    if (statusCode / 100 == 2) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-bool SlackClient::isError(const QJsonObject &data) {
-    if (data.isEmpty()) {
-        return true;
-    }
-    else {
-        return !data.value("ok").toBool(false);
-    }
-}
-
-QJsonObject SlackClient::getResult(QNetworkReply *reply) {
-    if (isOk(reply)) {
-        QJsonParseError error;
-        QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &error);
-
-        if (error.error == QJsonParseError::NoError) {
-            return document.object();
-        }
-        else {
-            return QJsonObject();
-        }
-    }
-    else {
-        return QJsonObject();
-    }
-}
-
 QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> params) {
     QUrlQuery query;
 
@@ -386,50 +349,8 @@ QNetworkReply* SlackClient::executePostWithFile(QString method, const QMap<QStri
     return reply;
 }
 
-void SlackClient::fetchAccessToken(QUrl resultUrl) {
-    QUrlQuery resultQuery(resultUrl);
-    QString code = resultQuery.queryItemValue("code");
-
-    if (code.isEmpty()) {
-        emit accessTokenFail();
-        return;
-    }
-
-    QMap<QString,QString> params;
-    params.insert("client_id", SLACK_CLIENT_ID);
-    params.insert("client_secret", SLACK_CLIENT_SECRET);
-    params.insert("code", code);
-
-    QNetworkReply* reply = executeGet("oauth.access", params);
-    connect(reply, SIGNAL(finished()), this, SLOT(handleAccessTokenReply()));
-}
-
-void SlackClient::handleAccessTokenReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject data = getResult(reply);
-
-    if (isError(data)) {
-        reply->deleteLater();
-        emit accessTokenFail();
-        return;
-    }
-
-    QString accessToken = data.value("access_token").toString();
-    QString teamId = data.value("team_id").toString();
-    QString userId = data.value("user_id").toString();
-    QString teamName = data.value("team_name").toString();
-    qDebug() << "Access token success" << accessToken << userId << teamId << teamName;
-
-    config->setAccessToken(accessToken);
-    config->setUserId(userId);
-
-    emit accessTokenSuccess(userId, teamId, teamName);
-
-    reply->deleteLater();
-}
-
 void SlackClient::logout() {
-    config->clearAccessToken();
+    config->clear();
     stream->disconnectFromHost();
     Storage::clear();
 }
@@ -453,23 +374,21 @@ void SlackClient::testLogin() {
 
 void SlackClient::handleTestLoginReply() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
-    QJsonObject data = getResult(reply);
+    QJsonObject data = Request::getResult(reply);
 
-    if (isError(data)) {
-        config->clearAccessToken();
+    if (Request::isError(data)) {
+        config->clear();
         reply->deleteLater();
         emit testLoginFail();
         return;
     }
 
-    QString teamId = data.value("team_id").toString();
-    QString userId = data.value("user_id").toString();
-    QString teamName = data.value("team").toString();
-    qDebug() << "Login success" << userId << teamId << teamName;
+    config->setTeamId(data.value("team_id").toString());
+    config->setUserId(data.value("user_id").toString());
+    config->setTeamName(data.value("team").toString());
+    qDebug() << "Login success" << config->getUserId() << config->getTeamId() << config->getTeamName();
 
-    config->setUserId(userId);
-
-    emit testLoginSuccess(userId, teamId, teamName);
+    emit testLoginSuccess();
     reply->deleteLater();
 }
 
@@ -483,8 +402,8 @@ void SlackClient::loadUsers() {
   QNetworkReply* reply = executeGet("users.list");
 
   connect(reply, &QNetworkReply::finished, [reply,this]() {
-    QJsonObject data = getResult(reply);
-    if (isError(data)) {
+    QJsonObject data = Request::getResult(reply);
+    if (Request::isError(data)) {
       qDebug() << "User load failed";
       emit loadUsersFail();
     }
@@ -507,9 +426,9 @@ void SlackClient::start() {
     QNetworkReply *reply = executeGet("rtm.connect", params);
 
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Connect result error";
             emit disconnected();
             emit initFail();
@@ -664,9 +583,9 @@ void SlackClient::loadConversations(QString cursor) {
 
   QNetworkReply* reply = executeGet("conversations.list", params);
   connect(reply, &QNetworkReply::finished, [reply,this]() {
-    QJsonObject data = getResult(reply);
+    QJsonObject data = Request::getResult(reply);
 
-    if (isError(data)) {
+    if (Request::isError(data)) {
       qDebug() << "Conversation load failed";
     }
     else {
@@ -693,7 +612,7 @@ void SlackClient::loadConversations(QString cursor) {
 
         combinator << AsyncFuture::observe(infoReply, &QNetworkReply::finished).future();
         connect(infoReply, &QNetworkReply::finished, [infoReply,infoMethod,this]() {
-            QJsonObject infoData = getResult(infoReply).value(infoMethod == "groups.info" ? "group" : "channel").toObject();
+            QJsonObject infoData = Request::getResult(infoReply).value(infoMethod == "groups.info" ? "group" : "channel").toObject();
             QVariantMap channel;
 
             if (infoData.value("is_im").toBool()) {
@@ -733,9 +652,9 @@ void SlackClient::joinChannel(QString channelId) {
 
     QNetworkReply* reply = executeGet("channels.join", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Channel join failed";
         }
 
@@ -749,9 +668,9 @@ void SlackClient::leaveChannel(QString channelId) {
 
     QNetworkReply* reply = executeGet("channels.leave", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Channel leave failed";
         }
 
@@ -765,9 +684,9 @@ void SlackClient::leaveGroup(QString groupId) {
 
     QNetworkReply* reply = executeGet("groups.leave", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Group leave failed";
         }
 
@@ -783,9 +702,9 @@ void SlackClient::openChat(QString chatId) {
 
     QNetworkReply* reply = executeGet("im.open", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Chat open failed";
         }
 
@@ -799,9 +718,9 @@ void SlackClient::closeChat(QString chatId) {
 
     QNetworkReply* reply = executeGet("im.close", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Chat close failed";
         }
 
@@ -818,9 +737,9 @@ void SlackClient::loadHistory(QString type, QString channelId, QString latest) {
 
   QNetworkReply* reply = executeGet(historyMethod(type), params);
   connect(reply, &QNetworkReply::finished, [reply,channelId,this]() {
-      QJsonObject data = getResult(reply);
+      QJsonObject data = Request::getResult(reply);
 
-      if (isError(data)) {
+      if (Request::isError(data)) {
           reply->deleteLater();
           emit loadHistoryFail();
           return;
@@ -854,9 +773,9 @@ void SlackClient::loadMessages(QString type, QString channelId) {
 void SlackClient::handleLoadMessagesReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
 
-    QJsonObject data = getResult(reply);
+    QJsonObject data = Request::getResult(reply);
 
-    if (isError(data)) {
+    if (Request::isError(data)) {
         reply->deleteLater();
         emit loadMessagesFail();
         return;
@@ -911,9 +830,9 @@ void SlackClient::markChannel(QString type, QString channelId, QString time) {
 
     QNetworkReply* reply = executeGet(markMethod(type), params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Mark conversation failed";
         }
 
@@ -934,9 +853,9 @@ void SlackClient::postMessage(QString channelId, QString content) {
 
     QNetworkReply* reply = executePost("chat.postMessage", data);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             qDebug() << "Post message failed";
         }
 
@@ -968,10 +887,10 @@ void SlackClient::postImage(QString channelId, QString imagePath, QString title,
 
     connect(reply, SIGNAL(finished()), imageFile, SLOT(deleteLater()));
     connect(reply, &QNetworkReply::finished, [reply,this]() {
-        QJsonObject data = getResult(reply);
+        QJsonObject data = Request::getResult(reply);
         qDebug() << "Post image result" << data;
 
-        if (isError(data)) {
+        if (Request::isError(data)) {
             emit postImageFail();
         }
         else {

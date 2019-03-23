@@ -3,6 +3,7 @@
 
 #include "slackclient.h"
 #include "slackconfig.h"
+#include "slackauthenticator.h"
 #include "networkaccessmanagerfactory.h"
 #include "notificationlistener.h"
 #include "dbusadaptor.h"
@@ -32,10 +33,15 @@ int main(int argc, char *argv[])
     qDebug() << "Setting last version" << APP_VERSION;
     settings.setValue("app/lastVersion", QVariant(APP_VERSION));
 
+
+
+
     SlackConfig::clearWebViewCache();
 
     qmlRegisterSingletonType<SlackClient>("harbour.slackfish", 1, 0, "Client", slack_client_provider);
     qmlRegisterUncreatableType<SlackConfig>("harbour.slackfish", 1, 0, "Config", "Use Client.config to access current config");
+
+    qmlRegisterType<SlackAuthenticator>("harbour.slackfish", 1, 0, "Authenticator");
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
     view->rootContext()->setContextProperty("slackClientId", SLACK_CLIENT_ID);

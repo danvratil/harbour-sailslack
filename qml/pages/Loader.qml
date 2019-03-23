@@ -5,8 +5,7 @@ import harbour.slackfish 1.0 as Slack
 Page {
     id: page
 
-    property bool firstView: true
-    property bool loading: true
+    property bool loading: false
     property string errorMessage: ""
     property string loadMessage: ""
 
@@ -20,7 +19,7 @@ Page {
 
             MenuItem {
                 text: qsTr("Login")
-                onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+                onClicked: startLogin()
             }
         }
 
@@ -68,13 +67,12 @@ Page {
     onStatusChanged: {
         if (status === PageStatus.Active) {
             errorMessage = ""
-            if (firstView || Slack.Client.config.userId !== "") {
-                firstView = false
-                initLoading()
-            }
-            else {
-                loading = false
-                errorMessage = qsTr("Not logged in")
+            if (!loading) {
+                if (Slack.Client.config.userId !== "") {
+                    initLoading()
+                } else {
+                    errorMessage = qsTr("Not logged in")
+                }
             }
         }
     }
@@ -97,26 +95,40 @@ Page {
 
     function initLoading() {
         loading = true
-        if (Slack.Client.config.userId !== "") {
-            loadMessage = qsTr("Loading")
-            Slack.Client.init()
-        }
-        else {
-            Slack.Client.testLogin()
-        }
+        Slack.Client.testLogin()
     }
 
-    function handleLoginTestSuccess(userId, teamId, teamName) {
-        loadMessage = qsTr("Loading")
-        var config = Slack.Client.config;
-        config.userId = userId;
-        config.teamId = teamId;
-        config.teamName = teamName;
+    function handleLoginTestSuccess() {
         Slack.Client.init()
     }
 
     function handleLoginTestFail() {
-        pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+        loading = false;
+        if (Slack.Client.config.userId !== "") {
+            startLogin()
+        }
+    }
+
+    function startLogin() {
+        loading = true
+        var loginPage = pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+        loginPage.onLoginSuccess.connect(handleLoginSuccess)
+        loginPage.onLoginFail.connect(handleLoginFail)
+    }
+
+    function handleLoginSuccess(userId, teamId, teamName, accessToken) {
+        errorMessage = ""
+        loadMessage = qsTr("Loading")
+        Slack.Client.config.userId = userId
+        Slack.Client.config.teamId = teamId
+        Slack.Client.config.teamName = teamName
+        Slack.Client.config.accessToken = accessToken
+        Slack.Client.init()
+    }
+
+    function handleLoginFail() {
+        loading = false;
+        errorMessage = qsTr("Login failed")
     }
 
     function handleInitSuccess() {

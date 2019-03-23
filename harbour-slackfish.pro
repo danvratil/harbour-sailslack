@@ -59,7 +59,9 @@ SOURCES += src/harbour-slackfish.cpp \
     src/messageformatter.cpp \
     src/notificationlistener.cpp \
     src/dbusadaptor.cpp \
-    src/filemodel.cpp
+    src/filemodel.cpp \
+    src/slackauthenticator.cpp \
+    src/requestutils.cpp
 
 OTHER_FILES += qml/harbour-slackfish.qml \
     qml/cover/CoverPage.qml \
@@ -84,7 +86,9 @@ HEADERS += \
     src/messageformatter.h \
     src/notificationlistener.h \
     src/dbusadaptor.h \
-    src/filemodel.h
+    src/filemodel.h \
+    src/slackauthenticator.h \
+    src/requestutils.h
 
 DISTFILES += \
     qml/pages/LoginPage.qml \
