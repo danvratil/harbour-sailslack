@@ -4,15 +4,16 @@
 
 #include "slackclientconfig.h"
 
-SlackClientConfig::SlackClientConfig(QObject *parent)
+SlackClientConfig::SlackClientConfig(const QString &team, QObject *parent)
     : QObject(parent), settings(this) {
     // FIXME: Technically we could read those on demand each time, but I've been getting weird
     // crashes inside of the QML engine when reading from the properties, possibly due to the
     // returned strings being temporaries
-    accessToken = settings.value("user/accessToken").toString();
-    userId = settings.value("user/userId").toString();
-    teamId = settings.value("user/teamId").toString();
-    teamName = settings.value("user/teamName").toString();
+    settings.beginGroup(QStringLiteral("team/%1").arg(team));
+    accessToken = settings.value("accessToken").toString();
+    userId = settings.value("userId").toString();
+    teamId = settings.value("teamId").toString();
+    teamName = settings.value("teamName").toString();
 }
 
 QString SlackClientConfig::getAccessToken() const {
@@ -21,17 +22,17 @@ QString SlackClientConfig::getAccessToken() const {
 
 void SlackClientConfig::setAccessToken(QString accessToken) {
     this->accessToken = accessToken;
-    settings.setValue("user/accessToken", this->accessToken);
+    settings.setValue("accessToken", this->accessToken);
 }
 
 void SlackClientConfig::clear() {
-    settings.remove("user/accessToken");
+    settings.remove("accessToken");
     accessToken.clear();
-    settings.remove("user/userId");
+    settings.remove("userId");
     userId.clear();
-    settings.remove("user/teamId");
+    settings.remove("teamId");
     teamId.clear();
-    settings.remove("user/teamName");
+    settings.remove("teamName");
     teamName.clear();
     Q_EMIT userIdChanged(userId);
     Q_EMIT accessTokenChanged(accessToken);
@@ -46,7 +47,7 @@ QString SlackClientConfig::getUserId() const {
 void SlackClientConfig::setUserId(QString userId) {
     if (this->userId != userId) {
         this->userId = userId;
-        settings.setValue("user/userId", this->userId);
+        settings.setValue("userId", this->userId);
         Q_EMIT userIdChanged(this->userId);
     }
 }
@@ -58,7 +59,7 @@ QString SlackClientConfig::getTeamId() const {
 void SlackClientConfig::setTeamId(const QString &teamId) {
     if (this->teamId != teamId) {
         this->teamId = teamId;
-        settings.setValue("user/teamId", this->teamId);
+        settings.setValue("teamId", this->teamId);
         Q_EMIT teamIdChanged(this->teamId);
     }
 }
@@ -70,7 +71,7 @@ QString SlackClientConfig::getTeamName() const {
 void SlackClientConfig::setTeamName(const QString &teamName) {
     if (this->teamName != teamName) {
         this->teamName = teamName;
-        settings.setValue("user/teamName", this->teamName);
+        settings.setValue("teamName", this->teamName);
         Q_EMIT teamNameChanged(this->teamName);
     }
 }

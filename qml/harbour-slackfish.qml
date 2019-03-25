@@ -7,13 +7,8 @@ import "dialogs"
 ApplicationWindow {
     id: appWindow
 
-    // SlackClient
-    Client {
-        id: slackClient
-    }
-
-    Component.onCompleted: {
-        pageStack.push(Qt.resolvedUrl("pages/Loader.qml"), { "slackClient": slackClient })
+    initialPage: Component {
+        TeamList {}
     }
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")

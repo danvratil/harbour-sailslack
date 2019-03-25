@@ -13,7 +13,7 @@ class SlackClientConfig : public QObject
     Q_PROPERTY(QString teamId READ getTeamId WRITE setTeamId NOTIFY teamIdChanged)
     Q_PROPERTY(QString teamName READ getTeamName WRITE setTeamName NOTIFY teamNameChanged)
 public:
-    explicit SlackClientConfig(QObject *parent = 0);
+    explicit SlackClientConfig(const QString &team, QObject *parent = 0);
 
     void clear();
 

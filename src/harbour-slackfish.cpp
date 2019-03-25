@@ -1,6 +1,7 @@
 #include <QtQuick>
 #include <sailfishapp.h>
 
+#include "slackconfig.h"
 #include "slackclient.h"
 #include "slackclientconfig.h"
 #include "slackauthenticator.h"
@@ -9,14 +10,6 @@
 #include "dbusadaptor.h"
 #include "storage.h"
 #include "filemodel.h"
-
-static QObject *slack_client_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
-    Q_UNUSED(engine)
-    Q_UNUSED(scriptEngine)
-
-    SlackClient *client = new SlackClient();
-    return client;
-}
 
 int main(int argc, char *argv[])
 {
@@ -38,6 +31,13 @@ int main(int argc, char *argv[])
 
     SlackClientConfig::clearWebViewCache();
 
+    qmlRegisterSingletonType<SlackConfig>("harbour.slackfish", 1, 0, "Config", [](QQmlEngine *, QJSEngine *) -> QObject* {
+        return new SlackConfig();
+    });
+    qmlRegisterSingletonType<SlackClientFactory>("harbour.slackfish", 1, 0, "ClientFactory",
+                                                 [](QQmlEngine *, QJSEngine *) -> QObject* {
+        return new SlackClientFactory();
+    });
 
     qmlRegisterType<SlackAuthenticator>("harbour.slackfish", 1, 0, "Authenticator");
     qmlRegisterType<SlackClient>("harbour.slackfish", 1, 0, "Client");

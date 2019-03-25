@@ -61,7 +61,8 @@ SOURCES += src/harbour-slackfish.cpp \
     src/filemodel.cpp \
     src/slackauthenticator.cpp \
     src/requestutils.cpp \
-    src/slackclientconfig.cpp
+    src/slackclientconfig.cpp \
+    src/slackconfig.cpp
 
 OTHER_FILES += qml/harbour-slackfish.qml \
     qml/cover/CoverPage.qml \
@@ -88,7 +89,8 @@ HEADERS += \
     src/filemodel.h \
     src/slackauthenticator.h \
     src/requestutils.h \
-    src/slackclientconfig.h
+    src/slackclientconfig.h \
+    src/slackconfig.h
 
 DISTFILES += \
     qml/pages/LoginPage.qml \
@@ -113,7 +115,9 @@ DISTFILES += \
     qml/pages/ChatSelect.qml \
     qml/dialogs/ImagePicker.qml \
     qml/pages/FileSend.qml \
-    data/emoji.json
+    data/emoji.json \
+    qml/pages/TeamList.qml \
+    qml/pages/TeamList.js
 
 RESOURCES += \
     data.qrc

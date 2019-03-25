@@ -1,7 +1,7 @@
 #include "networkaccessmanager.h"
 
 NetworkAccessManager::NetworkAccessManager(QObject *parent): QNetworkAccessManager(parent) {
-    config = new SlackClientConfig(this);
+    //config = new SlackClientConfig(this);
 }
 
 QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkRequest &request, QIODevice *outgoingData) {

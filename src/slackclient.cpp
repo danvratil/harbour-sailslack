@@ -22,12 +22,18 @@
 
 SlackClient::SlackClient(QObject *parent)
     : QObject(parent)
+{}
+
+SlackClient::SlackClient(const QString &team, QObject *parent)
+    : QObject(parent)
+    , team(team)
     , appActive(true)
     , activeWindow("init")
     , networkAccessManager(new QNetworkAccessManager(this))
-    , config(new SlackClientConfig(this))
+    , config(new SlackClientConfig(team, this))
     , stream(new SlackStream(this))
     , reconnectTimer(new QTimer(this))
+    , initialized(false)
 {
     networkAccessible = networkAccessManager->networkAccessible();
 
@@ -37,6 +43,11 @@ SlackClient::SlackClient(QObject *parent)
     connect(stream, SIGNAL(connected()), this, SLOT(handleStreamStart()));
     connect(stream, SIGNAL(disconnected()), this, SLOT(handleStreamEnd()));
     connect(stream, SIGNAL(messageReceived(QJsonObject)), this, SLOT(handleStreamMessage(QJsonObject)));
+
+}
+
+QString SlackClient::getTeam() const {
+    return team;
 }
 
 QString SlackClient::toString(const QJsonObject &data) {
@@ -439,6 +450,8 @@ void SlackClient::start() {
             qDebug() << "Connect completed";
 
             Storage::clearChannelMessages();
+            initialized = true;
+            Q_EMIT initializedChanged();
             emit initSuccess();
         }
 
@@ -1175,4 +1188,13 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setHintValue("x-nemo-display-on", true);
     notification.setRemoteAction(Notification::remoteAction("default", "", "harbour.slackfish", "/", "harbour.slackfish", "activate", arguments));
     notification.publish();
+}
+
+
+SlackClientFactory::SlackClientFactory(QObject *parent)
+    : QObject(parent)
+{}
+
+SlackClient *SlackClientFactory::createClient(const QString &team) {
+    return new SlackClient(team);
 }

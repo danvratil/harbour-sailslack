@@ -19,9 +19,11 @@ class SlackClient : public QObject
     Q_OBJECT
 
     Q_PROPERTY(SlackClientConfig* config READ getConfig CONSTANT)
-
+    Q_PROPERTY(QString team READ getTeam CONSTANT)
+    Q_PROPERTY(bool initialized READ getInitialized NOTIFY initializedChanged)
 public:
-    explicit SlackClient(QObject *parent = 0);
+    explicit SlackClient(QObject *parent = 0); // only to make qmlRegisterType happy, don't use
+    explicit SlackClient(const QString &team, QObject *parent = 0);
 
     Q_INVOKABLE void setAppActive(bool active);
     Q_INVOKABLE void setActiveWindow(QString windowId);
@@ -30,7 +32,14 @@ public:
     Q_INVOKABLE QVariant getChannel(QString channelId);
 
     SlackClientConfig *getConfig() const { return this->config; }
+    bool getInitialized() const { return initialized; }
+
+    void setTeam(const QString &team);
+    QString getTeam() const;
+
 signals:
+    void teamChanged();
+
     void testConnectionFail();
     void testLoginSuccess();
     void testLoginFail();
@@ -45,6 +54,7 @@ signals:
 
     void initFail();
     void initSuccess();
+    void initializedChanged();
 
     void reconnectFail();
     void reconnectAccessTokenFail();
@@ -96,6 +106,8 @@ public slots:
 
 
 private:
+    QString team;
+
     bool appActive;
     QString activeWindow;
 
@@ -149,6 +161,17 @@ private:
     QPointer<QTimer> reconnectTimer;
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
+
+    bool initialized;
+};
+
+class SlackClientFactory : public QObject
+{
+    Q_OBJECT
+public:
+    explicit SlackClientFactory(QObject *parent = nullptr);
+
+    Q_INVOKABLE SlackClient *createClient(const QString &team);
 };
 
 #endif // SLACKCLIENT_H
