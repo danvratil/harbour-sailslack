@@ -5,7 +5,6 @@ function init() {
     Slack.Config.onTeamRemoved.connect(handleTeamRemoved)
 
     teamsModel.clear()
-    console.log(Slack.Config.teams)
     Slack.Config.teams.forEach(function(team) {
         teamsModel.append({
             uuid: team,
@@ -16,19 +15,29 @@ function init() {
 }
 
 function handleTeamAdded(team) {
-    var client = Slack.ClientFactory.createClient(team)
-    teamsModel.append({
-        uuid: team,
-        client: client,
-        unreadCount: 0
+    var page = pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+    page.onLoginSuccess.connect(function(userId, teamId, teamName, accessToken) {
+        var client = Slack.ClientFactory.createClient(team)
+        client.config.userId = userId
+        client.config.teamId = teamId
+        client.config.teamName = teamName
+        client.config.accessToken = accessToken
+        teamsModel.append({
+            uuid: team,
+            client: client,
+            unreadCount: 0
+        })
+        pageStack.replace(Qt.resolvedUrl("Loader.qml"), {"slackClient": client})
     })
-    pageStack.push(Qt.resolvedUrl("Loader.qml"), {"slackClient": client})
+
 }
 
 function handleTeamRemoved(team) {
     for (var i = 0; i < teamsModel.count; i++) {
         var current = teamsModel.get(i)
         if (current.uuid === team) {
+            current.client.logout()
+            current.client.destroy()
             teamsModel.remove(i)
             return
         }

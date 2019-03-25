@@ -23,7 +23,7 @@ Page {
             }
 
             MenuItem {
-                text: qsTr("Sign into Another Workspace")
+                text: qsTr("Sign into a Workspace")
 
                 onClicked: {
                     Slack.Config.addNewTeam()
@@ -33,19 +33,29 @@ Page {
 
         SilicaListView {
             id: teamListView
-
             anchors.fill: parent
-
             model: teamsModel
+
+            header: PageHeader {
+                title: qsTr("Slackfish")
+            }
 
             delegate: ListItem {
                 id: delegate
                 contentHeight: Theme.itemSizeSmall
-                menu: contextMenu
 
                 property color infoColor: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                 property color textColor: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
                 property color currentColor: model.unreadCount > 0 ? textColor : infoColor
+
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Logout from this Workspace")
+                        onClicked: remorseAction(qsTr("Logging out"), function() {
+                            Slack.Config.removeTeam(model.uuid)
+                        })
+                    }
+                }
 
                 Row {
                     id: row
@@ -70,20 +80,6 @@ Page {
                         color: currentColor
                     }
                 }
-
-                Component {
-                    id: contextMenu
-                    ContextMenu {
-                        MenuItem {
-                            text: "Logout"
-                            onClicked: remorseAction("Logging out", function() {
-                                logout(model.uuid)
-                            })
-                        }
-                    }
-                }
-
-
                 onClicked: {
                     console.log("Opening team " + model.client.config.teamName)
                     if (model.client.initialized) {

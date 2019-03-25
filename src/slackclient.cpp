@@ -43,7 +43,10 @@ SlackClient::SlackClient(const QString &team, QObject *parent)
     connect(stream, SIGNAL(connected()), this, SLOT(handleStreamStart()));
     connect(stream, SIGNAL(disconnected()), this, SLOT(handleStreamEnd()));
     connect(stream, SIGNAL(messageReceived(QJsonObject)), this, SLOT(handleStreamMessage(QJsonObject)));
+}
 
+SlackClient::~SlackClient() {
+    qDebug() << "Destroying SlackClient for " << config->getTeamName();
 }
 
 QString SlackClient::getTeam() const {

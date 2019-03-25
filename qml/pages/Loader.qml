@@ -7,6 +7,7 @@ Page {
 
     property Client slackClient
 
+    property bool firstView: true
     property bool loading: false
     property string errorMessage: ""
     property string loadMessage: ""
@@ -15,15 +16,6 @@ Page {
         anchors.fill: parent
 
         PageHeader { title: "Slackfish" }
-
-        PullDownMenu {
-            enabled: !page.loading
-
-            MenuItem {
-                text: qsTr("Login")
-                onClicked: startLogin()
-            }
-        }
 
         Label {
             visible: loader.visible
@@ -66,25 +58,14 @@ Page {
         }
     }
 
-    onStatusChanged: {
-        if (status === PageStatus.Active) {
-            errorMessage = ""
-            if (!loading) {
-                if (slackClient.config.userId !== "") {
-                    initLoading()
-                } else {
-                    errorMessage = qsTr("Not logged in")
-                }
-            }
-        }
-    }
-
     Component.onCompleted: {
         slackClient.onTestLoginSuccess.connect(handleLoginTestSuccess)
         slackClient.onTestLoginFail.connect(handleLoginTestFail)
         slackClient.onInitSuccess.connect(handleInitSuccess)
         slackClient.onInitFail.connect(handleInitFail)
         slackClient.onTestConnectionFail.connect(handleConnectionFail)
+
+        initLoading()
     }
 
     function initLoading() {
@@ -104,13 +85,12 @@ Page {
     }
 
     function startLogin() {
-        loading = true
         var loginPage = pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
         loginPage.onLoginSuccess.connect(handleLoginSuccess)
-        loginPage.onLoginFail.connect(handleLoginFail)
     }
 
     function handleLoginSuccess(userId, teamId, teamName, accessToken) {
+        pageStack.pop() // pop the loginpage
         errorMessage = ""
         loadMessage = qsTr("Loading")
         slackClient.config.userId = userId
@@ -118,11 +98,6 @@ Page {
         slackClient.config.teamName = teamName
         slackClient.config.accessToken = accessToken
         slackClient.init()
-    }
-
-    function handleLoginFail() {
-        loading = false;
-        errorMessage = qsTr("Login failed")
     }
 
     function handleInitSuccess() {

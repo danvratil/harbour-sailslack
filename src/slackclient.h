@@ -24,6 +24,7 @@ class SlackClient : public QObject
 public:
     explicit SlackClient(QObject *parent = 0); // only to make qmlRegisterType happy, don't use
     explicit SlackClient(const QString &team, QObject *parent = 0);
+    ~SlackClient() override;
 
     Q_INVOKABLE void setAppActive(bool active);
     Q_INVOKABLE void setActiveWindow(QString windowId);

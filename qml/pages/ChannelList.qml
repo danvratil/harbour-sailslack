@@ -19,17 +19,7 @@ Page {
         PullDownMenu {
             id: topMenu
 
-            MenuItem {
-                text: qsTr("Logout")
-
-                onClicked: {
-                    logoutRemorse.execute(qsTr("Logout"), function() {
-                        slackClient.logout()
-                        pageStack.pop()
-                    })
-                }
-            }
-            MenuItem {
+           MenuItem {
                 text: qsTr("Open chat")
                 onClicked: {
                     pageStack.push(Qt.resolvedUrl("ChatSelect.qml"), { "slackClient": page.slackClient })
@@ -41,10 +31,6 @@ Page {
                     pageStack.push(Qt.resolvedUrl("ChannelSelect.qml"), { "slackClient": page.slackClient })
                 }
             }
-        }
-
-        RemorsePopup {
-            id: logoutRemorse
         }
 
         ChannelListView {
