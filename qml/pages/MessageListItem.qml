@@ -3,8 +3,14 @@ import Sailfish.Silica 1.0
 
 ListItem {
     id: item
-    enabled: false
     contentHeight: column.height + Theme.paddingMedium
+
+    menu: ContextMenu {
+        MenuItem {
+            text: qsTr("User Details")
+            onClicked: showUserDetails(user.id)
+        }
+    }
 
     property color infoColor: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
     property color textColor: item.highlighted ? Theme.highlightColor : Theme.primaryColor
@@ -84,10 +90,17 @@ ListItem {
 
     function handleLink(link) {
         if (link.indexOf("slackfish://") === 0) {
-            console.log("local link", link)
+            var parts = link.split('/')
+            if (parts[2] === "user") {
+                showUserDetails(parts[3])
+            }
         } else {
             console.log("external link", link)
             Qt.openUrlExternally(link)
         }
+    }
+
+    function showUserDetails(userId) {
+        pageStack.push(Qt.resolvedUrl("UserView.qml"), {"slackClient": slackClient, "userId": userId})
     }
 }

@@ -32,6 +32,16 @@ SilicaListView {
         anchors.horizontalCenter: listView.horizontalCenter
     }
 
+    PullDownMenu {
+        enabled: channel.type === "im"
+        MenuItem {
+            text: qsTr("User Details")
+            onClicked: {
+                pageStack.push(Qt.resolvedUrl("UserView.qml"), {"slackClient": slackClient, "userId": channel.userId})
+            }
+        }
+    }
+
     VerticalScrollDecorator {}
 
     Timer {

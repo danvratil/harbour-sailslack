@@ -117,7 +117,8 @@ DISTFILES += \
     qml/pages/FileSend.qml \
     data/emoji.json \
     qml/pages/TeamList.qml \
-    qml/pages/TeamList.js
+    qml/pages/TeamList.js \
+    qml/pages/UserView.qml
 
 RESOURCES += \
     data.qrc

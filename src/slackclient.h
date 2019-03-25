@@ -53,6 +53,9 @@ signals:
     void loadHistorySuccess(QString channelId, QVariantList messages, bool hasMore);
     void loadHistoryFail();
 
+    void loadUserInfoSuccess(QString userId, QVariantMap user);
+    void loadUserInfoFail(QString userId);
+
     void initFail();
     void initSuccess();
     void initializedChanged();
@@ -98,6 +101,7 @@ public slots:
     void closeChat(QString chatId);
     void postMessage(QString channelId, QString content);
     void postImage(QString channelId, QString imagePath, QString title, QString comment);
+    void loadUserInfo(QString userId);
 
     void handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 

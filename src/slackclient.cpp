@@ -505,7 +505,6 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
     data.insert("isOpen", group.value("is_open").toVariant());
     data.insert("lastRead", group.value("last_read").toVariant());
     data.insert("unreadCount", group.value("unread_count_display").toVariant());
-    data.insert("userId", QVariant());
     return data;
 }
 
@@ -914,6 +913,24 @@ void SlackClient::postImage(QString channelId, QString imagePath, QString title,
         }
 
         reply->deleteLater();
+    });
+}
+
+void SlackClient::loadUserInfo(QString userId) {
+    QMap<QString, QString> params;
+    params["user"] = userId;
+
+    QNetworkReply *reply = executeGet("users.info", params);
+    connect(reply, &QNetworkReply::finished, [userId, reply, this]() {
+        QJsonObject data = Request::getResult(reply);
+        if (Request::isError(data)) {
+            qDebug() << "User fetch failed:" << data.toVariantMap();
+            Q_EMIT loadUserInfoFail(userId);
+            return;
+        }
+
+        const auto user = data["user"].toObject();
+        Q_EMIT loadUserInfoSuccess(userId, user.toVariantMap());
     });
 }
 
