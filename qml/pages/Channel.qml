@@ -54,12 +54,10 @@ Page {
     }
 
     Component.onCompleted: {
-        console.log(slackClient)
         page.channel = slackClient.getChannel(page.channelId)
     }
 
     onStatusChanged: {
-        console.log(slackClient)
         if (status === PageStatus.Active) {
             slackClient.setActiveWindow(page.channelId)
 
