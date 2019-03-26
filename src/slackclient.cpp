@@ -35,6 +35,8 @@ SlackClient::SlackClient(const QString &team, QObject *parent)
     , messageFormatter(storage)
     , initialized(false)
 {
+    qDebug() << "Creating SlackClient for" << config->getTeamName();
+
     networkAccessible = networkAccessManager->networkAccessible();
 
     connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
@@ -92,13 +94,13 @@ void SlackClient::handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkA
 }
 
 void SlackClient::reconnect() {
-    qDebug() << "Reconnecting";
+    qDebug() << config->getTeamName() << ": Reconnecting";
     emit reconnecting();
     start();
 }
 
 void SlackClient::handleStreamStart() {
-    qDebug() << "Stream started";
+    qDebug() << config->getTeamName() << ": Stream started";
     emit connected();
 
     QJsonArray userIds;
@@ -116,10 +118,10 @@ void SlackClient::handleStreamStart() {
 }
 
 void SlackClient::handleStreamEnd() {
-    qDebug() << "Stream ended";
+    qDebug() << config->getTeamName() << ": Stream ended";
 
     if (!config->getAccessToken().isEmpty()) {
-        qDebug() << "Stream reconnect scheduled";
+        qDebug() << config->getTeamName() << ": Stream reconnect scheduled";
         emit reconnecting();
         reconnectTimer->setSingleShot(true);
         reconnectTimer->start(1000);
@@ -279,7 +281,7 @@ void SlackClient::parseNotification(QJsonObject message) {
       title = QString(tr("New message"));
   }
 
-  qDebug() << "App state" << appActive << activeWindow;
+  qDebug() << config->getTeamName() << ": App state" << appActive << activeWindow;
 
   if (!appActive || activeWindow != channelId) {
       sendNotification(channelId, title, content);
@@ -302,7 +304,7 @@ QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> pa
     url.setQuery(query);
     QNetworkRequest request(url);
 
-    qDebug() << "GET" << url.toString();
+    qDebug() << config->getTeamName() << ": GET" << url.toString();
     return networkAccessManager->get(request);
 }
 
@@ -328,7 +330,7 @@ QNetworkReply* SlackClient::executePost(QString method, const QMap<QString, QStr
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setHeader(QNetworkRequest::ContentLengthHeader, body.length());
 
-    qDebug() << "POST" << url.toString() << body;
+    qDebug() << config->getTeamName() << ": POST" << url.toString() << body;
     return networkAccessManager->post(request, body);
 }
 
@@ -355,7 +357,7 @@ QNetworkReply* SlackClient::executePostWithFile(QString method, const QMap<QStri
     QUrl url("https://slack.com/api/" + method);
     QNetworkRequest request(url);
 
-    qDebug() << "POST" << url << dataParts;
+    qDebug() << config->getTeamName() << ": POST" << url << dataParts;
 
     QNetworkReply* reply = networkAccessManager->post(request, dataParts);
     connect(reply, SIGNAL(finished()), dataParts, SLOT(deleteLater()));
@@ -371,7 +373,7 @@ void SlackClient::logout() {
 
 void SlackClient::testLogin() {
     if (networkAccessible != QNetworkAccessManager::Accessible) {
-        qDebug() << "Login failed no network" << networkAccessible;
+        qDebug() << config->getTeamName() << ": Login failed no network" << networkAccessible;
         emit testConnectionFail();
         return;
     }
@@ -400,29 +402,29 @@ void SlackClient::handleTestLoginReply() {
     config->setTeamId(data.value("team_id").toString());
     config->setUserId(data.value("user_id").toString());
     config->setTeamName(data.value("team").toString());
-    qDebug() << "Login success" << config->getUserId() << config->getTeamId() << config->getTeamName();
+    qDebug() << config->getTeamName() << ": Login success" << config->getUserId() << config->getTeamId() << config->getTeamName();
 
     emit testLoginSuccess();
     reply->deleteLater();
 }
 
 void SlackClient::init() {
-  qDebug() << "Start init";
+  qDebug() << config->getTeamName() << ": Start init";
   loadUsers();
 }
 
 void SlackClient::loadUsers() {
-  qDebug() << "Start load users";
+  qDebug() << config->getTeamName() << ": Start load users";
   QNetworkReply* reply = executeGet("users.list");
 
   connect(reply, &QNetworkReply::finished, [reply,this]() {
     QJsonObject data = Request::getResult(reply);
     if (Request::isError(data)) {
-      qDebug() << "User load failed";
+      qDebug() << config->getTeamName() << ": User load failed";
       emit loadUsersFail();
     }
     else {
-      qDebug() << "Load users completed";
+      qDebug() << config->getTeamName() << ": Load users completed";
       parseUsers(data);
       emit loadUsersSuccess();
       loadConversations();
@@ -433,7 +435,7 @@ void SlackClient::loadUsers() {
 }
 
 void SlackClient::start() {
-    qDebug() << "Connect start";
+    qDebug() << config->getTeamName() << ": Connect start";
 
     QMap<QString,QString> params;
     params.insert("batch_presence_aware", "1");
@@ -443,14 +445,14 @@ void SlackClient::start() {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Connect result error";
+            qDebug() << config->getTeamName() << ": Connect result error";
             emit disconnected();
             emit initFail();
         }
         else {
             QUrl url(data.value("url").toString());
             stream->listen(url);
-            qDebug() << "Connect completed";
+            qDebug() << config->getTeamName() << ": Connect completed";
 
             storage.clearChannelMessages();
             initialized = true;
@@ -586,7 +588,7 @@ QString SlackClient::historyMethod(QString type) {
 }
 
 void SlackClient::loadConversations(QString cursor) {
-  qDebug() << "Conversation load start" << cursor;
+  qDebug() << config->getTeamName() << ": Conversation load start" << cursor;
 
   QMap<QString,QString> params;
   params.insert("types", "public_channel,private_channel,mpim,im");
@@ -601,7 +603,7 @@ void SlackClient::loadConversations(QString cursor) {
     QJsonObject data = Request::getResult(reply);
 
     if (Request::isError(data)) {
-      qDebug() << "Conversation load failed";
+      qDebug() << config->getTeamName() << ": Conversation load failed";
     }
     else {
       auto combinator = AsyncFuture::combine();
@@ -670,7 +672,7 @@ void SlackClient::joinChannel(QString channelId) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Channel join failed";
+            qDebug() << config->getTeamName() << ": Channel join failed";
         }
 
         reply->deleteLater();
@@ -686,7 +688,7 @@ void SlackClient::leaveChannel(QString channelId) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Channel leave failed";
+            qDebug() << config->getTeamName() << ": Channel leave failed";
         }
 
         reply->deleteLater();
@@ -702,7 +704,7 @@ void SlackClient::leaveGroup(QString groupId) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Group leave failed";
+            qDebug() << config->getTeamName() << ": Group leave failed";
         }
 
         reply->deleteLater();
@@ -720,7 +722,7 @@ void SlackClient::openChat(QString chatId) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Chat open failed";
+            qDebug() << config->getTeamName() << ": Chat open failed";
         }
 
         reply->deleteLater();
@@ -736,7 +738,7 @@ void SlackClient::closeChat(QString chatId) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Chat close failed";
+            qDebug() << config->getTeamName() << ": Chat close failed";
         }
 
         reply->deleteLater();
@@ -848,7 +850,7 @@ void SlackClient::markChannel(QString type, QString channelId, QString time) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Mark conversation failed";
+            qDebug() << config->getTeamName() << ": Mark conversation failed";
         }
 
         reply->deleteLater();
@@ -871,7 +873,7 @@ void SlackClient::postMessage(QString channelId, QString content) {
         QJsonObject data = Request::getResult(reply);
 
         if (Request::isError(data)) {
-            qDebug() << "Post message failed";
+            qDebug() << config->getTeamName() << ": Post message failed";
         }
 
         reply->deleteLater();
@@ -897,13 +899,13 @@ void SlackClient::postImage(QString channelId, QString imagePath, QString title,
         return;
     }
 
-    qDebug() << "sending image" << imagePath;
+    qDebug() << config->getTeamName() << ": sending image" << imagePath;
     QNetworkReply* reply = executePostWithFile("files.upload", data, imageFile);
 
     connect(reply, SIGNAL(finished()), imageFile, SLOT(deleteLater()));
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
-        qDebug() << "Post image result" << data;
+        qDebug() << config->getTeamName() << ": Post image result" << data;
 
         if (Request::isError(data)) {
             emit postImageFail();
@@ -924,7 +926,7 @@ void SlackClient::loadUserInfo(QString userId) {
     connect(reply, &QNetworkReply::finished, [userId, reply, this]() {
         QJsonObject data = Request::getResult(reply);
         if (Request::isError(data)) {
-            qDebug() << "User fetch failed:" << data.toVariantMap();
+            qDebug() << config->getTeamName() << ": User fetch failed:" << data.toVariantMap();
             Q_EMIT loadUserInfoFail(userId);
             return;
         }
@@ -972,8 +974,7 @@ QVariantMap SlackClient::user(const QJsonObject &data) {
     }
 
     if (!userId.isValid()) {
-        qDebug() << "User not found for message";
-        qDebug() << data;
+        qDebug() << config->getTeamName() << ": User not found for message";
     }
 
     QVariantMap userData = storage.user(userId);
