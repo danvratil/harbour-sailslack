@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.sailslack 1.0 as Slack
 
 import "TeamList.js" as TeamList
 
@@ -37,7 +37,7 @@ Page {
             model: teamsModel
 
             header: PageHeader {
-                title: qsTr("Slackfish")
+                title: qsTr("Sailslack")
             }
 
             delegate: ListItem {

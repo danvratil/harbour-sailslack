@@ -1,4 +1,4 @@
-Name: harbour-slackfish
+Name: harbour-sailslack
 Summary: Unoffical Slack client for Sailfish
 Version: 1.4.2
 Release: 1
@@ -12,7 +12,7 @@ License: LICENSE
 Sources:
 - '%{name}-%{version}.tar.bz2'
 Description: |
-  Slackfish is an unoffical Slack client for Sailfish
+  Sailslack is an unoffical Slack client for Sailfish
 Configure: none
 # The qtc5 builder inserts macros to allow QtCreator to have fine
 # control over qmake/make execution

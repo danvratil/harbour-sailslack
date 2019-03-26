@@ -89,7 +89,7 @@ ListItem {
     }
 
     function handleLink(link) {
-        if (link.indexOf("slackfish://") === 0) {
+        if (link.indexOf("sailslack://") === 0) {
             var parts = link.split('/')
             if (parts[2] === "user") {
                 showUserDetails(parts[3])

@@ -1,22 +1,11 @@
-# NOTICE:
-#
-# Application name defined in TARGET has a corresponding QML filename.
-# If name defined in TARGET is changed, the following needs to be done
-# to match new name:
-#   - corresponding QML filename must be changed
-#   - desktop icon filename must be changed
-#   - desktop filename must be changed
-#   - icon definition filename in desktop file must be changed
-#   - translation filenames have to be changed
-
 # App config
-TARGET = harbour-slackfish
+TARGET = harbour-sailslack
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
 # Translations
 CONFIG += sailfishapp_i18n
-TRANSLATIONS += translations/harbour-slackfish-fi.ts
+#TRANSLATIONS += translations/harbour-sailslack-fi.ts
 
 # Notifications
 QT += dbus
@@ -45,7 +34,7 @@ if(isEmpty(CLIENT_SECRET)) {
 DEFINES += SLACK_CLIENT_ID=\\\"$${CLIENT_ID}\\\"
 DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
 
-SOURCES += src/harbour-slackfish.cpp \
+SOURCES += src/harbour-sailslack.cpp \
     src/slackclient.cpp \
     src/QtWebsocket/QWsSocket.cpp \
     src/QtWebsocket/QWsFrame.cpp \
@@ -64,14 +53,14 @@ SOURCES += src/harbour-slackfish.cpp \
     src/slackclientconfig.cpp \
     src/slackconfig.cpp
 
-OTHER_FILES += qml/harbour-slackfish.qml \
+OTHER_FILES += qml/harbour-sailslack.qml \
     qml/cover/CoverPage.qml \
-    rpm/harbour-slackfish.changes.in \
-    rpm/harbour-slackfish.spec \
-    rpm/harbour-slackfish.yaml \
+    rpm/harbour-sailslack.changes.in \
+    rpm/harbour-sailslack.spec \
+    rpm/harbour-sailslack.yaml \
     translations/*.ts \
-    harbour-slackfish.desktop \
-    harbour-slackfish.png
+    harbour-sailslack.desktop \
+    harbour-sailslack.png
 
 HEADERS += \
     src/slackclient.h \

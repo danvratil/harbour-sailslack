@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0
+import harbour.sailslack 1.0
 
 Page {
     id: page
@@ -15,7 +15,7 @@ Page {
     SilicaFlickable {
         anchors.fill: parent
 
-        PageHeader { title: "Slackfish" }
+        PageHeader { title: "Sailslack" }
 
         Label {
             visible: loader.visible

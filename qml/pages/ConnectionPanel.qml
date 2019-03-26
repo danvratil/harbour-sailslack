@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0
+import harbour.sailslack 1.0
 
 DockedPanel {
     id: connectionPanel

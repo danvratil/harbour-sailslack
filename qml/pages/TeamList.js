@@ -1,4 +1,4 @@
-.import harbour.slackfish 1.0 as Slack
+.import harbour.sailslack 1.0 as Slack
 
 function init() {
     Slack.Config.onTeamAdded.connect(handleTeamAdded)

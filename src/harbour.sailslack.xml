@@ -1,5 +1,5 @@
 <node>
-  <interface name="harbour.slackfish">
+  <interface name="harbour.sailslack">
     <method name="activate">
       <arg name="channelId" type="s" direction="in" />
     </method>

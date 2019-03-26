@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.slackfish 1.0 as Slack
+import harbour.sailslack 1.0 as Slack
 
 CoverBackground {
     property int unreadMessageCount: 0
@@ -10,7 +10,7 @@ CoverBackground {
         id: title
         color: Theme.highlightColor
         width: parent.width - Theme.paddingLarge * 2
-        text: "Slackfish"
+        text: "Sailslack"
         truncationMode: TruncationMode.Fade
         anchors {
             top: parent.top
