@@ -28,8 +28,12 @@ static QMap<QString, QString> emojiValues() {
 
 QMap<QString,QString> MessageFormatter::emojis = emojiValues();
 
+MessageFormatter::MessageFormatter(Storage &storage)
+    : storage(storage)
+{}
+
 void MessageFormatter::replaceUserInfo(QString &message) {
-    foreach (const QVariant &value, Storage::users()) {
+    foreach (const QVariant &value, storage.users()) {
         QVariantMap user = value.toMap();
         QString id = user.value("id").toString();
         QString name = user.value("name").toString();
@@ -42,7 +46,7 @@ void MessageFormatter::replaceUserInfo(QString &message) {
 }
 
 void MessageFormatter::replaceChannelInfo(QString &message) {
-    foreach (const QVariant &value, Storage::channels()) {
+    foreach (const QVariant &value, storage.channels()) {
         QVariantMap channel = value.toMap();
         QString id = channel.value("id").toString();
         QString name = channel.value("name").toString();

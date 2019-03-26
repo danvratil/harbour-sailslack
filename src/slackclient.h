@@ -13,6 +13,8 @@
 
 #include "slackclientconfig.h"
 #include "slackstream.h"
+#include "storage.h"
+#include "messageformatter.h"
 
 class SlackClient : public QObject
 {
@@ -164,6 +166,8 @@ private:
     QPointer<SlackClientConfig> config;
     QPointer<SlackStream> stream;
     QPointer<QTimer> reconnectTimer;
+    Storage storage;
+    MessageFormatter messageFormatter;
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
 

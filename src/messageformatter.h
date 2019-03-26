@@ -1,25 +1,28 @@
 #ifndef MESSAGEFORMATTER_H
 #define MESSAGEFORMATTER_H
 
-#include <QObject>
+#include <QMap>
+#include <QString>
 
-class MessageFormatter : public QObject
+class Storage;
+
+class MessageFormatter
 {
-    Q_OBJECT
 public:
-    static void replaceUserInfo(QString &message);
-    static void replaceTargetInfo(QString &message);
-    static void replaceChannelInfo(QString &message);
-    static void replaceSpecialCharacters(QString &message);
-    static void replaceLinks(QString &message);
-    static void replaceMarkdown(QString &message);
-    static void replaceEmoji(QString &message);
+    MessageFormatter(Storage &storage);
+
+    void replaceUserInfo(QString &message);
+    void replaceTargetInfo(QString &message);
+    void replaceChannelInfo(QString &message);
+    void replaceSpecialCharacters(QString &message);
+    void replaceLinks(QString &message);
+    void replaceMarkdown(QString &message);
+    void replaceEmoji(QString &message);
+
+private:
+    Storage &storage;
 
     static QMap<QString,QString> emojis;
-
-signals:
-
-public slots:
 };
 
 #endif // MESSAGEFORMATTER_H

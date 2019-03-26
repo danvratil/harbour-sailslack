@@ -1,37 +1,32 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include <QObject>
+#include <QVariantMap>
 
-class Storage : public QObject
+class Storage
 {
-    Q_OBJECT
 public:
-    static QVariantMap user(QVariant id);
-    static QVariantList users();
-    static void saveUser(QVariantMap user);
+    QVariantMap user(QVariant id);
+    QVariantList users();
+    void saveUser(QVariantMap user);
 
-    static QVariantMap channel(QVariant id);
-    static QVariantList channels();
-    static void saveChannel(QVariantMap channel);
+    QVariantMap channel(QVariant id);
+    QVariantList channels();
+    void saveChannel(QVariantMap channel);
 
-    static QVariantList channelMessages(QVariant channelId);
-    static bool channelMessagesExist(QVariant channelId);
-    static void setChannelMessages(QVariant channelId, QVariantList messages);
-    static void prependChannelMessages(QVariant channelId, QVariantList messages);
-    static void appendChannelMessage(QVariant channelId, QVariantMap message);
-    static void clearChannelMessages();
+    QVariantList channelMessages(QVariant channelId);
+    bool channelMessagesExist(QVariant channelId);
+    void setChannelMessages(QVariant channelId, QVariantList messages);
+    void prependChannelMessages(QVariant channelId, QVariantList messages);
+    void appendChannelMessage(QVariant channelId, QVariantMap message);
+    void clearChannelMessages();
 
-    static void clear();
-
-signals:
-
-public slots:
+    void clear();
 
 private:
-    static QVariantMap userMap;
-    static QVariantMap channelMap;
-    static QVariantMap channelMessageMap;
+    QVariantMap userMap;
+    QVariantMap channelMap;
+    QVariantMap channelMessageMap;
 };
 
 #endif // STORAGE_H

@@ -2,10 +2,6 @@
 
 #include <QDebug>
 
-QVariantMap Storage::userMap = QVariantMap();
-QVariantMap Storage::channelMap = QVariantMap();
-QVariantMap Storage::channelMessageMap = QVariantMap();
-
 void Storage::saveUser(QVariantMap user) {
     userMap.insert(user.value("id").toString(), user);
 }
