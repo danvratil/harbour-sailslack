@@ -10,6 +10,7 @@
 #include "dbusadaptor.h"
 #include "storage.h"
 #include "filemodel.h"
+#include "teamsmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,21 +27,15 @@ int main(int argc, char *argv[])
     qDebug() << "Setting last version" << APP_VERSION;
     settings.setValue("app/lastVersion", QVariant(APP_VERSION));
 
-
-
-
     SlackClientConfig::clearWebViewCache();
 
     qmlRegisterSingletonType<SlackConfig>("harbour.sailslack", 1, 0, "Config", [](QQmlEngine *, QJSEngine *) -> QObject* {
         return new SlackConfig();
     });
-    qmlRegisterSingletonType<SlackClientFactory>("harbour.sailslack", 1, 0, "ClientFactory",
-                                                 [](QQmlEngine *, QJSEngine *) -> QObject* {
-        return new SlackClientFactory();
-    });
 
     qmlRegisterType<SlackAuthenticator>("harbour.sailslack", 1, 0, "Authenticator");
     qmlRegisterType<SlackClient>("harbour.sailslack", 1, 0, "Client");
+    qmlRegisterType<TeamsModel>("harbour.sailslack", 1, 0, "TeamsModel");
     qmlRegisterUncreatableType<SlackClientConfig>("harbour.sailslack", 1, 0, "ClientConfig", "Use Client.config to access current config");
 
 

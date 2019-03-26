@@ -7,9 +7,7 @@ import "TeamList.js" as TeamList
 Page {
     id: page
 
-    ListModel {
-        id: teamsModel
-    }
+    property alias model: teamListView.model
 
     SilicaFlickable {
         anchors.fill: parent
@@ -34,7 +32,6 @@ Page {
         SilicaListView {
             id: teamListView
             anchors.fill: parent
-            model: teamsModel
 
             header: PageHeader {
                 title: qsTr("Sailslack")
@@ -91,9 +88,4 @@ Page {
             }
         }
     }
-
-    Component.onCompleted: {
-        TeamList.init()
-    }
-
 }

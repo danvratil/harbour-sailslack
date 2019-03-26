@@ -1,19 +1,31 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.sailslack 1.0
+import harbour.sailslack 1.0 as Slack
 import "pages"
-import "dialogs"
+import "cover"
+import "pages/TeamList.js" as TeamList
 
 ApplicationWindow {
     id: appWindow
 
+    Slack.TeamsModel {
+        id: teamsModel
+        slackConfig: Slack.Config
+    }
+
     initialPage: Component {
-        TeamList {}
+        TeamList {
+            model: teamsModel
+        }
     }
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: Orientation.All
     _defaultPageOrientations: Orientation.All
+
+    Component.onCompleted: {
+        TeamList.init()
+    }
 
     function activateChannel(channelId) {
         console.log("Navigate to", channelId);

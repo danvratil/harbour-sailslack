@@ -171,16 +171,7 @@ private:
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
 
-    bool initialized;
-};
-
-class SlackClientFactory : public QObject
-{
-    Q_OBJECT
-public:
-    explicit SlackClientFactory(QObject *parent = nullptr);
-
-    Q_INVOKABLE SlackClient *createClient(const QString &team);
+    bool initialized = false;
 };
 
 #endif // SLACKCLIENT_H

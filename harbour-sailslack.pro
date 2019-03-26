@@ -51,7 +51,8 @@ SOURCES += src/harbour-sailslack.cpp \
     src/slackauthenticator.cpp \
     src/requestutils.cpp \
     src/slackclientconfig.cpp \
-    src/slackconfig.cpp
+    src/slackconfig.cpp \
+    src/teamsmodel.cpp
 
 OTHER_FILES += qml/harbour-sailslack.qml \
     qml/cover/CoverPage.qml \
@@ -79,7 +80,8 @@ HEADERS += \
     src/slackauthenticator.h \
     src/requestutils.h \
     src/slackclientconfig.h \
-    src/slackconfig.h
+    src/slackconfig.h \
+    src/teamsmodel.h
 
 DISTFILES += \
     qml/pages/LoginPage.qml \

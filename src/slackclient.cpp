@@ -1209,12 +1209,3 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setRemoteAction(Notification::remoteAction("default", "", "harbour.sailslack", "/", "harbour.sailslack", "activate", arguments));
     notification.publish();
 }
-
-
-SlackClientFactory::SlackClientFactory(QObject *parent)
-    : QObject(parent)
-{}
-
-SlackClient *SlackClientFactory::createClient(const QString &team) {
-    return new SlackClient(team);
-}
