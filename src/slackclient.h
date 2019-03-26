@@ -23,6 +23,9 @@ class SlackClient : public QObject
     Q_PROPERTY(SlackClientConfig* config READ getConfig CONSTANT)
     Q_PROPERTY(QString team READ getTeam CONSTANT)
     Q_PROPERTY(bool initialized READ getInitialized NOTIFY initializedChanged)
+
+    Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged)
+
 public:
     explicit SlackClient(QObject *parent = 0); // only to make qmlRegisterType happy, don't use
     explicit SlackClient(const QString &team, QObject *parent = 0);
@@ -40,6 +43,7 @@ public:
     void setTeam(const QString &team);
     QString getTeam() const;
 
+    int getUnreadCount() const { return unreadCount; }
 signals:
     void teamChanged();
 
@@ -80,6 +84,8 @@ signals:
     void reconnecting();
     void disconnected();
     void connected();
+
+    void unreadCountChanged(int count);
 
 public slots:
     void init();
@@ -157,6 +163,8 @@ private:
     void sendNotification(QString channelId, QString title, QString content);
     void clearNotifications();
 
+    void updateUnreadCount();
+
     QVariantMap user(const QJsonObject &data);
 
     QString historyMethod(QString type);
@@ -172,6 +180,7 @@ private:
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
 
     bool initialized = false;
+    int unreadCount = 0;
 };
 
 #endif // SLACKCLIENT_H

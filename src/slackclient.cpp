@@ -18,6 +18,8 @@
 #include "requestutils.h"
 #include "slackclient.h"
 
+#include <algorithm>
+
 SlackClient::SlackClient(QObject *parent)
     : QObject(parent)
     , messageFormatter(storage)
@@ -203,6 +205,8 @@ void SlackClient::parseChannelUpdate(QJsonObject message) {
     channel.insert("unreadCount", message.value("unread_count_display").toVariant());
     storage.saveChannel(channel);
     emit channelUpdated(channel);
+
+    updateUnreadCount();
 }
 
 void SlackClient::parseMessageUpdate(QJsonObject message) {
@@ -219,10 +223,12 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
     QString latestRead = channel.value("lastRead").toString();
 
     if (messageTime > latestRead) {
-        int unreadCount = channel.value("unreadCount").toInt() + 1;
-        channel.insert("unreadCount", unreadCount);
+        int channelUnreadCount = channel.value("unreadCount").toInt() + 1;
+        channel.insert("unreadCount", channelUnreadCount);
         storage.saveChannel(channel);
         emit channelUpdated(channel);
+
+        updateUnreadCount();
     }
 
     if (channel.value("isOpen").toBool() == false) {
@@ -649,6 +655,7 @@ void SlackClient::loadConversations(QString cursor) {
 
       AsyncFuture::observe(combinator.future()).subscribe([nextCursor,this]() {
           if (nextCursor.isEmpty()) {
+              updateUnreadCount();
               start();
           }
           else {
@@ -1209,4 +1216,14 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setHintValue("x-nemo-display-on", true);
     notification.setRemoteAction(Notification::remoteAction("default", "", "harbour.sailslack", "/", "harbour.sailslack", "activate", arguments));
     notification.publish();
+}
+
+void SlackClient::updateUnreadCount() {
+    const auto channels = storage.channels();
+    unreadCount = std::accumulate(channels.cbegin(), channels.cend(), 0,
+                                  [](int count, const QVariant &channel) {
+        const auto map = channel.toMap();
+        return count + map.value(QStringLiteral("unreadCount"), 0).toInt();
+    });
+    Q_EMIT unreadCountChanged(unreadCount);
 }

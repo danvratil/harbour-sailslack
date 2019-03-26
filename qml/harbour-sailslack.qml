@@ -19,7 +19,11 @@ ApplicationWindow {
         }
     }
 
-    cover: Qt.resolvedUrl("cover/CoverPage.qml")
+    // FIXME: Make it a component
+    cover: CoverPage {
+        model: teamsModel
+    }
+
     allowedOrientations: Orientation.All
     _defaultPageOrientations: Orientation.All
 

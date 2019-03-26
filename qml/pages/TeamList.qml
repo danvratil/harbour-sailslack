@@ -43,7 +43,7 @@ Page {
 
                 property color infoColor: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
                 property color textColor: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
-                property color currentColor: model.unreadCount > 0 ? textColor : infoColor
+                property color currentColor: model.client.unreadCount > 0 ? textColor : infoColor
 
                 menu: ContextMenu {
                     MenuItem {
@@ -72,7 +72,7 @@ Page {
                         wrapMode: Text.Wrap
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: Theme.fontSizeMedium
-                        font.bold: model.unreadCount > 0
+                        font.bold: model.client.unreadCount > 0
                         text: model.client.config.teamName
                         color: currentColor
                     }
