@@ -42,8 +42,8 @@ ApplicationWindow {
 
         // FIXME: Don't pop the teamlist
         pageStack.clear()
-        pageStack.push(Qt.resolvedUrl("pages/TeamList.qml"), {"model": teamsModel}, PageStack.Immediate)
-        pageStack.push(Qt.resolvedUrl("pages/ChannelList.qml"), {"slackClient": client}, PageStack.Immediate)
+        pageStack.push(Qt.resolvedUrl("pages/TeamList.qml"), {"model": teamsModel}, PageStackAction.Immediate)
+        pageStack.push(Qt.resolvedUrl("pages/ChannelList.qml"), {"slackClient": client}, PageStackAction.Immediate)
         activate()
         pageStack.push(Qt.resolvedUrl("pages/Channel.qml"), {"slackClient": client, "channelId": channelId})
     }
