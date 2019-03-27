@@ -28,6 +28,7 @@ void SlackStream::disconnectFromHost() {
 }
 
 void SlackStream::listen(QUrl url) {
+    helloReceived = false;
     QString socketUrl = url.scheme() + "://" + url.host();
     QString resource = url.path();
 
