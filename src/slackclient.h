@@ -100,7 +100,7 @@ public slots:
     void handleLoadMessagesReply();
 
     void logout();
-    void loadUsers();
+    void loadUsers(const QString &cursor = {});
     void markChannel(QString type, QString channelId, QString time);
     void joinChannel(QString channelId);
     void leaveChannel(QString channelId);

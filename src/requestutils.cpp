@@ -42,3 +42,6 @@ QJsonObject Request::getResult(QNetworkReply *reply) {
     }
 }
 
+QString Request::nextCursor(const QJsonObject &data) {
+    return data.value("response_metadata").toObject().value("next_cursor").toString();
+}

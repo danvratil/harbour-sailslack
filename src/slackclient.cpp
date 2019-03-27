@@ -419,24 +419,31 @@ void SlackClient::init() {
   loadUsers();
 }
 
-void SlackClient::loadUsers() {
+void SlackClient::loadUsers(const QString &cursor) {
   qDebug() << config->getTeamName() << ": Start load users";
-  QNetworkReply* reply = executeGet("users.list");
-
+  QMap<QString, QString> params;
+  if (!cursor.isEmpty()) {
+      params.insert("cursor", cursor);
+  }
+  QNetworkReply* reply = executeGet("users.list", params);
   connect(reply, &QNetworkReply::finished, [reply,this]() {
     QJsonObject data = Request::getResult(reply);
     if (Request::isError(data)) {
       qDebug() << config->getTeamName() << ": User load failed";
       emit loadUsersFail();
-    }
-    else {
-      qDebug() << config->getTeamName() << ": Load users completed";
+    } else {
       parseUsers(data);
-      emit loadUsersSuccess();
-      loadConversations();
+      reply->deleteLater();
+      qDebug() << data;
+      const QString nextCursor = Request::nextCursor(data);
+      if (!nextCursor.isEmpty()) {
+          loadUsers(nextCursor);
+      } else {
+        qDebug() << config->getTeamName() << ": Load users completed";
+        emit loadUsersSuccess();
+        loadConversations();
+      }
     }
-
-    reply->deleteLater();
   });
 }
 
@@ -613,7 +620,7 @@ void SlackClient::loadConversations(QString cursor) {
     }
     else {
       auto combinator = AsyncFuture::combine();
-      QString nextCursor = data.value("response_metadata").toObject().value("next_cursor").toString();
+      QString nextCursor = Request::nextCursor(data);
 
       foreach (const QJsonValue &value, data.value("channels").toArray()) {
         QJsonObject channel = value.toObject();
