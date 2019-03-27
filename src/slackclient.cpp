@@ -434,7 +434,6 @@ void SlackClient::loadUsers(const QString &cursor) {
     } else {
       parseUsers(data);
       reply->deleteLater();
-      qDebug() << data;
       const QString nextCursor = Request::nextCursor(data);
       if (!nextCursor.isEmpty()) {
           loadUsers(nextCursor);
