@@ -105,17 +105,38 @@ void SlackClient::handleStreamStart() {
     qDebug() << config->getTeamName() << ": Stream started";
     emit connected();
 
-    QJsonArray userIds;
-    foreach (const QVariant &value, storage.users()) {
-        QVariantMap user = value.toMap();
-        if (user.value("name") != QVariant("slackbot")) {
-            userIds.append(QJsonValue::fromVariant(user.value("id")));
+    updatePresenceSubscription();
+}
+
+void SlackClient::updatePresenceSubscription() {
+    QSet<QString> userIds;
+    for (const auto &channelV : storage.channels()) {
+        const QVariantMap channel = channelV.toMap();
+        if (channel.value("type").toString() == "im" && !channel.value("is_user_deleted").toBool()) {
+            userIds.insert(channel.value("userId").toString());
+        } else if (channel.value("type").toString() == "mpim" || channel.value("type").toString() == "group") {
+            // TODO: Does presence of mpim and group ever makes sense
+            for (const auto &member : channel.value("memberIds").toList()) {
+                userIds.insert(member.toString());
+            }
+        } else {
+            // skip channels
         }
+
+        // The upper limit is not documented, but if it's overstepped we get immediately disconnected from Slack.
+        if (userIds.size() > 150) {
+            break;
+        }
+    }
+
+    QJsonArray userIdsJson;
+    for (const auto &userId : userIds) {
+        userIdsJson.push_back(QJsonValue::fromVariant(userId));
     }
 
     QJsonObject message;
     message.insert("type", QJsonValue(QString("presence_sub")));
-    message.insert("ids", userIds);
+    message.insert("ids", userIdsJson);
     this->stream->send(message);
 }
 
@@ -168,6 +189,8 @@ void SlackClient::parseChatOpen(QJsonObject message) {
     channel.insert("isOpen", QVariant(true));
     storage.saveChannel(channel);
     emit channelJoined(channel);
+
+    updatePresenceSubscription();
 }
 
 void SlackClient::parseChatClose(QJsonObject message) {
@@ -176,6 +199,8 @@ void SlackClient::parseChatClose(QJsonObject message) {
     channel.insert("isOpen", QVariant(false));
     storage.saveChannel(channel);
     emit channelLeft(channel);
+
+    updatePresenceSubscription();
 }
 
 void SlackClient::parseChannelJoin(QJsonObject message) {
@@ -196,6 +221,8 @@ void SlackClient::parseGroupJoin(QJsonObject message) {
     QVariantMap data = parseGroup(message.value("channel").toObject());
     storage.saveChannel(data);
     emit channelJoined(data);
+
+    updatePresenceSubscription();
 }
 
 void SlackClient::parseChannelUpdate(QJsonObject message) {
@@ -498,15 +525,17 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
         data.insert("category", QVariant("chat"));
 
         QStringList members;
+        QVariantList memberIds;
         QJsonArray memberList = group.value("members").toArray();
         foreach (const QJsonValue &member, memberList) {
             QVariant memberId = member.toVariant();
-
             if (memberId != config->getUserId()) {
                 members << storage.user(memberId).value("name").toString();
+                memberIds << memberId.toString();
             }
         }
         data.insert("name", QVariant(members.join(", ")));
+        data.insert("memberIds", memberIds);
     }
     else {
         data.insert("type", QVariant("group"));

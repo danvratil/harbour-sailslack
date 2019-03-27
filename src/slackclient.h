@@ -117,6 +117,7 @@ public slots:
     void handleStreamEnd();
     void handleStreamMessage(QJsonObject message);
 
+    void updatePresenceSubscription();
 
 private:
     QString team;
