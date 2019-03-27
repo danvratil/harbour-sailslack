@@ -1201,6 +1201,7 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     QString preview = text.length() > 40 ? text.left(37) + "..." : text;
 
     QVariantList arguments;
+    arguments.append(team);
     arguments.append(channelId);
 
     Notification notification;
@@ -1210,6 +1211,7 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setPreviewSummary(title);
     notification.setPreviewBody(preview);
     notification.setCategory("chat");
+    notification.setHintValue("x-sailslack-team", team);
     notification.setHintValue("x-sailslack-channel", channelId);
     notification.setHintValue("x-nemo-feedback", "chat_exists");
     notification.setHintValue("x-nemo-priority", 100);

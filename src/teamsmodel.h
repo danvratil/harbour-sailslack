@@ -19,6 +19,15 @@ class TeamsModel : public QAbstractListModel
 
     Q_PROPERTY(SlackConfig *slackConfig READ getSlackConfig WRITE setSlackConfig)
 public:
+    struct Team {
+        Team(const QString &uuid, std::unique_ptr<SlackClient> client)
+            : uuid(uuid), client(std::move(client)) {}
+
+        QString uuid;
+        std::unique_ptr<SlackClient> client;
+    };
+
+
     enum Roles {
         UuidRole = Qt::UserRole + 1,
         ClientRole
@@ -30,7 +39,7 @@ public:
     SlackConfig *getSlackConfig() const;
 
     QHash<int, QByteArray> roleNames() const override;
-    int rowCount(const QModelIndex &parent) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role) const override;
 
@@ -38,14 +47,9 @@ public Q_SLOTS:
     SlackClient *addTeam(const QString &userId, const QString &teamId, const QString &teamName, const QString &accessToken);
     void removeTeam(const QString &teamId);
 
-private:
-    struct Team {
-        Team(const QString &uuid, std::unique_ptr<SlackClient> client)
-            : uuid(uuid), client(std::move(client)) {}
+    SlackClient *clientForTeam(const QString &teamId) const;
 
-        QString uuid;
-        std::unique_ptr<SlackClient> client;
-    };
+private:
     std::vector<Team> teams;
     SlackConfig *config = nullptr;
 };

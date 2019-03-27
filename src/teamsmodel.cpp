@@ -66,8 +66,18 @@ SlackClient *TeamsModel::addTeam(const QString &userId, const QString &teamId, c
     return teams.back().client.get();
 }
 
+namespace {
+
+auto findTeam(const QString &teamId) {
+    return [teamId](const TeamsModel::Team &team) {
+        return team.uuid == teamId;
+    };
+}
+
+}
+
 void TeamsModel::removeTeam(const QString &teamId) {
-    auto team = std::find_if(teams.begin(), teams.end(), [&teamId](const Team &team) { return team.uuid == teamId; });
+    auto team = std::find_if(teams.begin(), teams.end(), findTeam(teamId));
     if (team == teams.end()) {
         return;
     }
@@ -75,4 +85,12 @@ void TeamsModel::removeTeam(const QString &teamId) {
     beginRemoveRows({}, row, row);
     teams.erase(team);
     endRemoveRows();
+}
+
+SlackClient *TeamsModel::clientForTeam(const QString &teamId) const {
+    auto team = std::find_if(teams.begin(), teams.end(), findTeam(teamId));
+    if (team == teams.end()) {
+        return nullptr;
+    }
+    return team->client.get();
 }

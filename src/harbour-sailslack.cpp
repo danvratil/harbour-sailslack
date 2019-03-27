@@ -7,7 +7,7 @@
 #include "slackauthenticator.h"
 #include "networkaccessmanagerfactory.h"
 #include "notificationlistener.h"
-#include "dbusadaptor.h"
+#include "sailslack_adaptor.h"
 #include "storage.h"
 #include "filemodel.h"
 #include "teamsmodel.h"
@@ -47,17 +47,13 @@ int main(int argc, char *argv[])
     view->engine()->setNetworkAccessManagerFactory(new NetworkAccessManagerFactory());
     view->showFullScreen();
 
-    NotificationListener* listener = new NotificationListener(view.data());
-    new DBusAdaptor(listener);
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.registerService("harbour.sailslack");
-    connection.registerObject("/", listener);
-
+    QScopedPointer<NotificationListener> listener;
+    QTimer::singleShot(0, [&listener, &view]() mutable {
+        listener.reset(new NotificationListener(view.data()));
+    });
     int result = app->exec();
 
     qDebug() << "Application terminating";
-
-    delete listener;
 
     return result;
 }

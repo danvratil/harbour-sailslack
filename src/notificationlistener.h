@@ -6,15 +6,16 @@
 
 class NotificationListener : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "harbour.sailslack")
 public:
-  explicit NotificationListener(QQuickView *view, QObject *parent = 0);
+     explicit NotificationListener(QQuickView *view, QObject *parent = 0);
 
 public slots:
-  void activate(const QString &channelId);
+     void activate(const QString &teamId, const QString &channelId);
 
 private:
-  QQuickView *view;
+     QQuickView *view;
 };
 
 #endif // NOTIFICATIONLISTENER_H

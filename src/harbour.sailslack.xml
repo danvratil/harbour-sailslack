@@ -1,6 +1,7 @@
 <node>
   <interface name="harbour.sailslack">
     <method name="activate">
+      <arg name="teamId" type="s" direction="in" />
       <arg name="channelId" type="s" direction="in" />
     </method>
  </interface>

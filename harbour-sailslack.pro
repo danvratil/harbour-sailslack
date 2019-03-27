@@ -14,7 +14,7 @@ PKGCONFIG += nemonotifications-qt5
 # Includes
 INCLUDEPATH += ./QtWebsocket
 
-QT += concurrent
+QT += concurrent dbus
 
 include(vendor/vendor.pri)
 
@@ -34,6 +34,8 @@ if(isEmpty(CLIENT_SECRET)) {
 DEFINES += SLACK_CLIENT_ID=\\\"$${CLIENT_ID}\\\"
 DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
 
+DBUS_ADAPTORS += src/harbour.sailslack.xml
+
 SOURCES += src/harbour-sailslack.cpp \
     src/slackclient.cpp \
     src/QtWebsocket/QWsSocket.cpp \
@@ -46,7 +48,6 @@ SOURCES += src/harbour-sailslack.cpp \
     src/storage.cpp \
     src/messageformatter.cpp \
     src/notificationlistener.cpp \
-    src/dbusadaptor.cpp \
     src/filemodel.cpp \
     src/slackauthenticator.cpp \
     src/requestutils.cpp \
@@ -75,7 +76,6 @@ HEADERS += \
     src/storage.h \
     src/messageformatter.h \
     src/notificationlistener.h \
-    src/dbusadaptor.h \
     src/filemodel.h \
     src/slackauthenticator.h \
     src/requestutils.h \
