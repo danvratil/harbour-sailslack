@@ -618,6 +618,17 @@ void SlackClient::loadConversations(QString cursor) {
       foreach (const QJsonValue &value, data.value("channels").toArray()) {
         QJsonObject channel = value.toObject();
 
+        // Don't request details for channels and groups that we are not members of
+        if (channel.value("is_channel").toBool() && !channel.value("is_member").toBool()) {
+            storage.saveChannel(parseChannel(channel));
+            continue;
+        } else if ((channel.value("is_group").toBool() || channel.value("is_mpim").toBool()) && !channel.value("is_member").toBool()) {
+            storage.saveChannel(parseGroup(channel));
+            continue;
+        } else if ((channel.value("is_im").toBool() && channel.value("is_user_deleted").toBool())) {
+            continue;
+        }
+
         QString infoMethod;
         if (channel.value("is_channel").toBool()) {
           infoMethod = "channels.info";
