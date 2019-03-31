@@ -592,10 +592,15 @@ void SlackClient::parseUsers(QJsonObject data) {
 
         QVariantMap data;
         data.insert("id", user.value("id").toVariant());
-        if (profile.contains("display_name")) {
-            data.insert("name", profile.value("display_name").toVariant());
+        const auto name = user.value("name").toString();
+        const auto realName = profile.value("real_name").toString();
+        const auto displayName = profile.value("display_name").toString();
+        if (displayName == name && !realName.isEmpty()) {
+            data.insert("name", realName);
+        } else if (!displayName.isEmpty()) {
+            data.insert("name", displayName);
         } else {
-            data.insert("name", user.value("name").toVariant());
+            data.insert("name", name);
         }
         data.insert("presence", presence);
         storage.saveUser(data);
