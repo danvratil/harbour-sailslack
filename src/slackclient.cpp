@@ -653,6 +653,12 @@ void SlackClient::loadConversations(QString cursor) {
       foreach (const QJsonValue &value, data.value("channels").toArray()) {
         QJsonObject channel = value.toObject();
 
+        // Skip private group chats that are closed, we don't want those listed or
+        // counted towards our unread count. If we receive a message in those
+        if (channel.value("is_mpim").toBool() && !channel.value("is_open").toBool()) {
+            continue;
+        }
+
         QString infoMethod;
         if (channel.value("is_channel").toBool()) {
           infoMethod = "channels.info";
