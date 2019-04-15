@@ -8,8 +8,10 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
-* Sun Apr 13 2014 Jack Tar <jack.tar@example.com> 0.0.1-1
-- Scrubbed the deck
-- Hoisted the sails
-
+* Tue Apr 16 2019 Daniel Vrátil <me@dvratil.cz> 0.1-1
+- Forked from harbour-slackfish
+- Fixed connecting to Slack
+- Fixed loading larger teams
+- Support for multiple teams
+- Various minor fixes and improvements
 
