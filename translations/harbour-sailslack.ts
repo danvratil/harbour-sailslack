@@ -117,43 +117,36 @@
 <context>
     <name>ConnectionPanel</name>
     <message>
-        <location filename="../qml/pages/ConnectionPanel.qml" line="33"/>
+        <location filename="../qml/pages/ConnectionPanel.qml" line="36"/>
         <source>Reconnecting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ConnectionPanel.qml" line="40"/>
-        <location filename="../qml/pages/ConnectionPanel.qml" line="73"/>
+        <location filename="../qml/pages/ConnectionPanel.qml" line="44"/>
         <source>Disconnected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ConnectionPanel.qml" line="46"/>
+        <location filename="../qml/pages/ConnectionPanel.qml" line="51"/>
         <source>Reconnect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ConnectionPanel.qml" line="81"/>
+        <location filename="../qml/pages/ConnectionPanel.qml" line="44"/>
         <source>No network connection</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>CoverPage</name>
-    <message>
-        <location filename="../qml/cover/CoverPage.qml" line="91"/>
-        <source>Reconnecting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/cover/CoverPage.qml" line="96"/>
-        <source>Disconnected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/cover/CoverPage.qml" line="101"/>
-        <source>No network connection</source>
-        <translation type="unfinished"></translation>
+    <message numerus="yes">
+        <location filename="../qml/cover/CoverPage.qml" line="61"/>
+        <source>Unread
+messages</source>
+        <comment>0</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -249,17 +242,17 @@ Are you sure you wish to leave?</source>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="273"/>
+        <location filename="../src/slackclient.cpp" line="317"/>
         <source>New message in %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="276"/>
+        <location filename="../src/slackclient.cpp" line="320"/>
         <source>New message from %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="279"/>
+        <location filename="../src/slackclient.cpp" line="323"/>
         <source>New message</source>
         <translation type="unfinished"></translation>
     </message>
@@ -267,27 +260,27 @@ Are you sure you wish to leave?</source>
 <context>
     <name>TeamList</name>
     <message>
-        <location filename="../qml/pages/TeamList.qml" line="19"/>
+        <location filename="../qml/pages/TeamList.qml" line="17"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/TeamList.qml" line="26"/>
+        <location filename="../qml/pages/TeamList.qml" line="24"/>
         <source>Sign into a Workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/TeamList.qml" line="40"/>
+        <location filename="../qml/pages/TeamList.qml" line="37"/>
         <source>Sailslack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/TeamList.qml" line="53"/>
+        <location filename="../qml/pages/TeamList.qml" line="50"/>
         <source>Logout from this Workspace</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/TeamList.qml" line="54"/>
+        <location filename="../qml/pages/TeamList.qml" line="51"/>
         <source>Logging out</source>
         <translation type="unfinished"></translation>
     </message>
