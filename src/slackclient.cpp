@@ -88,22 +88,29 @@ void SlackClient::handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkA
     networkAccessible = accessible;
 
     if (networkAccessible == QNetworkAccessManager::Accessible) {
-        emit networkOn();
+        Q_EMIT networkAccessibleChanged(true);
+    } else {
+        Q_EMIT networkAccessibleChanged(false);
     }
-    else {
-        emit networkOff();
+}
+
+void SlackClient::setConnectionStatus(ConnectionStatus status) {
+    if (connectionStatus != status) {
+        connectionStatus = status;
+        Q_EMIT connectionStatusChanged(connectionStatus);
     }
 }
 
 void SlackClient::reconnect() {
     qDebug() << config->getTeamName() << ": Reconnecting";
-    emit reconnecting();
+    setConnectionStatus(Connecting);
+
     start();
 }
 
 void SlackClient::handleStreamStart() {
     qDebug() << config->getTeamName() << ": Stream started";
-    emit connected();
+    setConnectionStatus(Connected);
 
     updatePresenceSubscription();
 }
@@ -145,9 +152,11 @@ void SlackClient::handleStreamEnd() {
 
     if (!config->getAccessToken().isEmpty()) {
         qDebug() << config->getTeamName() << ": Stream reconnect scheduled";
-        emit reconnecting();
+        setConnectionStatus(Connecting);
         reconnectTimer->setSingleShot(true);
         reconnectTimer->start(1000);
+    } else {
+        setConnectionStatus(Disconnected);
     }
 }
 
@@ -442,8 +451,9 @@ void SlackClient::handleTestLoginReply() {
 }
 
 void SlackClient::init() {
-  qDebug() << config->getTeamName() << ": Start init";
-  loadUsers();
+    setConnectionStatus(Connecting);
+    qDebug() << config->getTeamName() << ": Start init";
+    loadUsers();
 }
 
 void SlackClient::loadUsers(const QString &cursor) {
@@ -485,7 +495,7 @@ void SlackClient::start() {
 
         if (Request::isError(data)) {
             qDebug() << config->getTeamName() << ": Connect result error";
-            emit disconnected();
+            setConnectionStatus(Disconnected);
             emit initFail();
         }
         else {

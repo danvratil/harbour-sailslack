@@ -68,13 +68,31 @@ Page {
                     }
 
                     Label {
-                        width: parent.width - icon.width - Theme.paddingMedium
+                        width: parent.width - icon.width - Theme.paddingMedium - statusIcon.width
                         wrapMode: Text.Wrap
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: Theme.fontSizeMedium
                         font.bold: model.client.unreadCount > 0
                         text: model.client.config.teamName
                         color: currentColor
+                    }
+
+                    Rectangle {
+                        id: statusIcon
+                        width: 20
+                        height: width
+                        anchors.verticalCenter: parent.verticalCenter
+                        radius: width / 2
+                        color: switch (model.client.connectionStatus) {
+                               case Slack.Client.Connected: return "green"
+                               case Slack.Client.Connecting: return "yellow"
+                               case Slack.Client.Disconnected: return "red"
+                               }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
                     }
                 }
                 onClicked: {

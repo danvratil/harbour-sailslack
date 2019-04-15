@@ -23,10 +23,18 @@ class SlackClient : public QObject
     Q_PROPERTY(SlackClientConfig* config READ getConfig CONSTANT)
     Q_PROPERTY(QString team READ getTeam CONSTANT)
     Q_PROPERTY(bool initialized READ getInitialized NOTIFY initializedChanged)
-
+    Q_PROPERTY(ConnectionStatus connectionStatus READ getConnectionStatus NOTIFY connectionStatusChanged)
+    Q_PROPERTY(bool networkAccessible READ getNetworkAccessible NOTIFY networkAccessibleChanged)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged)
 
 public:
+    enum ConnectionStatus {
+        Disconnected,
+        Connecting,
+        Connected
+    };
+    Q_ENUM(ConnectionStatus)
+
     explicit SlackClient(QObject *parent = 0); // only to make qmlRegisterType happy, don't use
     explicit SlackClient(const QString &team, QObject *parent = 0);
     ~SlackClient() override;
@@ -44,6 +52,10 @@ public:
     QString getTeam() const;
 
     int getUnreadCount() const { return unreadCount; }
+
+    ConnectionStatus getConnectionStatus() const { return connectionStatus; }
+    bool getNetworkAccessible() const { return networkAccessible == QNetworkAccessManager::Accessible; }
+
 signals:
     void teamChanged();
 
@@ -78,12 +90,8 @@ signals:
     void postImageSuccess();
     void postImageFail();
 
-    void networkOff();
-    void networkOn();
-
-    void reconnecting();
-    void disconnected();
-    void connected();
+    void connectionStatusChanged(SlackClient::ConnectionStatus status);
+    void networkAccessibleChanged(bool hasNetwork);
 
     void unreadCountChanged(int count);
 
@@ -124,6 +132,8 @@ private:
 
     bool appActive;
     QString activeWindow;
+
+    void setConnectionStatus(ConnectionStatus status);
 
     QNetworkReply* executePost(QString method, const QMap<QString, QString> &data);
     QNetworkReply *executePostWithFile(QString method, const QMap<QString, QString>&, QFile *file);
@@ -178,9 +188,10 @@ private:
     Storage storage;
     MessageFormatter messageFormatter;
 
-    QNetworkAccessManager::NetworkAccessibility networkAccessible;
+    QNetworkAccessManager::NetworkAccessibility networkAccessible = QNetworkAccessManager::UnknownAccessibility;
 
     bool initialized = false;
+    ConnectionStatus connectionStatus = Disconnected;
     int unreadCount = 0;
 };
 

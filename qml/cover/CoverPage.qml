@@ -20,11 +20,32 @@ CoverBackground {
 
             Column {
                 width: parent.width
-                Label {
-                    color: Theme.highlightColor
+                Row {
                     width: parent.width
-                    text: model.client.config.teamName
-                    truncationMode: TruncationMode.Fade
+
+                    Label {
+                        color: Theme.highlightColor
+                        width: parent.width - statusIndicator.width
+                        text: model.client.config.teamName
+                        truncationMode: TruncationMode.Fade
+                    }
+                    Rectangle {
+                        id: statusIndicator
+                        width: 15
+                        anchors.verticalCenter: parent.verticalCenter
+                        height: width
+                        radius: width / 2
+                        color: switch (model.client.connectionStatus) {
+                               case Slack.Client.Connected: return "green"
+                               case Slack.Client.Connecting: return "yellow"
+                               case Slack.Client.Disconnected: return "red"
+                               }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
                 }
 
                 Row {

@@ -12,6 +12,8 @@ DockedPanel {
 
     dock: Dock.Bottom
 
+    visible: slackClient.connectionStatus !== Client.Connected || !slackClient.networkAccessible
+
     Column {
         id: content
         width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
@@ -30,58 +32,26 @@ DockedPanel {
             }
 
             Label {
+                visible: slackClient.connectionStatus === Client.Connecting
                 text: qsTr("Reconnecting")
             }
         }
 
         Label {
             id: disconnectedMessage
+            visible: slackClient.connectionStatus === Client.Disconnected || !slackClient.networkAccessible
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Disconnected")
+            text: slackClient.networkAccessible ? qsTr("Disconnected") : qsTr("No network connection")
         }
 
         Button {
             id: reconnectButton
+            visible: slackClient.connectionStatus === Client.Disconnected && slackClient.networkAccessible
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Reconnect")
             onClicked: {
                 slackClient.reconnect()
             }
         }
-    }
-
-    Component.onCompleted: {
-        slackClient.onConnected.connect(hideConnectionPanel)
-        slackClient.onReconnecting.connect(showReconnectingMessage)
-        slackClient.onDisconnected.connect(showDisconnectedMessage)
-        slackClient.onNetworkOff.connect(showNoNetworkMessage)
-        slackClient.onNetworkOn.connect(hideConnectionPanel)
-    }
-
-    function hideConnectionPanel() {
-        connectionPanel.hide()
-    }
-
-    function showReconnectingMessage() {
-        disconnectedMessage.visible = false
-        reconnectButton.visible = false
-        reconnectingMessage.visible = true
-        connectionPanel.show()
-    }
-
-    function showDisconnectedMessage() {
-        disconnectedMessage.text = qsTr("Disconnected")
-        disconnectedMessage.visible = true
-        reconnectButton.visible = true
-        reconnectingMessage.visible = false
-        connectionPanel.show()
-    }
-
-    function showNoNetworkMessage() {
-        disconnectedMessage.text = qsTr("No network connection")
-        disconnectedMessage.visible = true
-        reconnectButton.visible = false
-        reconnectingMessage.visible = false
-        connectionPanel.show()
     }
 }
