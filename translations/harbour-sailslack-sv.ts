@@ -247,17 +247,17 @@ Vill du verkligen lämna?</translation>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="317"/>
+        <location filename="../src/slackclient.cpp" line="320"/>
         <source>in %1 @ %2</source>
         <translation>i %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="320"/>
+        <location filename="../src/slackclient.cpp" line="323"/>
         <source>from %1 @ %2</source>
         <translation>från %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="323"/>
+        <location filename="../src/slackclient.cpp" line="326"/>
         <source>New message</source>
         <translation>Nytt meddelande</translation>
     </message>
