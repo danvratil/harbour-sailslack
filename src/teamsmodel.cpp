@@ -68,7 +68,7 @@ SlackClient *TeamsModel::addTeam(const QString &userId, const QString &teamId, c
 
 namespace {
 
-std::function<bool(const TeamsModel::Team &team)> findTeam(const QString &teamId) {
+auto findTeam(const QString &teamId) {
     return [teamId](const TeamsModel::Team &team) {
         return team.uuid == teamId;
     };

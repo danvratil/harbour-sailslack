@@ -253,7 +253,7 @@ Are you sure you wish to leave?</source>
     </message>
     <message>
         <location filename="../src/slackclient.cpp" line="326"/>
-        <source>new messages</source>
+        <source>New message</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

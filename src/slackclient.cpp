@@ -323,7 +323,7 @@ void SlackClient::parseNotification(QJsonObject message) {
       title = QString(tr("from %1 @ %2")).arg(channel).arg(teamName);
   }
   else {
-      title = QString(tr("new messages"));
+      title = QString(tr("New message"));
   }
 
   qDebug() << config->getTeamName() << ": App state" << appActive << activeWindow;

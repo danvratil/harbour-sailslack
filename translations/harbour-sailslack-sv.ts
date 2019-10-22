@@ -258,7 +258,7 @@ Vill du verkligen lämna?</translation>
     </message>
     <message>
         <location filename="../src/slackclient.cpp" line="323"/>
-        <source>new messages</source>
+        <source>New message</source>
         <translation>Nytt meddelande</translation>
     </message>
 </context>
