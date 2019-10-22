@@ -242,18 +242,18 @@ Are you sure you wish to leave?</source>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="317"/>
-        <source>New message in %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/slackclient.cpp" line="320"/>
-        <source>New message from %1</source>
+        <source>in %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/slackclient.cpp" line="323"/>
-        <source>New message</source>
+        <source>from %1 @ %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/slackclient.cpp" line="326"/>
+        <source>new messages</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
