@@ -16,7 +16,7 @@ protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request, QIODevice *outgoingData = 0);
 
 private:
-    QPointer<SlackClientConfig> config;
+    QString getToken(QUrl url);
 };
 
 #endif // NETWORKACCESSMANAGER_H

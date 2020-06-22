@@ -160,6 +160,7 @@ private:
     QString getContent(QJsonObject message);
     QVariantList getAttachments(QJsonObject message);
     QVariantList getImages(QJsonObject message);
+    void getImageData(const QJsonObject &file, QVariantList &list);
     QString getAttachmentColor(QJsonObject attachment);
     QVariantList getAttachmentFields(QJsonObject attachment);
     QVariantList getAttachmentImages(QJsonObject attachment);
