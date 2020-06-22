@@ -1075,39 +1075,52 @@ QString SlackClient::getContent(QJsonObject message) {
 
 QVariantList SlackClient::getImages(QJsonObject message) {
     QVariantList images;
+    QStringList imageTypes;
+    imageTypes << "jpg";
+    imageTypes << "png";
+    imageTypes << "gif";
 
     if (message.value("subtype").toString() == "file_share") {
-        QStringList imageTypes;
-        imageTypes << "jpg";
-        imageTypes << "png";
-        imageTypes << "gif";
-
         QJsonObject file = message.value("file").toObject();
         QString fileType = file.value("filetype").toString();
 
         if (imageTypes.contains(fileType)) {
-            QString thumbItem = file.contains("thumb_480") ? "480" : "360";
+            getImageData(file, images);
+        }
+    } else if (message.contains("files")) {
+        QJsonArray files = message.value("files").toArray();
+        foreach (const QJsonValue &value, files) {
+            QJsonObject file = value.toObject();
+            QString fileType = file.value("filetype").toString();
 
-            QVariantMap thumbSize;
-            thumbSize.insert("width", file.value("thumb_" + thumbItem + "_w").toVariant());
-            thumbSize.insert("height", file.value("thumb_" + thumbItem + "_h").toVariant());
-
-            QVariantMap imageSize;
-            imageSize.insert("width", file.value("original_w").toVariant());
-            imageSize.insert("height", file.value("original_h").toVariant());
-
-            QVariantMap fileData;
-            fileData.insert("name", file.value("name").toVariant());
-            fileData.insert("url", file.value("url_private").toVariant());
-            fileData.insert("size", imageSize);
-            fileData.insert("thumbSize", thumbSize);
-            fileData.insert("thumbUrl", file.value("thumb_" + thumbItem).toVariant());
-
-            images.append(fileData);
+            if (imageTypes.contains(fileType)) {
+                getImageData(file, images);
+            }
         }
     }
 
     return images;
+}
+
+void SlackClient::getImageData(const QJsonObject &file, QVariantList &list) {
+    QString thumbItem = file.contains("thumb_480") ? "480" : "360";
+
+    QVariantMap thumbSize;
+    thumbSize.insert("width", file.value("thumb_" + thumbItem + "_w").toVariant());
+    thumbSize.insert("height", file.value("thumb_" + thumbItem + "_h").toVariant());
+
+    QVariantMap imageSize;
+    imageSize.insert("width", file.value("original_w").toVariant());
+    imageSize.insert("height", file.value("original_h").toVariant());
+
+    QVariantMap fileData;
+    fileData.insert("name", file.value("name").toVariant());
+    fileData.insert("url", file.value("url_private").toVariant());
+    fileData.insert("size", imageSize);
+    fileData.insert("thumbSize", thumbSize);
+    fileData.insert("thumbUrl", file.value("thumb_" + thumbItem).toVariant());
+
+    list.append(fileData);
 }
 
 QVariantList SlackClient::getAttachments(QJsonObject message) {
