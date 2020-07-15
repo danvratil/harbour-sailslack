@@ -1123,6 +1123,10 @@ void SlackClient::getImageData(const QJsonObject &file, QVariantList &list) {
     fileData.insert("thumbSize", thumbSize);
     fileData.insert("thumbUrl", file.value("thumb_" + thumbItem).toVariant());
 
+    if (file.contains("title")) {
+        fileData.insert("title", file.value("title").toVariant());
+    }
+
     list.append(fileData);
 }
 

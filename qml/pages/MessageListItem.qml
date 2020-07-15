@@ -58,19 +58,27 @@ ListItem {
         Repeater {
             id: imageRepeater
             model: images
+            Column {
+                spacing: Theme.paddingSmall
+                Text {
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: textColor
+                    visible: text.length > 0
+                    text: model.title
+                }
+                Image {
+                    width: parent.width
+                    height: model.thumbSize.height
+                    fillMode: Image.PreserveAspectFit
+                    source: model.thumbUrl
+                    sourceSize.width: model.thumbSize.width
+                    sourceSize.height: model.thumbSize.height
 
-            Image {
-                width: parent.width
-                height: model.thumbSize.height
-                fillMode: Image.PreserveAspectFit
-                source: model.thumbUrl
-                sourceSize.width: model.thumbSize.width
-                sourceSize.height: model.thumbSize.height
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        pageStack.push(Qt.resolvedUrl("Image.qml"), {"model": model})
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            pageStack.push(Qt.resolvedUrl("Image.qml"), {"model": model})
+                        }
                     }
                 }
             }
