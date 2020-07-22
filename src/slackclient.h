@@ -81,6 +81,9 @@ signals:
     void reconnectFail();
     void reconnectAccessTokenFail();
 
+    void updateChannelUnreadCountFailed(QString);
+    void updateImUnreadCountFailed(QString);
+
     void messageReceived(QVariantMap message);
     void channelUpdated(QVariantMap channel);
     void channelJoined(QVariantMap channel);
@@ -103,13 +106,13 @@ public slots:
     void testLogin();
     void handleTestLoginReply();
 
-    void loadHistory(QString type, QString channelId, QString latest);
-    void loadMessages(QString type, QString channelId);
+    void loadHistory(QString channelId, QString latest);
+    void loadMessages(QString channelId);
     void handleLoadMessagesReply();
 
     void logout();
     void loadUsers(const QString &cursor = {});
-    void markChannel(QString type, QString channelId, QString time);
+    void markChannel(QString channelId, QString time);
     void joinChannel(QString channelId);
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
@@ -169,6 +172,9 @@ private:
     QVariantMap parseGroup(QJsonObject group);
     QVariantMap parseChat(QJsonObject chat);
 
+    void updateChannelUnreadCount(QString channelId, QString lastRead);
+    void updateImUnreadCount(QString channelId, QString lastRead);
+
     void parseUsers(QJsonObject data);
     void findNewUsers(const QString &message);
 
@@ -178,9 +184,6 @@ private:
     void updateUnreadCount();
 
     QVariantMap user(const QJsonObject &data);
-
-    QString historyMethod(QString type);
-    QString markMethod(QString type);
 
     QPointer<QNetworkAccessManager> networkAccessManager;
     QPointer<SlackClientConfig> config;

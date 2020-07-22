@@ -143,7 +143,7 @@ SilicaListView {
 
     function markLatest() {
         if (latestRead != "") {
-            slackClient.markChannel(channel.type, channel.id, latestRead)
+            slackClient.markChannel(channel.id, latestRead)
             latestRead = ""
         }
     }
@@ -156,13 +156,13 @@ SilicaListView {
 
     function loadMessages() {
         loading = true
-        slackClient.loadMessages(channel.type, channel.id)
+        slackClient.loadMessages(channel.id)
     }
 
     function loadHistory() {
         if (messageListModel.count) {
             loading = true
-            slackClient.loadHistory(channel.type, channel.id, messageListModel.get(0).timestamp)
+            slackClient.loadHistory(channel.id, messageListModel.get(0).timestamp)
         }
     }
 
