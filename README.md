@@ -1,8 +1,11 @@
-# harbour-sailslack
+# harbour-sailslack2
 
-Unoffical [Slack](https://slack.com/) client for [Sailfish](https://sailfishos.org) available in _Jolla Store_.
+Unoffical [Slack](https://slack.com/) client for [Sailfish](https://sailfishos.org).
 
-This is a fork of [Slackfish](https://github.com/markussammallahti/harbour-slackfish) developed by Markuss Sammallahti.
+This is a fork of [Sailslack](https://github.com/danvratil/harbour-sailslack) developed by danvratil.
+Sailslack is a fork of [Slackfish](https://github.com/markussammallahti/harbour-slackfish) developed by Markuss Sammallahti.
+
+I do not plan any further development except for fixing bugs preventing me from using it.
 
 ## Development
 

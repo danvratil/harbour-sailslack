@@ -24,7 +24,7 @@ Page {
 
             Label {
                 x: page.padding
-                text: "Sailslack" + applicationVersion
+                text: "Sailslack2" + applicationVersion
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
             }
@@ -51,7 +51,7 @@ Page {
                 x: page.padding
                 width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
                 font.pixelSize: Theme.fontSizeSmall
-                value: qsTr("Source code and issues in <a href='%1'>Github</a>.").arg("https://github.com/danvratil/harbour-sailslack")
+                value: qsTr("Source code and issues in <a href='%1'>Github</a>.").arg("https://github.com/decon4/harbour-sailslack")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 
@@ -59,7 +59,15 @@ Page {
                 x: page.padding
                 width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
                 font.pixelSize: Theme.fontSizeSmall
-                value: qsTr("Based on <a href='%1'>Slackfish</a> by Markus Sammallahti.").arg("https://github.com/markussammallahti/harbour-sailfish")
+                value: qsTr("Sailslack2 is based on <a href='%1'>Sailslack</a> by danvratil.").arg("https://github.com/danvratil/harbour-sailslack")
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            RichTextLabel {
+                x: page.padding
+                width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
+                font.pixelSize: Theme.fontSizeSmall
+                value: qsTr("Sailslack is based on <a href='%1'>Slackfish</a> by Markus Sammallahti.").arg("https://github.com/markussammallahti/harbour-sailfish")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
         }

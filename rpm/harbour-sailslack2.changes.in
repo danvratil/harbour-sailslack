@@ -8,6 +8,11 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sat Jul 25 2020 Decon <coding@userspace.se> 0.1-1
+- Forked from harbour-sailslack
+- Fixed images not being loaded
+- Ported some API calls to new conversations API
+
 * Tue Apr 16 2019 Daniel Vrátil <me@dvratil.cz> 0.1-1
 - Forked from harbour-slackfish
 - Fixed connecting to Slack

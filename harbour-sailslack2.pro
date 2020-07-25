@@ -1,5 +1,5 @@
 # App config
-TARGET = harbour-sailslack
+TARGET = harbour-sailslack2
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
@@ -57,12 +57,12 @@ SOURCES += src/harbour-sailslack.cpp \
 
 OTHER_FILES += qml/harbour-sailslack.qml \
     qml/cover/CoverPage.qml \
-    rpm/harbour-sailslack.changes.in \
-    rpm/harbour-sailslack.spec \
-    rpm/harbour-sailslack.yaml \
+    rpm/harbour-sailslack2.changes.in \
+    rpm/harbour-sailslack2.spec \
+    rpm/harbour-sailslack2.yaml \
     translations/*.ts \
-    harbour-sailslack.desktop \
-    harbour-sailslack.png
+    harbour-sailslack2.desktop \
+    harbour-sailslack2.png
 
 HEADERS += \
     src/slackclient.h \

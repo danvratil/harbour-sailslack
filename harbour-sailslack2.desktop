@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 X-Nemo-Application-Type=silica-qt5
-Icon=harbour-sailslack
-Exec=harbour-sailslack
-Name=Sailslack
+Icon=harbour-sailslack2
+Exec=harbour-sailslack2
+Name=Sailslack2
 

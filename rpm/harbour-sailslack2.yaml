@@ -1,9 +1,9 @@
-Name: harbour-sailslack
+Name: harbour-sailslack2
 Summary: Unoffical Slack client for Sailfish
 Version: 0.1
 Release: 1
 Group: Network
-URL: https://github.com/danvratil/harbour-sailslack
+URL: https://github.com/decon4/harbour-sailslack
 License: GPLv3
 # This must be generated before uploading a package to a remote build service.
 # Usually this line does not need to be modified.
