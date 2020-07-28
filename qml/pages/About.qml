@@ -24,7 +24,7 @@ Page {
 
             Label {
                 x: page.padding
-                text: "Sailslack2" + applicationVersion
+                text: "Sailslack2 v" + applicationVersion
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
             }

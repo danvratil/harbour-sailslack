@@ -14,7 +14,7 @@ Name:       harbour-sailslack2
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Unoffical Slack client for Sailfish
 Version:    0.1
-Release:    1
+Release:    2
 Group:      Network
 License:    GPLv3
 URL:        https://github.com/decon4/harbour-sailslack
