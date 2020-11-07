@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import QtWebKit 3.0
+import Sailfish.WebView 1.0
 import harbour.sailslack 1.0 as Slack
 
-Page {
+WebViewPage {
     id: page
 
     property string processId: Math.random().toString(36).substring(7)
@@ -11,6 +12,9 @@ Page {
 
     signal loginSuccess(string userId, string teamId, string teamName, string accessToken)
 
+    PageHeader {
+        title: "Sign in with Slack"
+    }
 
     Slack.Authenticator {
         id: authenticator
@@ -21,33 +25,55 @@ Page {
 
         onAccessTokenFail: {
             console.log('access token failed')
-            webView.visible = true
+            webViewF.visible = true
         }
     }
 
-    SilicaWebView {
-        id: webView
-        anchors.fill: parent
-        url: page.startUrl + "&state=" + page.processId
+    Slack.AuthServer {
+        id: server
 
-        header: PageHeader {
-            title: "Sign in with Slack"
+        onResultUrlAvailable: {
+            authenticator.fetchAccessToken(url);
         }
+    }
 
-        onNavigationRequested: {
-            if (isReturnUrl(request.url)) {
-                visible = false
-                request.action = WebView.IgnoreRequest
+    onStatusChanged: {
+        switch (status) {
+        case PageStatus.Activating:
+            server.listen(3000);
+            break;
+        case PageStatus.Deactivating:
+            server.close();
+            break;
+        }
+    }
 
-                if (isSuccessUrl(request.url)) {
-                    authenticator.fetchAccessToken(request.url)
+    WebViewFlickable {
+        id: webViewF
+        anchors.fill: parent
+
+        webView {
+            active: true
+            url: page.startUrl + "&state=" + page.processId
+
+            onLinkClicked: {
+                // This is currently not called for redirects (at least not in sailfish-components-webview 1.1.6.1
+                // so I just leave this here in case it starts working, otherwise AuthServer is actually listening on 3000.
+                var request = {url: url};
+                if (isReturnUrl(request.url)) {
+                    visible = false
+                    request.action = WebView.IgnoreRequest
+
+                    if (isSuccessUrl(request.url)) {
+                        Slack.Client.fetchAccessToken(request.url)
+                    }
+                    else {
+                        pageStack.pop(undefined, PageStackAction.Animated)
+                    }
                 }
                 else {
-                    pageStack.pop(undefined,PageStackAction.Animated)
+                    request.action = WebView.AcceptRequest
                 }
-            }
-            else {
-                request.action = WebView.AcceptRequest
             }
         }
     }

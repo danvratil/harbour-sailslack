@@ -1,5 +1,7 @@
 # App config
 TARGET = harbour-sailslack
+CONFIG += link_pkgconfig
+PKGCONFIG += qt5embedwidget
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
@@ -11,6 +13,8 @@ CONFIG += sailfishapp_i18n
 QT += dbus
 PKGCONFIG += nemonotifications-qt5
 
+CONFIG += sailfish-components-webview-qt5
+
 # Includes
 INCLUDEPATH += ./QtWebsocket
 
@@ -18,7 +22,7 @@ QT += concurrent dbus
 
 include(vendor/vendor.pri)
 
-VERSION = "1.4.2"
+VERSION = "1.4.3"
 DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 
 # Check slack config
@@ -37,6 +41,7 @@ DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
 DBUS_ADAPTORS += src/harbour.sailslack.xml
 
 SOURCES += src/harbour-sailslack.cpp \
+    src/authserver.cpp \
     src/slackclient.cpp \
     src/QtWebsocket/QWsSocket.cpp \
     src/QtWebsocket/QWsFrame.cpp \
@@ -65,6 +70,7 @@ OTHER_FILES += qml/harbour-sailslack.qml \
     harbour-sailslack.png
 
 HEADERS += \
+    src/authserver.h \
     src/slackclient.h \
     src/QtWebsocket/QWsSocket.h \
     src/QtWebsocket/QWsFrame.h \
