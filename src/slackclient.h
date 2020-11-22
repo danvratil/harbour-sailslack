@@ -43,7 +43,9 @@ public:
     Q_INVOKABLE void setActiveWindow(QString windowId);
 
     Q_INVOKABLE QVariantList getChannels();
-    Q_INVOKABLE QVariant getChannel(QString channelId);
+    Q_INVOKABLE QVariant getChannel(const QString& channelId);
+
+    Q_INVOKABLE QVariant getThread(const QString& threadId);
 
     SlackClientConfig *getConfig() const { return this->config; }
     bool getInitialized() const { return initialized; }
@@ -66,7 +68,7 @@ signals:
     void loadUsersSuccess();
     void loadUsersFail();
 
-    void loadMessagesSuccess(QString channelId, QVariantList messages, bool hasMore);
+    void loadMessagesSuccess(QString channelId, QString threadId, QVariantList messages, bool hasMore);
     void loadMessagesFail();
     void loadHistorySuccess(QString channelId, QVariantList messages, bool hasMore);
     void loadHistoryFail();
@@ -84,7 +86,7 @@ signals:
     void updateChannelUnreadCountFailed(QString);
     void updateImUnreadCountFailed(QString);
 
-    void messageReceived(QVariantMap message);
+    void messageReceived(QVariantMap message, bool update);
     void channelUpdated(QVariantMap channel);
     void channelJoined(QVariantMap channel);
     void channelLeft(QVariantMap channel);
@@ -110,15 +112,17 @@ public slots:
     void loadMessages(QString channelId);
     void handleLoadMessagesReply();
 
+    void loadThreadMessages(QString threadId, QString channelId);
+
     void logout();
     void loadUsers(const QString &cursor = {});
     void markChannel(QString channelId, QString time);
-    void joinChannel(QString channelId);
+    void joinChannel(const QString& channelId);
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
     void openChat(QString chatId);
     void closeChat(QString chatId);
-    void postMessage(QString channelId, QString content);
+    void postMessage(QString channelId, QString threadId, QString content);
     void postImage(QString channelId, QString imagePath, QString title, QString comment);
     void loadUserInfo(QString userId);
 
@@ -147,7 +151,7 @@ private:
 
     void loadConversations(QString cursor = QString());
 
-    void parseMessageUpdate(QJsonObject message);
+    void parseMessageUpdate(QJsonObject message, bool update = false);
     void parseChannelUpdate(QJsonObject message);
     void parseChannelJoin(QJsonObject message);
     void parseChannelLeft(QJsonObject message);

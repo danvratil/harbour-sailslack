@@ -225,16 +225,21 @@ Are you sure you wish to leave?</source>
         <source>User Details</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qml/pages/MessageListItem.qml" line="60"/>
+        <source>Replies</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MessageListView</name>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="38"/>
+        <location filename="../qml/pages/MessageListView.qml" line="39"/>
         <source>User Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="100"/>
+        <location filename="../qml/pages/MessageListView.qml" line="107"/>
         <source>Message %1%2</source>
         <translation type="unfinished"></translation>
     </message>

@@ -5,6 +5,7 @@ import harbour.sailslack 1.0
 SilicaListView {
     property alias atBottom: listView.atYEnd
     property variant channel
+    property variant thread
 
     property Client slackClient
 
@@ -78,14 +79,20 @@ SilicaListView {
     }
 
     header: PageHeader {
-        title: channel.name
+        title: getTitle()
     }
 
     model: ListModel {
         id: messageListModel
     }
 
-    delegate: MessageListItem {}
+    delegate: MessageListItem {
+        onClicked: {
+            if (reply_count > 0 && !thread) {
+                pageStack.push(Qt.resolvedUrl("Thread.qml"), {"slackClient": slackClient, "channelId": channelId, "threadId": thread_ts});
+            }
+        }
+    }
 
     section {
         property: "timegroup"
@@ -99,7 +106,8 @@ SilicaListView {
         visible: inputEnabled
         placeholder: qsTr("Message %1%2").arg("#").arg(channel.name)
         onSendMessage: {
-            slackClient.postMessage(channel.id, content)
+            var threadId = thread && thread.thread_ts;
+            slackClient.postMessage(channel.id, threadId || "", content)
         }
     }
 
@@ -141,6 +149,18 @@ SilicaListView {
         slackClient.onMessageReceived.disconnect(handleMessageReceived)
     }
 
+    function getTitle() {
+        var result = "Thread";
+        if (thread) {
+            if (thread.content) {
+                result = thread.content;
+            }
+        } else {
+            result = channel.name;
+        }
+        return result;
+    }
+
     function markLatest() {
         if (latestRead != "") {
             slackClient.markChannel(channel.id, latestRead)
@@ -156,7 +176,11 @@ SilicaListView {
 
     function loadMessages() {
         loading = true
-        slackClient.loadMessages(channel.id)
+        if (thread) {
+            slackClient.loadThreadMessages(thread.thread_ts, channel.id);
+        } else {
+            slackClient.loadMessages(channel.id)
+        }
     }
 
     function loadHistory() {
@@ -166,8 +190,10 @@ SilicaListView {
         }
     }
 
-    function handleLoadSuccess(channelId, messages, hasMore) {
-        if (channelId === channel.id) {
+    function handleLoadSuccess(channelId, threadId, messages, hasMore) {
+        var isForThisThread = threadId && thread && threadId === thread.thread_ts;
+        var isForThisChannel = !threadId && channelId === channel.id;
+        if (isForThisChannel || isForThisThread) {
             hasMoreMessages = hasMore
             loader.sendMessage({
                 op: 'replace',
@@ -188,11 +214,27 @@ SilicaListView {
         }
     }
 
-    function handleMessageReceived(message) {
+    function handleMessageReceived(message, update) {
         if (message.type === "message" && message.channel === channel.id) {
-            var isAtBottom = atBottom
-            messageListModel.append(message)
+            if ((message.thread_ts) && (message.thread_ts !== message.timestamp)) {
+                // A message received a reply. Is it for this thread?
+                if (message.thread_ts !== thread.thread_ts) {
+                    return;
+                }
+            }
 
+            if (update) {
+                for (var i = 0; i < messageListModel.count; i++) {
+                    if (messageListModel.get(i).timestamp === message.timestamp) {
+                        messageListModel.set(i, message);
+                        break;
+                    }
+                }
+            } else {
+                messageListModel.append(message)
+            }
+
+            var isAtBottom = atBottom
             if (isAtBottom) {
                 listView.positionViewAtEnd()
 

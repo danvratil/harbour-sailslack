@@ -50,6 +50,28 @@ ListItem {
             onLinkActivated: handleLink(link)
         }
 
+        Item {
+            width: parent.width
+            height: childrenRect.height
+            visible: reply_count > 0
+
+            Label {
+                id: replies
+                text: qsTr("Replies")
+                anchors.left: parent.left
+                font.italic: true
+                font.pixelSize: Theme.fontSizeTiny
+                color: infoColor
+            }
+
+            Label {
+                text: " : " + String(reply_count)
+                anchors.left: replies.right
+                font.pixelSize: Theme.fontSizeTiny
+                color: infoColor
+            }
+        }
+
         Spacer {
             height: Theme.paddingMedium
             visible: contentLabel.visible && (imageRepeater.count > 0 || attachmentRepeater.count > 0)
