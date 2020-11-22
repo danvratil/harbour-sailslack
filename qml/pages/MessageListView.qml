@@ -89,7 +89,12 @@ SilicaListView {
     delegate: MessageListItem {
         onClicked: {
             if (reply_count > 0 && !thread) {
-                pageStack.push(Qt.resolvedUrl("Thread.qml"), {"slackClient": slackClient, "channelId": channelId, "threadId": thread_ts});
+                showThread(thread_ts)
+            }
+        }
+        onOpenThread: {
+            if (slackClient.createThread(channel.id, threadId, messageListModel.get(index))) {
+                showThread(threadId)
             }
         }
     }
@@ -149,6 +154,10 @@ SilicaListView {
         slackClient.onMessageReceived.disconnect(handleMessageReceived)
     }
 
+    function showThread(threadId) {
+        pageStack.push(Qt.resolvedUrl("Thread.qml"), {"slackClient": slackClient, "channelId": channel.id, "threadId": threadId});
+    }
+
     function markLatest() {
         if (latestRead != "") {
             slackClient.markChannel(channel.id, latestRead)
@@ -163,10 +172,22 @@ SilicaListView {
     }
 
     function loadMessages() {
-        loading = true
-        if (thread) {
-            slackClient.loadThreadMessages(thread.thread_ts, channel.id);
+        if (thread && thread.thread_ts) {
+            if (!thread.transient) {
+                loading = true
+                slackClient.loadThreadMessages(thread.thread_ts, channel.id);
+            } else {
+                loading = false;
+                var messages =[thread];
+                loader.sendMessage({
+                    op: 'replace',
+                    model: messageListModel,
+                    messages: messages
+                })
+
+            }
         } else {
+            loading = true
             slackClient.loadMessages(channel.id)
         }
     }
@@ -180,7 +201,7 @@ SilicaListView {
 
     function handleLoadSuccess(channelId, threadId, messages, hasMore) {
         var isForThisThread = threadId && thread && threadId === thread.thread_ts;
-        var isForThisChannel = !threadId && channelId === channel.id;
+        var isForThisChannel = !threadId && !thread && channelId === channel.id;
         if (isForThisChannel || isForThisThread) {
             hasMoreMessages = hasMore
             loader.sendMessage({

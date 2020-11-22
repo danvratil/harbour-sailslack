@@ -54,7 +54,7 @@ QString messageThread(const QVariantMap& message) {
 }
 
 bool isThreadStarter(const QVariantMap& message) {
-    return message.value("thread_ts") == message.value("timestamp");
+    return message.value("thread_ts") == message.value("timestamp") || message.value("transient").toBool();
 }
 
 void Storage::setChannelMessages(const QString &channelId, QVariantList messages) {
@@ -78,6 +78,8 @@ void Storage::createOrUpdateThread(const QString &threadId, QVariantMap message)
         threadMap.insert(threadId, message);
     } else {
         qDebug() << "Thread already exists:" << threadId;
+        threadMap.insert(threadId, message);
+        threadMessageMap.value(threadId).toList().replace(0, message);
     }
 
     // Search the starting message in its channel

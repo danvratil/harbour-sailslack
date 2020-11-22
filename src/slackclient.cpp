@@ -986,6 +986,35 @@ void SlackClient::handleLoadMessagesReply() {
     reply->deleteLater();
 }
 
+bool SlackClient::createThread(QString channelId, QString threadId) {
+
+    if (!storage.channelMessagesExist(channelId)) {
+        return false;
+    }
+
+    auto channelMessages = storage.channelMessages(channelId);
+    auto found = std::lower_bound(channelMessages.begin(),
+                     channelMessages.end(),
+                     threadId,
+                     [](const QVariant& m1, const QString& timestamp)
+    {
+        return m1.toMap().value("timestamp").toString() < timestamp;
+    });
+
+    if (found != channelMessages.end()) {
+        auto message = found->toMap();
+        if (message.value("timestamp") == threadId) {
+            if (message.value("thread_ts") != threadId) {
+                message.insert("thread_ts", threadId);
+                message.insert("transient", true);
+            }
+            storage.createOrUpdateThread(threadId, message);
+        }
+        return true;
+    }
+    return false;
+}
+
 QVariantList SlackClient::parseMessages(const QJsonObject data) {
     QJsonArray messageList = data.value("messages").toArray();
     QVariantList messages;

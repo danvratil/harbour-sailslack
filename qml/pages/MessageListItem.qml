@@ -4,11 +4,17 @@ import Sailfish.Silica 1.0
 ListItem {
     id: item
     contentHeight: column.height + Theme.paddingMedium
+    signal openThread(string threadId)
 
     menu: ContextMenu {
         MenuItem {
             text: qsTr("User Details")
             onClicked: showUserDetails(user.id)
+        }
+        MenuItem {
+            visible: !item.parent.thread
+            text: qsTr("Reply in thread")
+            onClicked: openThread(timestamp)
         }
     }
 
@@ -133,4 +139,5 @@ ListItem {
     function showUserDetails(userId) {
         pageStack.push(Qt.resolvedUrl("UserView.qml"), {"slackClient": slackClient, "userId": userId})
     }
+
 }

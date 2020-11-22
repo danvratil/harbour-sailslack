@@ -111,6 +111,7 @@ public slots:
     void loadHistory(QString channelId, QString latest);
     void loadMessages(QString channelId);
     void handleLoadMessagesReply();
+    bool createThread(QString channelId, QString threadId);
 
     void loadThreadMessages(QString threadId, QString channelId);
 
