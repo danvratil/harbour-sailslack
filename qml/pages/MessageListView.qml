@@ -79,7 +79,7 @@ SilicaListView {
     }
 
     header: PageHeader {
-        title: getTitle()
+        title: thread ? qsTr("Thread in %1%2").arg("#").arg(channel.name) : channel.name
     }
 
     model: ListModel {
@@ -104,7 +104,7 @@ SilicaListView {
 
     footer: MessageInput {
         visible: inputEnabled
-        placeholder: qsTr("Message %1%2").arg("#").arg(channel.name)
+        placeholder: (thread ? qsTr("Message thread in %1%2") : qsTr("Message %1%2")).arg("#").arg(channel.name)
         onSendMessage: {
             var threadId = thread && thread.thread_ts;
             slackClient.postMessage(channel.id, threadId || "", content)
@@ -147,18 +147,6 @@ SilicaListView {
         slackClient.onLoadMessagesSuccess.disconnect(handleLoadSuccess)
         slackClient.onLoadHistorySuccess.disconnect(handleHistorySuccess)
         slackClient.onMessageReceived.disconnect(handleMessageReceived)
-    }
-
-    function getTitle() {
-        var result = "Thread";
-        if (thread) {
-            if (thread.content) {
-                result = thread.content;
-            }
-        } else {
-            result = channel.name;
-        }
-        return result;
     }
 
     function markLatest() {
