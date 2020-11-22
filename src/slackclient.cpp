@@ -167,13 +167,15 @@ void SlackClient::handleStreamMessage(QJsonObject message) {
         if (message.value("subtype") == QStringLiteral("message_replied")) {
             QJsonObject innerMessage = message.value("message").toObject();
             innerMessage.insert("channel", message.value("channel"));
-            storage.createOrUpdateThread(innerMessage.value("thread_ts").toString(), getMessageData(innerMessage));
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
             parseMessageUpdate(innerMessage, true);
         } else if (message.value("subtype") == QStringLiteral("message_changed")) {
             QJsonObject innerMessage = message.value("message").toObject();
             innerMessage.insert("channel", message.value("channel"));
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
             parseMessageUpdate(innerMessage, true);
         } else {
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(message));
             parseMessageUpdate(message);
         }
     }
@@ -265,11 +267,10 @@ void SlackClient::parseChannelUpdate(QJsonObject message) {
 
 void SlackClient::parseMessageUpdate(QJsonObject message, bool update) {
     QVariantMap data = getMessageData(message);
-    bool appendToChannel = false;
 
     QString channelId = message.value("channel").toString();
-    if (storage.channelMessagesExist(channelId)) {
-        appendToChannel = storage.appendChannelMessage(channelId, data);
+    if (storage.channelMessagesExist(channelId) && !update) {
+        storage.appendChannelMessage(channelId, data);
     }
 
     QVariantMap channel = storage.channel(channelId);
@@ -993,15 +994,8 @@ bool SlackClient::createThread(QString channelId, QString threadId) {
     }
 
     auto channelMessages = storage.channelMessages(channelId);
-    auto found = std::lower_bound(channelMessages.begin(),
-                     channelMessages.end(),
-                     threadId,
-                     [](const QVariant& m1, const QString& timestamp)
-    {
-        return m1.toMap().value("timestamp").toString() < timestamp;
-    });
-
-    if (found != channelMessages.end()) {
+    auto found = storage.findSortedMessages(channelMessages, threadId);
+    if (found != channelMessages.constEnd()) {
         auto message = found->toMap();
         if (message.value("timestamp") == threadId) {
             if (message.value("thread_ts") != threadId) {

@@ -92,20 +92,32 @@ void Storage::prependChannelMessages(const QString &channelId, QVariantList mess
     setChannelMessages(channelId, messages);
 }
 
-bool Storage::appendChannelMessage(const QString &channelId, QVariantMap message) {
-    bool result = false;
+QVariantList::const_iterator Storage::findSortedMessages(const QVariantList& messages, const QString& timestamp) {
+    return std::lower_bound(messages.begin(),
+                     messages.end(),
+                     timestamp,
+                     [](const QVariant& m1, const QString& timestamp)
+    {
+        return m1.toMap().value("timestamp").toString() < timestamp;
+    });
+}
+
+void Storage::appendChannelMessage(const QString &channelId, QVariantMap message) {
     QVariantList messages = channelMessages(channelId);
     auto threadId = messageThread(message);
     if (threadId.isEmpty() || isThreadStarter(message)) {
-        messages.append(message);
+        // append or update
+        auto found = findSortedMessages(messages, threadId);
+        if (found != messages.constEnd()) {
+            auto messageIndex = found - messages.constBegin();
+            messages[messageIndex] = message;
+        } else {
+            messages.append(message);
+        }
         setChannelMessages(channelId, messages);
-        result = true;
-    }
-    if (!threadId.isEmpty()) {
+    } else {
         appendThreadMessage(threadId, message);
     }
-
-    return result;
 }
 
 void Storage::clearChannelMessages() {
@@ -121,8 +133,13 @@ void Storage::appendThreadMessage(const QString &threadId, QVariantMap message) 
     if (messages.size()) {
         if (isThreadStarter(message)) {
             qDebug() << "Updated thread starter for:" << threadId;
+        }
+        auto found = findSortedMessages(messages, message.value("timestamp").toString());
+        if (found != messages.constEnd()) {
+            auto messageIndex = found - messages.constBegin();
+            messages[messageIndex] = message;
         } else {
-            messages.push_back(message);
+            messages.append(message);
         }
     } else {
         qDebug("Thread without thread starter?");
