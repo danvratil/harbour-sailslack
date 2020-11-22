@@ -221,12 +221,17 @@ Are you sure you wish to leave?</source>
 <context>
     <name>MessageListItem</name>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="10"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="11"/>
         <source>User Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="60"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="16"/>
+        <source>Reply in thread</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListItem.qml" line="68"/>
         <source>Replies</source>
         <translation type="unfinished"></translation>
     </message>

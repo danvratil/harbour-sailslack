@@ -12,9 +12,11 @@ ListItem {
             onClicked: showUserDetails(user.id)
         }
         MenuItem {
-            visible: !item.parent.thread
+            visible: !page.threadId
             text: qsTr("Reply in thread")
-            onClicked: openThread(timestamp)
+            onClicked: {
+                openThread(timestamp)
+            }
         }
     }
 
