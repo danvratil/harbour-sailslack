@@ -123,15 +123,15 @@ void SlackClient::updatePresenceSubscription() {
             userIds.insert(channel.value("userId").toString());
         } else if (channel.value("type").toString() == "mpim" || channel.value("type").toString() == "group") {
             // TODO: Does presence of mpim and group ever makes sense
-            for (const auto &member : channel.value("memberIds").toList()) {
-                userIds.insert(member.toString());
-            }
+//            for (const auto &member : channel.value("memberIds").toList()) {
+//                userIds.insert(member.toString());
+//            }
         } else {
             // skip channels
         }
 
         // The upper limit is not documented, but if it's overstepped we get immediately disconnected from Slack.
-        if (userIds.size() > 150) {
+        if (userIds.size() > 100) {
             break;
         }
     }
@@ -480,6 +480,7 @@ void SlackClient::init() {
 void SlackClient::loadUsers(const QString &cursor) {
   qDebug() << config->getTeamName() << ": Start load users";
   QMap<QString, QString> params;
+  params.insert("team_id", config->getTeamId());
   if (!cursor.isEmpty()) {
       params.insert("cursor", cursor);
   }
@@ -697,6 +698,8 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
   data.insert("lastRead", chat.value("last_read").toVariant());
   data.insert("unreadCount", chat.value("unread_count_display").toVariant());
 
+  data.insert("is_archived", chat.value("is_archived"));
+
   return data;
 }
 
@@ -732,6 +735,10 @@ void SlackClient::parseUsers(QJsonObject data) {
     }
 }
 
+QVariantList SlackClient::getUsers() {
+    return storage.users();
+}
+
 QVariantList SlackClient::getChannels() {
     return storage.channels();
 }
@@ -750,6 +757,7 @@ void SlackClient::loadConversations(QString cursor) {
   QMap<QString,QString> params;
   params.insert("types", "public_channel,private_channel,mpim,im");
   params.insert("limit", "1000"); // the API limit
+  params.insert("team_id", config->getTeamId());
 
   if (!cursor.isEmpty()) {
       params.insert("cursor", cursor);
@@ -775,28 +783,45 @@ void SlackClient::loadConversations(QString cursor) {
             continue;
         }
 
+        if (channel.value("is_archived").toBool()) {
+            continue;
+        }
+
         const QString infoMethod = "conversations.info";
 
         QMap<QString,QString> params;
-        params.insert("channel", channel.value("id").toString());
+        QString channelId = channel.value("id").toString();
+        params.insert("channel", channelId);
         QNetworkReply* infoReply = executeGet(infoMethod, params);
+        infoReply->setProperty("channelId", channelId);
 
         combinator << AsyncFuture::observe(infoReply, &QNetworkReply::finished).future();
         connect(infoReply, &QNetworkReply::finished, [infoReply,infoMethod,this]() {
             QJsonObject infoData = Request::getResult(infoReply).value("channel").toObject();
+
+            QString channelId = infoReply->property("channelId").toString();
             QVariantMap channel;
 
+            bool ignore = false;
             if (infoData.value("is_im").toBool()) {
               channel = parseChat(infoData);
-            }
-            else if (infoData.value("is_channel").toBool()) {
+              // fixme: is_org_shared im conversations come with a not-yet known userId
+              if (channel.value("name").toString().isEmpty()) {
+                  qDebug() << "Ignoring empty named: " << infoData.value("user").toString() << "\n";
+                  ignore = true;
+              }
+            } else if (infoData.value("is_channel").toBool()) {
               channel = parseChannel(infoData);
-            }
-            else {
+            } else if (infoData.value("is_group").toBool()) {
+              channel = parseGroup(infoData);
+            } else {
+              infoData.insert("id", channelId);
               channel = parseGroup(infoData);
             }
 
-            storage.saveChannel(channel);
+            if (!ignore) {
+                storage.saveChannel(channel);
+            }
             infoReply->deleteLater();
         });
       }
