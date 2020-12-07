@@ -64,7 +64,7 @@
     </message>
     <message>
         <location filename="../qml/pages/ChannelListView.qml" line="106"/>
-        <source>Unreads</source>
+        <source>Starred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
