@@ -26,7 +26,10 @@ QString NetworkAccessManager::getToken(QUrl url) {
     if (match.hasMatch()) {
         const QString team = match.captured(1);
         SlackClientConfig config(team);
-        return config.getAccessToken();
+        const QString token = config.getAccessToken();
+        if (!token.isEmpty()){
+            return config.getAccessToken();
+        }
     }
-    return QString();
+    return SlackClientConfig::lastToken();
 }

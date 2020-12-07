@@ -1,8 +1,20 @@
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
+#include <QAtomicPointer>
 
 #include "slackclientconfig.h"
+
+static QAtomicPointer<const SlackClientConfig> s_lastToken{};
+
+QString SlackClientConfig::lastToken() {
+    auto lastToken = s_lastToken.load();
+    if (lastToken) {
+        return lastToken->getAccessToken();
+    } else {
+        return QString();
+    }
+}
 
 SlackClientConfig::SlackClientConfig(const QString &team, QObject *parent)
     : QObject(parent), settings(this) {
@@ -17,6 +29,7 @@ SlackClientConfig::SlackClientConfig(const QString &team, QObject *parent)
 }
 
 QString SlackClientConfig::getAccessToken() const {
+    s_lastToken.store(this);
     return accessToken;
 }
 
