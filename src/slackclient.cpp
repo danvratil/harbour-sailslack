@@ -667,6 +667,7 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
         data.insert("type", QVariant("group"));
         data.insert("category", QVariant("channel"));
         data.insert("name", group.value("name").toVariant());
+        data.insert("is_starred", group.value("is_starred").toBool());
         updateChannelUnreadCount(id, lastRead);
     }
 

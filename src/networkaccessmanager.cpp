@@ -21,15 +21,5 @@ QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkR
 }
 
 QString NetworkAccessManager::getToken(QUrl url) {
-    QRegularExpression re("^.*/([A-Z0-9]+)-.*$");
-    QRegularExpressionMatch match = re.match(url.path());
-    if (match.hasMatch()) {
-        const QString team = match.captured(1);
-        SlackClientConfig config(team);
-        const QString token = config.getAccessToken();
-        if (!token.isEmpty()){
-            return config.getAccessToken();
-        }
-    }
     return SlackClientConfig::lastToken();
-}
+g}

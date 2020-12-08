@@ -70,7 +70,7 @@ function compareChannels(a, b) {
     return Channel.compareByName(a, b)
 }
 
-var categories = ["starred", "channels", "chat"];
+var categories = ["starred", "channel", "chat"];
 function compareByCategory(a, b) {
     if (a.category !== b.category) {
         var diff = categories.indexOf(a.category) - categories.indexOf(b.category);
@@ -81,9 +81,9 @@ function compareByCategory(a, b) {
 
 function compareByBool(a, b, prop, desired) {
     if (a[prop] !== b[prop]) {
-        if (b[prop] === desired) {
+        if (Boolean(b[prop]) === desired) {
             return 1;
-        } else {
+        } else if (Boolean(a[prop]) === desired){
             return -1;
         }
     }
