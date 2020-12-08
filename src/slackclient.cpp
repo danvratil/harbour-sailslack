@@ -640,6 +640,8 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
     QString id = group.value("id").toString();
     QString lastRead = group.value("last_read").toString();
     data.insert("lastRead", lastRead);
+    data.insert("is_starred", group.value("is_starred").toBool());
+    data.insert("is_private", group.value("is_private").toBool());
 
     if (group.value("is_mpim").toBool()) {
         data.insert("type", QVariant("mpim"));
@@ -667,7 +669,6 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
         data.insert("type", QVariant("group"));
         data.insert("category", QVariant("channel"));
         data.insert("name", group.value("name").toVariant());
-        data.insert("is_starred", group.value("is_starred").toBool());
         updateChannelUnreadCount(id, lastRead);
     }
 
@@ -702,6 +703,8 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
   data.insert("unreadCount", chat.value("unread_count_display").toVariant());
 
   data.insert("is_archived", chat.value("is_archived"));
+  data.insert("is_starred", chat.value("is_starred").toBool());
+  data.insert("is_private", chat.value("is_private").toBool());
 
   return data;
 }

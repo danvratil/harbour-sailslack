@@ -29,7 +29,9 @@ SlackClientConfig::SlackClientConfig(const QString &team, QObject *parent)
 }
 
 QString SlackClientConfig::getAccessToken() const {
-    s_lastToken.store(this);
+    if (!accessToken.isEmpty()) {
+        s_lastToken.store(this);
+    }
     return accessToken;
 }
 

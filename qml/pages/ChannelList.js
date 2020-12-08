@@ -64,9 +64,6 @@ function compareChannels(a, b) {
     result = compareByBool(a, b, "is_private", false);
     if (result) return result;
 
-    result = compareByBool(a, b, "is_mpim", true);
-    if (result) return result;
-
     return Channel.compareByName(a, b)
 }
 

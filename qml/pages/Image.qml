@@ -18,24 +18,13 @@ Page {
 
     SilicaFlickable {
         anchors.fill: parent
-        contentHeight: column.height
 
-        Column {
-            id: column
-
-            width: page.width
-
-            PageHeader { title: model.name }
-
-            Image {
-                id: image
-                visible: status === Image.Ready
-                source: model.url
-                width: parent.width
-                fillMode: Image.PreserveAspectFit
-                sourceSize.width: model.size.width
-                sourceSize.height: model.size.height
-            }
+        AnimatedImage {
+            anchors.fill: parent
+            id: image
+            visible: status === Image.Ready
+            source: model.url
+            fillMode: Image.PreserveAspectFit
         }
     }
 }
