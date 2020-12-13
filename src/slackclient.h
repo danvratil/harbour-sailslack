@@ -123,6 +123,7 @@ public slots:
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
     void openChat(QString chatId);
+    void openUserChat(QStringList users);
     void closeChat(QString chatId);
     void postMessage(QString channelId, QString threadId, QString content);
     void postImage(QString channelId, QString imagePath, QString title, QString comment);

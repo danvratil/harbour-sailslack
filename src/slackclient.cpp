@@ -976,6 +976,29 @@ void SlackClient::openChat(QString chatId) {
     });
 }
 
+void SlackClient::openUserChat(QStringList users) {
+
+    QMap<QString,QString> params;
+    params.insert("users", users.join(","));
+    params.insert("return_im", "true");
+
+    QNetworkReply* reply = executeGet("conversations.open", params);
+    connect(reply, &QNetworkReply::finished, [reply,this]() {
+        QJsonObject data = Request::getResult(reply);
+
+        if (Request::isError(data)) {
+            qDebug() << config->getTeamName() << ": Chat open failed";
+        } else {
+            auto channel = parseChat(data.value("channel").toObject());
+            storage.saveChannel(channel);
+            emit channelJoined(channel);
+        }
+
+        reply->deleteLater();
+    });
+}
+
+
 void SlackClient::closeChat(QString chatId) {
     QMap<QString,QString> params;
     params.insert("channel", chatId);

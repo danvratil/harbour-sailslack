@@ -13,6 +13,15 @@ Page {
         PullDownMenu {
             MenuItem {
                 text: qsTr("Direct Messages")
+                onClicked: {
+                    function navigateTo(chat) {
+                        slackClient.onChannelJoined.disconnect(navigateTo);
+                        pageStack.replace(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": chat.id})
+                    }
+
+                    slackClient.onChannelJoined.connect(navigateTo);
+                    slackClient.openUserChat([userId]);
+                }
             }
         }
 
