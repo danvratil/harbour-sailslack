@@ -675,6 +675,65 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
     return data;
 }
 
+void SlackClient::loadUserForChat(QString userId, QJsonObject chat) {
+    QMap<QString, QString> params;
+    params["user"] = userId;
+
+    auto user = storage.user(userId);
+    if (user.value("name").toString().isEmpty()) {
+        user.insert("id", userId);
+        if (!user.value("channels").toList().isEmpty()) {
+            auto channels = user.value("channels").toList();
+            channels.append(chat);
+            user.insert("channels", channels);
+            storage.saveUser(user);
+            qDebug() << "requested user in progress: " << userId;
+            return;
+        } else {
+            auto channels = QVariantList();
+            QJsonDocument chatJson(chat);
+            channels.append(chatJson.toVariant());
+            user.insert("channels", channels);
+            storage.saveUser(user);
+            qDebug() << "requesting user info for: " << userId;
+        }
+    }
+
+    QNetworkReply *reply = executeGet("users.info", params);
+    connect(reply, &QNetworkReply::finished, [userId, reply, this]() {
+        QJsonObject data = Request::getResult(reply);
+        if (Request::isError(data)) {
+            qDebug() << config->getTeamName() << ": User fetch failed:" << data.toVariantMap();
+            return;
+        }
+
+        const auto dataUser = data["user"].toObject();
+        qDebug() << "storing async resolved user: " << dataUser.value("id").toString();
+        auto userId = dataUser.value("id").toString();
+        auto channels = storage.user(userId).value("channels").toList();
+        auto user = parseUser(dataUser);
+        if (user.value("name").toString().isEmpty()) {
+            qDebug() << "Oh no not again!:" << userId;
+        } else {
+            qDebug() << "Resolved to " << user.value("name").toString();
+        }
+        storage.saveUser(user);
+        for (int i = 0; i < channels.length(); i++) { // todo is_open
+            auto channelVariant = channels.at(i).toMap();
+            if (channelVariant.value("is_open").toBool()) {
+                channelVariant.insert("channel", channelVariant.value("id"));
+                QJsonDocument channelJson = QJsonDocument::fromVariant(channelVariant);
+                QJsonObject channelJsonObj = channelJson.object();
+                auto chat = parseChat(channelJsonObj);
+                storage.saveChannel(chat);
+                parseChatOpen(channelJsonObj);
+            }
+        }
+    });
+}
+
+
+
 QVariantMap SlackClient::parseChat(QJsonObject chat) {
   QVariantMap data;
 
@@ -706,9 +765,8 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
   return data;
 }
 
-void SlackClient::parseUsers(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("members").toArray()) {
-        QJsonObject user = value.toObject();
+QVariantMap SlackClient::parseUser(const QJsonObject& user)
+{
         QJsonObject profile = user.value("profile").toObject();
         QVariant presence;
         if (profile.value("always_active").toBool()) {
@@ -734,7 +792,12 @@ void SlackClient::parseUsers(QJsonObject data) {
             data.insert("name", name);
         }
         data.insert("presence", presence);
-        storage.saveUser(data);
+    return data;
+}
+
+void SlackClient::parseUsers(QJsonObject data) {
+    foreach (const QJsonValue &value, data.value("members").toArray()) {
+        storage.saveUser(parseUser(value.toObject()));
     }
 }
 
@@ -805,13 +868,14 @@ void SlackClient::loadConversations(QString cursor) {
             QString channelId = infoReply->property("channelId").toString();
             QVariantMap channel;
 
-            bool ignore = false;
+            bool async = false;
             if (infoData.value("is_im").toBool()) {
               channel = parseChat(infoData);
               // fixme: is_org_shared im conversations come with a not-yet known userId
               if (channel.value("name").toString().isEmpty()) {
-                  qDebug() << "Ignoring empty named: " << infoData.value("user").toString() << "\n";
-                  ignore = true;
+                  qDebug() << "Lazy loading user: " << infoData.value("user").toString() << "\n";
+                  loadUserForChat(infoData.value("user").toString(), infoData);
+                  async = true;
               }
             } else if (infoData.value("is_channel").toBool()) {
               channel = parseChannel(infoData);
@@ -822,7 +886,7 @@ void SlackClient::loadConversations(QString cursor) {
               channel = parseGroup(infoData);
             }
 
-            if (!ignore) {
+            if (!async) {
                 storage.saveChannel(channel);
             }
             infoReply->deleteLater();
