@@ -46,7 +46,7 @@ function handleChannelLeft(channel) {
 }
 
 function getChannelSection(channel) {
-    if (channel.is_starred > 0) {
+    if (channel.is_starred) {
         return "starred"
     }
     else {
@@ -55,19 +55,25 @@ function getChannelSection(channel) {
 }
 
 function compareChannels(a, b) {
-    var result = compareByBool(a, b, "is_starred", true);
-    if (result) return result;
+    var result = 0;
+    if (b.unreadCount !== a.unreadCount) {
+        result = (b.unreadCount ? 1 : 0) - (a.unreadCount ? 1 : 0);
+    }
+    if (result !== 0) return result;
+
+    result = compareByBool(a, b, "is_starred", true);
+    if (result !== 0) return result;
 
     result = compareByCategory(a, b);
-    if (result) return result;
+    if (result !== 0) return result;
 
     result = compareByBool(a, b, "is_private", false);
-    if (result) return result;
+    if (result !== 0) return result;
 
     return Channel.compareByName(a, b)
 }
 
-var categories = ["starred", "channel", "chat"];
+var categories = ["channel", "chat"];
 function compareByCategory(a, b) {
     if (a.category !== b.category) {
         var diff = categories.indexOf(a.category) - categories.indexOf(b.category);
