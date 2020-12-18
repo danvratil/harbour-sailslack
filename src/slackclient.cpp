@@ -815,6 +815,7 @@ void SlackClient::loadConversations(QString cursor) {
   params.insert("types", "public_channel,private_channel,mpim,im");
   params.insert("limit", "1000"); // the API limit
   params.insert("team_id", config->getTeamId());
+  params.insert("exclude_archived", "true");
 
   if (!cursor.isEmpty()) {
       params.insert("cursor", cursor);
