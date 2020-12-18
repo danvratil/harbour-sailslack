@@ -2,6 +2,8 @@
 
 #include <QQmlEngine>
 
+#include <functional>
+
 Q_DECLARE_METATYPE(SlackClient*)
 
 TeamsModel::TeamsModel(QObject *parent)
