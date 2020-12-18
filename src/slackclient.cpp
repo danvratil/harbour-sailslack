@@ -200,6 +200,9 @@ void SlackClient::handleStreamMessage(QJsonObject message) {
     else if (type == "desktop_notification") {
         parseNotification(message);
     }
+    else if (type == "reaction_added" || type =="reaction_removed") {
+        parseReactionAddedRemoved(message);
+    }
 }
 
 void SlackClient::parseChatOpen(QJsonObject message) {
@@ -346,6 +349,60 @@ void SlackClient::parseNotification(QJsonObject message) {
   if (!appActive || activeWindow != channelId) {
       sendNotification(channelId, title, content);
   }
+}
+
+void SlackClient::parseReactionAddedRemoved(const QJsonObject &message) {
+    const bool remove = message.value(QStringLiteral("type")).toString() == QLatin1String("reaction_removed");
+    const auto reaction = message.value(QStringLiteral("reaction")).toString();
+    const auto item = message.value(QStringLiteral("item")).toObject();
+    const auto channelId = item.value(QStringLiteral("channel")).toString();
+    const auto ts = item.value(QStringLiteral("ts")).toString();
+
+    auto msg = storage.channelMessage(channelId, ts);
+    if (msg.isEmpty()) {
+        return;
+    }
+
+    auto reactions = msg.value(QStringLiteral("reactions")).toList();
+    auto it = std::find_if(reactions.begin(), reactions.end(), [reaction](const auto &val) {
+        const auto map = val.toMap();
+        return reaction == map[QStringLiteral("name")].toString();
+    });
+
+    if (remove) {
+        if (it == reactions.end()) {
+            return;
+        }
+        auto map = it->toMap();
+        const int count = map[QStringLiteral("count")].toInt();
+        if (count > 1) {
+            map[QStringLiteral("count")] = count - 1;
+            auto users = map[QStringLiteral("users")].toList();
+            users.removeOne(message[QStringLiteral("user")].toString());
+            map[QStringLiteral("users")] = users;
+            *it = map;
+        } else {
+            reactions.erase(it);
+        }
+    } else {
+        if (it == reactions.end()) {
+            QVariantMap map;
+            map[QStringLiteral("name")] = reaction;
+            map[QStringLiteral("count")] = 1;
+            map[QStringLiteral("users")] = QVariantList({message[QStringLiteral("user")].toString()});
+            reactions.push_back(map);
+        } else {
+            auto map = it->toMap();
+            map[QStringLiteral("count")] = map[QStringLiteral("count")].toInt() + 1;
+            auto users = map[QStringLiteral("users")].toList();
+            users.push_back(message[QStringLiteral("user")].toString());
+            map[QStringLiteral("users")] = users;
+            *it = map;
+        }
+    }
+    msg[QStringLiteral("reactions")] = reactions;
+    storage.updateChannelMessage(channelId, msg);
+    emit messageReceived(msg, true);
 }
 
 QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> params) {
@@ -597,7 +654,7 @@ void SlackClient::updateChannelUnreadCount(QString channelId, QString lastRead) 
           return;
       }
 
-      QVariantList messages = parseMessages(data);
+      QVariantList messages = parseMessages(data, channelId);
       if (!messages.isEmpty()) {
           QVariantMap msg = messages.at(0).toMap();
           if (msg.contains("timestamp")) {
@@ -1023,7 +1080,7 @@ void SlackClient::loadHistory(QString channelId, QString latest) {
           return;
       }
 
-      QVariantList messages = parseMessages(data);
+      QVariantList messages = parseMessages(data, channelId);
       bool hasMore = data.value("has_more").toBool();
       storage.prependChannelMessages(channelId, messages);
 
@@ -1077,9 +1134,10 @@ void SlackClient::handleLoadMessagesReply() {
         return;
     }
 
-    QVariantList messages = parseMessages(data);
-    bool hasMore = data.value("has_more").toBool();
-    QString channelId = reply->property("channelId").toString();
+    const auto channelId = reply->property("channelId").toString();
+    const bool hasMore = data.value("has_more").toBool();
+
+    const QVariantList messages = parseMessages(data, channelId);
 
     QString threadId = reply->property("thread_ts").toString();
 
@@ -1115,13 +1173,20 @@ bool SlackClient::createThread(QString channelId, QString threadId) {
     return false;
 }
 
-QVariantList SlackClient::parseMessages(const QJsonObject data) {
+QVariantList SlackClient::parseMessages(const QJsonObject data, const QString &channelId) {
     QJsonArray messageList = data.value("messages").toArray();
     QVariantList messages;
+    messages.reserve(messageList.size());
 
     foreach (const QJsonValue &value, messageList) {
         QJsonObject message = value.toObject();
-        messages << getMessageData(message);
+        auto msg = getMessageData(message);
+        if (!channelId.isEmpty()) {
+            msg[QStringLiteral("channel")] = channelId;
+        }
+        Q_ASSERT(msg.contains(QStringLiteral("channel")));
+        Q_ASSERT(!msg.value(QStringLiteral("channel")).toString().isEmpty());
+        messages.push_back(msg);
     }
     std::sort(messages.begin(), messages.end(), [](const QVariant &a, const QVariant &b) -> bool {
         return a.toMap().value("time").toDateTime() < b.toMap().value("time").toDateTime();
@@ -1252,6 +1317,9 @@ QVariantMap SlackClient::getMessageData(const QJsonObject message) {
     data.insert("attachments", getAttachments(message));
     data.insert("images", getImages(message));
     data.insert("content", QVariant(getContent(message)));
+    if (message.contains(QStringLiteral("reactions"))) {
+        data.insert(QStringLiteral("reactions"), getReactions(message));
+    }
 
     return data;
 }
@@ -1312,6 +1380,20 @@ QString SlackClient::getContent(QJsonObject message) {
     messageFormatter.replaceEmoji(content);
 
     return content;
+}
+
+QVariantList SlackClient::getReactions(const QJsonObject &message) const {
+    QVariantList reactions;
+
+    const auto arr = message.value(QStringLiteral("reactions")).toArray();
+    reactions.reserve(arr.size());
+
+    for (const auto &v : arr) {
+        const QJsonObject &reaction = v.toObject();
+        reactions.push_back(reaction.toVariantMap());
+    }
+
+    return reactions;
 }
 
 QVariantList SlackClient::getImages(QJsonObject message) {

@@ -31,8 +31,42 @@ QVariantList Storage::channels() {
     return channelMap.values();
 }
 
-QVariantList Storage::channelMessages(const QString &channelId) {
+QVariantList Storage::channelMessages(const QString &channelId) const {
     return channelMessageMap.value(channelId).toList();
+}
+
+QVariantMap Storage::channelMessage(const QString &channelId, const QString &messageId) const {
+    const auto messages = channelMessages(channelId);
+    const auto msg = std::find_if(messages.cbegin(), messages.cend(), [messageId](const QVariant &msg) {
+        const auto map = msg.toMap();
+        return map.value(QStringLiteral("timestamp")).toString() == messageId;
+    });
+    if (msg == messages.cend()) {
+        return {};
+    }
+
+    return msg->toMap();
+}
+
+void Storage::updateChannelMessage(const QString &channelId, const QVariantMap &message) {
+    auto channelIt = channelMessageMap.find(channelId);
+    Q_ASSERT(channelIt != channelMessageMap.end());
+    if (channelIt == channelMessageMap.end()) {
+        return;
+    }
+
+    auto msgList = channelIt->toList();
+    auto msgIt = std::find_if(msgList.begin(), msgList.end(), [message](const QVariant &msg) {
+        const auto msgMap = msg.toMap();
+        return message[QStringLiteral("timestamp")] == msgMap[QStringLiteral("timestamp")];
+    });
+    Q_ASSERT(msgIt != msgList.end());
+    if (msgIt == msgList.end()) {
+        return;
+    }
+
+    *msgIt = message;
+    *channelIt = msgList;
 }
 
 bool Storage::channelMessagesExist(const QString &channelId) {

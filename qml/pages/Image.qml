@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.0 as QtQuick
 import Sailfish.Silica 1.0
 
 Page {
@@ -13,18 +13,18 @@ Page {
         maximumValue: 1
         valueText: parseInt(value * 100) + "%"
         value: image.progress
-        visible: image.status === Image.Loading
+        visible: image.status === QtQuick.Image.Loading
     }
 
     SilicaFlickable {
         anchors.fill: parent
 
-        AnimatedImage {
+        QtQuick.AnimatedImage {
             anchors.fill: parent
             id: image
-            visible: status === Image.Ready
+            visible: status === QtQuick.Image.Ready
             source: model.url
-            fillMode: Image.PreserveAspectFit
+            fillMode: QtQuick.Image.PreserveAspectFit
         }
     }
 }

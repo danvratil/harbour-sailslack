@@ -12,6 +12,7 @@
 #include "storage.h"
 #include "filemodel.h"
 #include "teamsmodel.h"
+#include "emojiprovider.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,6 +33,9 @@ int main(int argc, char *argv[])
 
     qmlRegisterSingletonType<SlackConfig>("harbour.sailslack", 1, 0, "Config", [](QQmlEngine *, QJSEngine *) -> QObject* {
         return new SlackConfig();
+    });
+    qmlRegisterSingletonType<EmojiProvider>("harbour.sailslack", 1, 0, "EmojiProvider", [](QQmlEngine *, QJSEngine *) -> QObject* {
+        return EmojiProvider::self();
     });
 
     qmlRegisterType<AuthServer>("harbour.sailslack", 1, 0, "AuthServer");

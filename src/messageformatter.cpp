@@ -8,25 +8,7 @@
 #include <QJsonObject>
 
 #include "storage.h"
-
-static QMap<QString, QString> emojiValues() {
-    Q_INIT_RESOURCE(data);
-
-    QFile file;
-    file.setFileName((":/data/data/emoji.json"));
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    QString contents = file.readAll();
-    file.close();
-    QJsonDocument d = QJsonDocument::fromJson(contents.toUtf8());
-
-    QMap<QString,QString> map;
-    foreach (const QJsonValue &value, d.array()) {
-        map.insert(value.toObject().value("name").toString(), value.toObject().value("image").toString());
-    }
-    return map;
-}
-
-QMap<QString,QString> MessageFormatter::emojis = emojiValues();
+#include "emojiprovider.h"
 
 MessageFormatter::MessageFormatter(Storage &storage)
     : storage(storage)
@@ -97,12 +79,11 @@ void MessageFormatter::replaceEmoji(QString &message) {
         QRegularExpressionMatch match = i.next();
         QString name = match.captured(1);
 
-        if (MessageFormatter::emojis.contains(name)) {
-            QString image = MessageFormatter::emojis.value(name);
+        const auto image = EmojiProvider::self()->urlForEmoji(name);
+        if (!image.isEmpty()) {
             QString emoji = "<img src=\"https://a.slack-edge.com/production-standard-emoji-assets/10.2/google-large/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"64\" height=\"64\" />";
             message.replace(":" + name + ":", emoji);
-        }
-        else {
+        } else {
           qDebug() << "Missing emoji" << name;
         }
     }

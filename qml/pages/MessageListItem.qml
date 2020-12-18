@@ -114,6 +114,18 @@ ListItem {
                 onLinkClicked: handleLink(link)
             }
         }
+
+        Spacer {
+            height: Theme.paddingMedium
+            visible: contentLabel.visible && (imageRepeater.count > 0 || attachmentRepeater.count > 0) && (reactionsView.visible)
+        }
+
+        ReactionsView {
+            id: reactionsView
+            width: parent.width
+            model: typeof reactions === 'undefined' ? null : reactions
+            visible: typeof reactions !== 'undefined'
+        }
     }
 
     function handleLink(link) {

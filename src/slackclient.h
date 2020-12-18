@@ -164,11 +164,13 @@ private:
     void parseChatClose(QJsonObject message);
     void parsePresenceChange(QJsonObject message);
     void parseNotification(QJsonObject message);
+    void parseReactionAddedRemoved(const QJsonObject &message);
 
-    QVariantList parseMessages(const QJsonObject data);
+    QVariantList parseMessages(const QJsonObject data, const QString &channelId = {});
     QVariantMap getMessageData(const QJsonObject message);
 
     QString getContent(QJsonObject message);
+    QVariantList getReactions(const QJsonObject &message) const;
     QVariantList getAttachments(QJsonObject message);
     QVariantList getImages(QJsonObject message);
     void getImageData(const QJsonObject &file, QVariantList &list);

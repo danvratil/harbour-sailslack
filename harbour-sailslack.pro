@@ -47,6 +47,7 @@ TRANSLATIONS += translations/harbour-sailslack.ts \
 
 SOURCES += src/harbour-sailslack.cpp \
     src/authserver.cpp \
+    src/emojiprovider.cpp \
     src/slackclient.cpp \
     src/QtWebsocket/QWsSocket.cpp \
     src/QtWebsocket/QWsFrame.cpp \
@@ -75,6 +76,7 @@ OTHER_FILES += qml/harbour-sailslack.qml \
 
 HEADERS += \
     src/authserver.h \
+    src/emojiprovider.h \
     src/slackclient.h \
     src/QtWebsocket/QWsSocket.h \
     src/QtWebsocket/QWsFrame.h \
@@ -107,6 +109,7 @@ DISTFILES += \
     qml/pages/ChannelListView.qml \
     qml/pages/MessageListView.qml \
     qml/pages/About.qml \
+    qml/pages/ReactionsView.qml \
     qml/pages/RichTextLabel.qml \
     qml/pages/AttachmentFieldGrid.qml \
     qml/pages/Attachment.qml \

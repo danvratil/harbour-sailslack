@@ -15,8 +15,9 @@ public:
     QVariantList channels();
     void saveChannel(QVariantMap channel);
 
-    QVariantList channelMessages(const QString &channelId);
+    QVariantList channelMessages(const QString &channelId) const;
     bool channelMessagesExist(const QString &channelId);
+    QVariantMap channelMessage(const QString &channelId, const QString &messageId) const;
     void setChannelMessages(const QString &channelId, QVariantList messages);
     QVariantList::const_iterator findSortedMessages(const QVariantList& messages, const QString& timestamp);
 
@@ -27,6 +28,7 @@ public:
 
     void prependChannelMessages(const QString &channelId, QVariantList messages);
     void appendChannelMessage(const QString &channelId, QVariantMap message);
+    void updateChannelMessage(const QString &channelId, const QVariantMap &message);
     void clearChannelMessages();
 
     void appendThreadMessage(const QString &threadId, QVariantMap message);
