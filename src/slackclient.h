@@ -172,7 +172,7 @@ private:
     void findNewUsers(const QString &message);
 
     void sendNotification(QString channelId, QString title, QString content);
-    void clearNotifications();
+    void clearNotifications(QString channelId);
 
     void updateUnreadCount();
 

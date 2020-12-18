@@ -64,18 +64,18 @@ QString SlackClient::toString(const QJsonObject &data) {
 
 void SlackClient::setAppActive(bool active) {
     appActive = active;
-    clearNotifications();
+    clearNotifications(activeWindow);
 }
 
 void SlackClient::setActiveWindow(QString windowId) {
     activeWindow = windowId;
-    clearNotifications();
+    clearNotifications(activeWindow);
 }
 
-void SlackClient::clearNotifications() {
+void SlackClient::clearNotifications(QString channelId) {
   foreach (QObject* object, Notification::notifications()) {
       Notification* n = qobject_cast<Notification*>(object);
-      if (n->hintValue("x-sailslack-channel").toString() == activeWindow) {
+      if (n->hintValue("x-sailslack-channel").toString() == channelId) {
           n->close();
       }
 
@@ -242,6 +242,8 @@ void SlackClient::parseChannelUpdate(QJsonObject message) {
     storage.saveChannel(channel);
     emit channelUpdated(channel);
 
+    clearNotifications(id);
+
     updateUnreadCount();
 }
 
@@ -307,6 +309,7 @@ void SlackClient::parsePresenceChange(QJsonObject message) {
 }
 
 void SlackClient::parseNotification(QJsonObject message) {
+  QString teamName = config->getTeamName();
   QString channel = message.value("subtitle").toString();
   QString content = message.value("content").toString();
 
@@ -314,10 +317,10 @@ void SlackClient::parseNotification(QJsonObject message) {
   QString title;
 
   if (channelId.startsWith("C") || channelId.startsWith("G")) {
-      title = QString(tr("New message in %1")).arg(channel);
+      title = QString(tr("in %1 @ %2")).arg(channel).arg(teamName);
   }
   else if (channelId.startsWith("D")) {
-      title = QString(tr("New message from %1")).arg(channel);
+      title = QString(tr("from %1 @ %2")).arg(channel).arg(teamName);
   }
   else {
       title = QString(tr("New message"));
@@ -1260,7 +1263,14 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     arguments.append(team);
     arguments.append(channelId);
 
+    QVariantMap channel = storage.channel(channelId);
+    int channelUnreadCount = channel.value("unreadCount").toInt();
+    title = QString::number(channelUnreadCount) + ' ' + title;
+
+    clearNotifications(channelId);
+
     Notification notification;
+
     notification.setAppName("Sailslack");
     notification.setAppIcon("harbour-sailslack");
     notification.setBody(body);
@@ -1269,9 +1279,13 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setCategory("chat");
     notification.setHintValue("x-sailslack-team", team);
     notification.setHintValue("x-sailslack-channel", channelId);
-    notification.setHintValue("x-nemo-feedback", "chat_exists");
     notification.setHintValue("x-nemo-priority", 100);
     notification.setHintValue("x-nemo-display-on", true);
+    notification.setHintValue("x-nemo-item-count", channelUnreadCount);
+    notification.setHintValue("x-nemo-feedback", "chat,chat_exists");
+    if (channelUnreadCount > 1) {
+        notification.setHintValue("suppress-sound", true);
+    }
     notification.setRemoteAction(Notification::remoteAction("default", "", "harbour.sailslack", "/", "harbour.sailslack", "activate", arguments));
     notification.publish();
 }
