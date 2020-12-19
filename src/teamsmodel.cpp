@@ -1,6 +1,7 @@
 #include "teamsmodel.h"
 
 #include <QQmlEngine>
+#include <functional>
 
 #include <functional>
 

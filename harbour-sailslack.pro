@@ -112,6 +112,7 @@ DISTFILES += \
     data/emoji.json \
     qml/pages/TeamList.qml \
     qml/pages/TeamList.js \
+    qml/pages/Thread.qml \
     qml/pages/UserView.qml
 
 RESOURCES += \

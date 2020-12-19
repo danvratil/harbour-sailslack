@@ -5,6 +5,7 @@ import harbour.sailslack 1.0
 SilicaListView {
     property alias atBottom: listView.atYEnd
     property variant channel
+    property variant thread
 
     property Client slackClient
 
@@ -78,14 +79,25 @@ SilicaListView {
     }
 
     header: PageHeader {
-        title: channel.name
+        title: thread ? qsTr("Thread in #%1").arg(channel.name) : channel.name
     }
 
     model: ListModel {
         id: messageListModel
     }
 
-    delegate: MessageListItem {}
+    delegate: MessageListItem {
+        onClicked: {
+            if (reply_count > 0 && !thread) {
+                showThread(thread_ts)
+            }
+        }
+        onOpenThread: {
+            if (slackClient.createThread(channel.id, threadId, messageListModel.get(index))) {
+                showThread(threadId)
+            }
+        }
+    }
 
     section {
         property: "timegroup"
@@ -97,9 +109,10 @@ SilicaListView {
 
     footer: MessageInput {
         visible: inputEnabled
-        placeholder: qsTr("Message %1%2").arg("#").arg(channel.name)
+        placeholder: (thread ? qsTr("Message thread in %1%2") : qsTr("Message %1%2")).arg("#").arg(channel.name)
         onSendMessage: {
-            slackClient.postMessage(channel.id, content)
+            var threadId = thread && thread.thread_ts;
+            slackClient.postMessage(channel.id, threadId || "", content)
         }
     }
 
@@ -141,6 +154,10 @@ SilicaListView {
         slackClient.onMessageReceived.disconnect(handleMessageReceived)
     }
 
+    function showThread(threadId) {
+        pageStack.push(Qt.resolvedUrl("Thread.qml"), {"slackClient": slackClient, "channelId": channel.id, "threadId": threadId});
+    }
+
     function markLatest() {
         if (latestRead != "") {
             slackClient.markChannel(channel.id, latestRead)
@@ -155,8 +172,24 @@ SilicaListView {
     }
 
     function loadMessages() {
-        loading = true
-        slackClient.loadMessages(channel.id)
+        if (thread && thread.thread_ts) {
+            if (!thread.transient) {
+                loading = true
+                slackClient.loadThreadMessages(thread.thread_ts, channel.id);
+            } else {
+                loading = false;
+                var messages =[thread];
+                loader.sendMessage({
+                    op: 'replace',
+                    model: messageListModel,
+                    messages: messages
+                })
+
+            }
+        } else {
+            loading = true
+            slackClient.loadMessages(channel.id)
+        }
     }
 
     function loadHistory() {
@@ -166,8 +199,10 @@ SilicaListView {
         }
     }
 
-    function handleLoadSuccess(channelId, messages, hasMore) {
-        if (channelId === channel.id) {
+    function handleLoadSuccess(channelId, threadId, messages, hasMore) {
+        var isForThisThread = threadId && thread && threadId === thread.thread_ts;
+        var isForThisChannel = !threadId && !thread && channelId === channel.id;
+        if (isForThisChannel || isForThisThread) {
             hasMoreMessages = hasMore
             loader.sendMessage({
                 op: 'replace',
@@ -188,11 +223,28 @@ SilicaListView {
         }
     }
 
-    function handleMessageReceived(message) {
+    function handleMessageReceived(message, update) {
         if (message.type === "message" && message.channel === channel.id) {
-            var isAtBottom = atBottom
-            messageListModel.append(message)
+            if ((message.thread_ts) && (message.thread_ts !== message.timestamp)) {
+                // A message received a reply. Is it for this thread?
+                if (message.thread_ts !== thread.thread_ts) {
+                    return;
+                }
+            }
 
+            if (update) {
+                // TODO: better than linear search for message to be updated
+                for (var i = 0; i < messageListModel.count; i++) {
+                    if (messageListModel.get(i).timestamp === message.timestamp) {
+                        messageListModel.set(i, message);
+                        break;
+                    }
+                }
+            } else {
+                messageListModel.append(message)
+            }
+
+            var isAtBottom = atBottom
             if (isAtBottom) {
                 listView.positionViewAtEnd()
 

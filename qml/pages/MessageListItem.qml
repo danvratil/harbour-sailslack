@@ -4,8 +4,16 @@ import Sailfish.Silica 1.0
 ListItem {
     id: item
     contentHeight: column.height + Theme.paddingMedium
+    signal openThread(string threadId)
 
     menu: ContextMenu {
+        MenuItem {
+            visible: !page.threadId
+            text: qsTr("Reply in thread")
+            onClicked: {
+                openThread(timestamp)
+            }
+        }
         MenuItem {
             text: qsTr("User Details")
             onClicked: showUserDetails(user.id)
@@ -48,6 +56,20 @@ ListItem {
             visible: text.length > 0
             value: content
             onLinkActivated: handleLink(link)
+        }
+
+        Item {
+            width: parent.width
+            height: childrenRect.height
+            visible: reply_count > 0
+
+            Label {
+                text: qsTr("Replies: %1").arg(reply_count)
+                anchors.left: parent.left
+                font.italic: true
+                font.pixelSize: Theme.fontSizeTiny
+                color: infoColor
+            }
         }
 
         Spacer {
@@ -111,4 +133,5 @@ ListItem {
     function showUserDetails(userId) {
         pageStack.push(Qt.resolvedUrl("UserView.qml"), {"slackClient": slackClient, "userId": userId})
     }
+
 }
