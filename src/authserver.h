@@ -18,12 +18,14 @@ public:
 public Q_SLOTS:
     bool listen(quint16 port);
     void close();
+    bool isListening();
 
 private Q_SLOTS:
     void clientConnected();
 
 signals:
     void resultUrlAvailable(const QString& url);
+    bool listening(bool isListening);
 
 };
 

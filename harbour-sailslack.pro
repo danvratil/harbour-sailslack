@@ -90,6 +90,7 @@ HEADERS += \
     src/teamsmodel.h
 
 DISTFILES += \
+    qml/pages/LoginLink.qml \
     qml/pages/LoginPage.qml \
     qml/pages/Loader.qml \
     qml/pages/ChannelList.qml \

@@ -6,7 +6,7 @@ function init() {
 }
 
 function handleTeamAdded(team) {
-    var page = pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+    var page = pageStack.push(Qt.resolvedUrl("LoginLink.qml"));
     page.onLoginSuccess.connect(function(userId, teamId, teamName, accessToken) {
         var client = teamsModel.addTeam(userId, teamId, teamName, accessToken)
         pageStack.replace(Qt.resolvedUrl("Loader.qml"), {"slackClient": client})

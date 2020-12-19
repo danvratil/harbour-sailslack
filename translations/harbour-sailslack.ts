@@ -68,12 +68,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="109"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="111"/>
         <source>Channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="112"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="114"/>
         <source>Direct messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -215,6 +215,45 @@ Are you sure you wish to leave?</source>
     <message>
         <location filename="../qml/pages/Loader.qml" line="115"/>
         <source>No network connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoginLink</name>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="41"/>
+        <source>Listening on port %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="41"/>
+        <source>Not listening on port %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="69"/>
+        <source>Sign in with Slack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="78"/>
+        <source>Click below to login with your browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="82"/>
+        <source>Use browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="89"/>
+        <source>Or use the sailfish WebView
+(Warning: works only from terminal!)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginLink.qml" line="93"/>
+        <source>Use webview</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

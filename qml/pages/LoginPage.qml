@@ -67,7 +67,7 @@ WebViewPage {
                     request.action = WebView.IgnoreRequest
 
                     if (isSuccessUrl(request.url)) {
-                        Slack.Client.fetchAccessToken(request.url)
+                        authenticator.fetchAccessToken(request.url)
                     }
                     else {
                         pageStack.pop(undefined, PageStackAction.Animated)

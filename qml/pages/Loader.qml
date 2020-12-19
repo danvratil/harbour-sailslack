@@ -85,7 +85,7 @@ Page {
     }
 
     function startLogin() {
-        var loginPage = pageStack.push(Qt.resolvedUrl("LoginPage.qml"))
+        var loginPage = pageStack.push(Qt.resolvedUrl("LoginLink.qml"))
         loginPage.onLoginSuccess.connect(handleLoginSuccess)
     }
 
