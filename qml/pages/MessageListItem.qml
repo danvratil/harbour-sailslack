@@ -8,15 +8,15 @@ ListItem {
 
     menu: ContextMenu {
         MenuItem {
-            text: qsTr("User Details")
-            onClicked: showUserDetails(user.id)
-        }
-        MenuItem {
             visible: !page.threadId
             text: qsTr("Reply in thread")
             onClicked: {
                 openThread(timestamp)
             }
+        }
+        MenuItem {
+            text: qsTr("User Details")
+            onClicked: showUserDetails(user.id)
         }
     }
 
@@ -64,17 +64,9 @@ ListItem {
             visible: reply_count > 0
 
             Label {
-                id: replies
-                text: qsTr("Replies")
+                text: qsTr("Replies: %1").arg(reply_count)
                 anchors.left: parent.left
                 font.italic: true
-                font.pixelSize: Theme.fontSizeTiny
-                color: infoColor
-            }
-
-            Label {
-                text: " : " + String(reply_count)
-                anchors.left: replies.right
                 font.pixelSize: Theme.fontSizeTiny
                 color: infoColor
             }

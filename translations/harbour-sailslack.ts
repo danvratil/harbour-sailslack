@@ -221,18 +221,18 @@ Are you sure you wish to leave?</source>
 <context>
     <name>MessageListItem</name>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="11"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="18"/>
         <source>User Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="16"/>
-        <source>Reply in thread</source>
+        <location filename="../qml/pages/MessageListItem.qml" line="67"/>
+        <source>Replies: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="68"/>
-        <source>Replies</source>
+        <location filename="../qml/pages/MessageListItem.qml" line="12"/>
+        <source>Reply in thread</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -244,25 +244,35 @@ Are you sure you wish to leave?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="107"/>
+        <location filename="../qml/pages/MessageListView.qml" line="82"/>
+        <source>Thread in #%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
         <source>Message %1%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
+        <source>Message thread in %1%2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="320"/>
+        <location filename="../src/slackclient.cpp" line="338"/>
         <source>in %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="323"/>
+        <location filename="../src/slackclient.cpp" line="341"/>
         <source>from %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="326"/>
+        <location filename="../src/slackclient.cpp" line="344"/>
         <source>New message</source>
         <translation type="unfinished"></translation>
     </message>

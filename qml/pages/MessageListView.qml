@@ -79,7 +79,7 @@ SilicaListView {
     }
 
     header: PageHeader {
-        title: thread ? qsTr("Thread in %1%2").arg("#").arg(channel.name) : channel.name
+        title: thread ? qsTr("Thread in #%1").arg(channel.name) : channel.name
     }
 
     model: ListModel {
@@ -233,6 +233,7 @@ SilicaListView {
             }
 
             if (update) {
+                // TODO: better than linear search for message to be updated
                 for (var i = 0; i < messageListModel.count; i++) {
                     if (messageListModel.get(i).timestamp === message.timestamp) {
                         messageListModel.set(i, message);
