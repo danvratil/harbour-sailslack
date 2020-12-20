@@ -962,7 +962,13 @@ void SlackClient::loadCustomEmojis() {
         QHash<QString, QString> emojiMap;
         emojiMap.reserve(emojis.size());
         for (auto it = emojis.begin(), end = emojis.end(); it != end; ++it) {
-            emojiMap.insert(it.key(), it.value().toString());
+            const auto value = it.value().toString();
+            if (value.startsWith(QLatin1String("alias:"))) {
+                const auto name = value.mid(value.indexOf(QLatin1Char(':')) + 1);
+                emojiMap.insert(it.key(), emojiMap.value(name));
+            } else {
+                emojiMap.insert(it.key(), it.value().toString());
+            }
         }
         emojiProvider.setCustomEmojis(emojiMap);
 
