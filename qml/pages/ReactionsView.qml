@@ -4,9 +4,11 @@ import Sailfish.Silica 1.0
 import harbour.sailslack 1.0
 
 QtQuick.Grid {
+    property Client slackClient
+
     property alias model: repeater.model
 
-    spacing: Theme.paddingSmall
+    spacing: Theme.paddingMedium
 
     QtQuick.Repeater {
         id: repeater
@@ -15,16 +17,20 @@ QtQuick.Grid {
             spacing: Theme.paddingSmall
 
             QtQuick.Image {
-                Layout.alignment: Qt.AlignLeft | Qt.AlignHCenter
-                Layout.preferredWidth: sourceSize.width
-                Layout.preferredHeight: sourceSize.height
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.preferredHeight: Theme.fontSizeSmall
+                Layout.preferredWidth: Theme.fontSizeSmall
 
-                width: sourceSize.width
-                height: sourceSize.height
-                source: EmojiProvider.urlForEmoji(name)
+                height: Theme.fontSizeSmall
+                width: Theme.fontSizeSmall
+                source: slackClient.emojiProvider.urlForEmoji(name)
+
+                fillMode: QtQuick.Image.PreserveAspectFit
             }
 
             Label {
+                Layout.alignment: Qt.AlignVCenter
+
                 text: count
                 font.pixelSize: Theme.fontSizeExtraSmall
             }

@@ -15,12 +15,15 @@
 #include "slackstream.h"
 #include "storage.h"
 #include "messageformatter.h"
+#include "emojiprovider.h"
+
 
 class SlackClient : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(SlackClientConfig* config READ getConfig CONSTANT)
+    Q_PROPERTY(EmojiProvider* emojiProvider READ getEmojiProvider CONSTANT)
     Q_PROPERTY(QString team READ getTeam CONSTANT)
     Q_PROPERTY(bool initialized READ getInitialized NOTIFY initializedChanged)
     Q_PROPERTY(ConnectionStatus connectionStatus READ getConnectionStatus NOTIFY connectionStatusChanged)
@@ -49,6 +52,7 @@ public:
     Q_INVOKABLE QVariant getThread(const QString& threadId);
 
     SlackClientConfig *getConfig() const { return this->config; }
+    EmojiProvider *getEmojiProvider() { return &this->emojiProvider; }
     bool getInitialized() const { return initialized; }
 
     void setTeam(const QString &team);
@@ -154,6 +158,7 @@ private:
     static QString toString(const QJsonObject &data);
 
     void loadConversations(QString cursor = QString());
+    void loadCustomEmojis();
 
     void parseMessageUpdate(QJsonObject message, bool update = false);
     void parseChannelUpdate(QJsonObject message);
@@ -202,6 +207,7 @@ private:
     QPointer<QTimer> reconnectTimer;
     Storage storage;
     MessageFormatter messageFormatter;
+    EmojiProvider emojiProvider;
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible = QNetworkAccessManager::UnknownAccessibility;
 

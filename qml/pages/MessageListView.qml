@@ -87,6 +87,7 @@ SilicaListView {
     }
 
     delegate: MessageListItem {
+        slackClient: listView.slackClient
         onClicked: {
             if (reply_count > 0 && !thread) {
                 showThread(thread_ts)

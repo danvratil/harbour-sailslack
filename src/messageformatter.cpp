@@ -8,10 +8,10 @@
 #include <QJsonObject>
 
 #include "storage.h"
-#include "emojiprovider.h"
+#include "slackclient.h"
 
-MessageFormatter::MessageFormatter(Storage &storage)
-    : storage(storage)
+MessageFormatter::MessageFormatter(SlackClient &slackClient, Storage &storage)
+    : storage(storage), client(slackClient)
 {}
 
 void MessageFormatter::replaceUserInfo(QString &message) {
@@ -79,9 +79,9 @@ void MessageFormatter::replaceEmoji(QString &message) {
         QRegularExpressionMatch match = i.next();
         QString name = match.captured(1);
 
-        const auto image = EmojiProvider::self()->urlForEmoji(name);
+        const auto image = client.getEmojiProvider()->urlForEmoji(name);
         if (!image.isEmpty()) {
-            QString emoji = "<img src=\"https://a.slack-edge.com/production-standard-emoji-assets/10.2/google-large/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"64\" height=\"64\" />";
+            const QString emoji = QStringLiteral("<img src=\"%1\" alt=\"%2\" align=\"bottom\" width=\"64\" height=\"64\" />").arg(image, name);
             message.replace(":" + name + ":", emoji);
         } else {
           qDebug() << "Missing emoji" << name;

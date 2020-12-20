@@ -1,10 +1,13 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
+import harbour.sailslack 1.0
 
 ListItem {
     id: item
     contentHeight: column.height + Theme.paddingMedium
     signal openThread(string threadId)
+
+    property Client slackClient
 
     menu: ContextMenu {
         MenuItem {
@@ -122,6 +125,7 @@ ListItem {
 
         ReactionsView {
             id: reactionsView
+            slackClient: item.slackClient
             width: parent.width
             model: typeof reactions === 'undefined' ? null : reactions
             visible: typeof reactions !== 'undefined'

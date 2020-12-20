@@ -22,7 +22,7 @@
 
 SlackClient::SlackClient(QObject *parent)
     : QObject(parent)
-    , messageFormatter(storage)
+    , messageFormatter(*this, storage)
 {}
 
 SlackClient::SlackClient(const QString &team, QObject *parent)
@@ -34,7 +34,7 @@ SlackClient::SlackClient(const QString &team, QObject *parent)
     , config(new SlackClientConfig(team, this))
     , stream(new SlackStream(this))
     , reconnectTimer(new QTimer(this))
-    , messageFormatter(storage)
+    , messageFormatter(*this, storage)
     , initialized(false)
 {
     qDebug() << "Creating SlackClient for" << config->getTeamName();
@@ -943,8 +943,7 @@ void SlackClient::loadConversations(QString cursor) {
 
       AsyncFuture::observe(combinator.future()).subscribe([nextCursor,this]() {
           if (nextCursor.isEmpty()) {
-              updateUnreadCount();
-              start();
+              loadCustomEmojis();
           }
           else {
               loadConversations(nextCursor);
@@ -954,6 +953,24 @@ void SlackClient::loadConversations(QString cursor) {
 
     reply->deleteLater();
   });
+}
+
+void SlackClient::loadCustomEmojis() {
+    QNetworkReply *reply = executeGet(QStringLiteral("emoji.list"));
+    connect(reply, &QNetworkReply::finished, [reply, this]() {
+        const auto emojis = Request::getResult(reply).value(QStringLiteral("emoji")).toObject();
+        QHash<QString, QString> emojiMap;
+        emojiMap.reserve(emojis.size());
+        for (auto it = emojis.begin(), end = emojis.end(); it != end; ++it) {
+            emojiMap.insert(it.key(), it.value().toString());
+        }
+        emojiProvider.setCustomEmojis(emojiMap);
+
+        reply->deleteLater();
+
+        updateUnreadCount();
+        start();
+    });
 }
 
 void SlackClient::joinChannel(const QString& channelId) {

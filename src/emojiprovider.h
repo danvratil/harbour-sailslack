@@ -10,19 +10,18 @@ class EmojiProvider : public QObject
 {
     Q_OBJECT
 public:
-    static EmojiProvider *self();
+    explicit EmojiProvider();
+
+    void setCustomEmojis(const QHash<QString, QString> &emojis);
 
 public Q_SLOTS:
     QString urlForEmoji(const QString &emoji) const;
 
 private:
-    explicit EmojiProvider();
-
     void loadEmojis();
 
-    QHash<QString, QString> mEmojiStore;
-
-    static EmojiProvider *sEmojiProvider;
+    static QHash<QString, QString> sStandardEmojis;
+    QHash<QString, QString> mCustomEmojis;
 };
 
 #endif // EMOJIPROVIDER_H

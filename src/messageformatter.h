@@ -5,11 +5,12 @@
 #include <QString>
 
 class Storage;
+class SlackClient;
 
 class MessageFormatter
 {
 public:
-    MessageFormatter(Storage &storage);
+    MessageFormatter(SlackClient &client, Storage &storage);
 
     void replaceUserInfo(QString &message);
     void replaceTargetInfo(QString &message);
@@ -21,8 +22,7 @@ public:
 
 private:
     Storage &storage;
-
-    static QMap<QString,QString> emojis;
+    SlackClient &client;
 };
 
 #endif // MESSAGEFORMATTER_H

@@ -34,14 +34,12 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonType<SlackConfig>("harbour.sailslack", 1, 0, "Config", [](QQmlEngine *, QJSEngine *) -> QObject* {
         return new SlackConfig();
     });
-    qmlRegisterSingletonType<EmojiProvider>("harbour.sailslack", 1, 0, "EmojiProvider", [](QQmlEngine *, QJSEngine *) -> QObject* {
-        return EmojiProvider::self();
-    });
 
     qmlRegisterType<AuthServer>("harbour.sailslack", 1, 0, "AuthServer");
     qmlRegisterType<SlackAuthenticator>("harbour.sailslack", 1, 0, "Authenticator");
     qmlRegisterType<SlackClient>("harbour.sailslack", 1, 0, "Client");
     qmlRegisterType<TeamsModel>("harbour.sailslack", 1, 0, "TeamsModel");
+    qmlRegisterUncreatableType<EmojiProvider>("harbour.sailslack", 1, 0, "EmojiProvider", "Use Client.emojiProvider to access current config");
     qmlRegisterUncreatableType<SlackClientConfig>("harbour.sailslack", 1, 0, "ClientConfig", "Use Client.config to access current config");
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
