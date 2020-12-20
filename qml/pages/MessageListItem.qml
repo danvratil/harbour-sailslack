@@ -88,13 +88,11 @@ ListItem {
                     visible: text.length > 0
                     text: model.title
                 }
-                Image {
+                AnimatedImage {
                     width: parent.width
                     height: model.thumbSize.height
                     fillMode: Image.PreserveAspectFit
                     source: model.thumbUrl
-                    sourceSize.width: model.thumbSize.width
-                    sourceSize.height: model.thumbSize.height
 
                     MouseArea {
                         anchors.fill: parent

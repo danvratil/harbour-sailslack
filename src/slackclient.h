@@ -42,6 +42,7 @@ public:
     Q_INVOKABLE void setAppActive(bool active);
     Q_INVOKABLE void setActiveWindow(QString windowId);
 
+    Q_INVOKABLE QVariantList getUsers();
     Q_INVOKABLE QVariantList getChannels();
     Q_INVOKABLE QVariant getChannel(const QString& channelId);
 

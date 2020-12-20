@@ -64,16 +64,21 @@
     </message>
     <message>
         <location filename="../qml/pages/ChannelListView.qml" line="106"/>
-        <source>Unreads</source>
-        <translation>Непрочетени</translation>
+        <source>Unread</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="109"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="108"/>
+        <source>Starred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ChannelListView.qml" line="111"/>
         <source>Channels</source>
         <translation>Канали</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="112"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="114"/>
         <source>Direct messages</source>
         <translation>Директни съобщения</translation>
     </message>
@@ -267,17 +272,17 @@ Are you sure you wish to leave?</source>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="338"/>
+        <location filename="../src/slackclient.cpp" line="335"/>
         <source>in %1 @ %2</source>
         <translation>в %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="341"/>
+        <location filename="../src/slackclient.cpp" line="338"/>
         <source>from %1 @ %2</source>
         <translation>от %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="344"/>
+        <location filename="../src/slackclient.cpp" line="341"/>
         <source>New message</source>
         <translation>Ново съобщение</translation>
     </message>
