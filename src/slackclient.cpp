@@ -122,10 +122,7 @@ void SlackClient::updatePresenceSubscription() {
         if (channel.value("type").toString() == "im" && !channel.value("is_user_deleted").toBool()) {
             userIds.insert(channel.value("userId").toString());
         } else if (channel.value("type").toString() == "mpim" || channel.value("type").toString() == "group") {
-            // TODO: Does presence of mpim and group ever makes sense
-//            for (const auto &member : channel.value("memberIds").toList()) {
-//                userIds.insert(member.toString());
-//            }
+            // skip groups
         } else {
             // skip channels
         }
