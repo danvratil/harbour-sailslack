@@ -128,7 +128,7 @@ void SlackClient::updatePresenceSubscription() {
         }
 
         // The upper limit is not documented, but if it's overstepped we get immediately disconnected from Slack.
-        if (userIds.size() > 100) {
+        if (userIds.size() > 150) {
             break;
         }
     }
@@ -682,53 +682,44 @@ void SlackClient::loadUserForChat(QString userId, QJsonObject chat) {
     auto user = storage.user(userId);
     if (user.value("name").toString().isEmpty()) {
         user.insert("id", userId);
-        if (!user.value("channels").toList().isEmpty()) {
-            auto channels = user.value("channels").toList();
-            channels.append(chat);
-            user.insert("channels", channels);
-            storage.saveUser(user);
-            qDebug() << "requested user in progress: " << userId;
-            return;
-        } else {
-            auto channels = QVariantList();
-            QJsonDocument chatJson(chat);
-            channels.append(chatJson.toVariant());
-            user.insert("channels", channels);
-            storage.saveUser(user);
-            qDebug() << "requesting user info for: " << userId;
-        }
+        QJsonDocument chatJson(chat);
+        user.insert("asyncChat", chatJson.toVariant());
+        storage.saveUser(user);
+        qDebug() << "Requesting user info for: " << userId;
     }
 
     QNetworkReply *reply = executeGet("users.info", params);
-    connect(reply, &QNetworkReply::finished, [userId, reply, this]() {
+
+    connect(reply, &QNetworkReply::finished, [reply, this]() {
         QJsonObject data = Request::getResult(reply);
         if (Request::isError(data)) {
             qDebug() << config->getTeamName() << ": User fetch failed:" << data.toVariantMap();
+            reply->deleteLater();
             return;
         }
 
         const auto dataUser = data["user"].toObject();
-        qDebug() << "storing async resolved user: " << dataUser.value("id").toString();
         auto userId = dataUser.value("id").toString();
-        auto channels = storage.user(userId).value("channels").toList();
+
+        auto asyncChat = storage.user(userId).value("asyncChat");
+        storage.user(userId).remove("asyncChat");
+
+        qDebug() << "storing async resolved user: " << dataUser.value("id").toString();
         auto user = parseUser(dataUser);
-        if (user.value("name").toString().isEmpty()) {
-            qDebug() << "Oh no not again!:" << userId;
-        } else {
+        if (!user.value("name").toString().isEmpty()) {
             qDebug() << "Resolved to " << user.value("name").toString();
         }
         storage.saveUser(user);
-        for (int i = 0; i < channels.length(); i++) { // todo is_open
-            auto channelVariant = channels.at(i).toMap();
-            if (channelVariant.value("is_open").toBool()) {
-                channelVariant.insert("channel", channelVariant.value("id"));
-                QJsonDocument channelJson = QJsonDocument::fromVariant(channelVariant);
-                QJsonObject channelJsonObj = channelJson.object();
-                auto chat = parseChat(channelJsonObj);
-                storage.saveChannel(chat);
-                parseChatOpen(channelJsonObj);
-            }
+
+        auto chatJson = QJsonDocument::fromVariant(asyncChat.toMap());
+        auto chat = parseChat(chatJson.object());
+
+        storage.saveChannel(chat);
+        if (chat.value("isOpen").toBool()) {
+            emit channelJoined(chat);
         }
+
+        reply->deleteLater();
     });
 }
 
@@ -843,11 +834,11 @@ void SlackClient::loadConversations(QString cursor) {
       foreach (const QJsonValue &value, data.value("channels").toArray()) {
         QJsonObject channel = value.toObject();
 
-        // Skip private group chats that are closed, we don't want those listed or
-        // counted towards our unread count. If we receive a message in those
-        if (channel.value("is_mpim").toBool() && !channel.value("is_open").toBool()) {
-            continue;
-        }
+       // Skip private group chats that are closed, we don't want those listed or
+       // counted towards our unread count. If we receive a message in those
+       if (channel.value("is_mpim").toBool() && !channel.value("is_open").toBool()) {
+           continue;
+       }
 
         if (channel.value("is_archived").toBool()) {
             continue;
@@ -871,7 +862,6 @@ void SlackClient::loadConversations(QString cursor) {
             bool async = false;
             if (infoData.value("is_im").toBool()) {
               channel = parseChat(infoData);
-              // fixme: is_org_shared im conversations come with a not-yet known userId
               if (channel.value("name").toString().isEmpty()) {
                   qDebug() << "Lazy loading user: " << infoData.value("user").toString() << "\n";
                   loadUserForChat(infoData.value("user").toString(), infoData);
