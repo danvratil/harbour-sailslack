@@ -72,7 +72,9 @@ void Storage::setThreadMessages(const QString& threadId, QVariantList messages) 
 }
 
 void Storage::createOrUpdateThread(const QString &threadId, QVariantMap message) {
-    Q_ASSERT(isThreadStarter(message));
+    if (!isThreadStarter(message)) {
+        return;
+    }
     if (!threadMap.contains(threadId)) {
         threadMessageMap.insert(threadId, QVariantList({message}));
         threadMap.insert(threadId, message);

@@ -128,7 +128,7 @@ void SlackClient::updatePresenceSubscription() {
         }
 
         // The upper limit is not documented, but if it's overstepped we get immediately disconnected from Slack.
-        if (userIds.size() > 150) {
+        if (userIds.size() > 100) {
             break;
         }
     }
@@ -758,31 +758,31 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
 
 QVariantMap SlackClient::parseUser(const QJsonObject& user)
 {
-        QJsonObject profile = user.value("profile").toObject();
-        QVariant presence;
-        if (profile.value("always_active").toBool()) {
-            presence = QVariant("active");
-        }
-        else {
-            presence = QVariant("away");
-        }
+    QJsonObject profile = user.value("profile").toObject();
+    QVariant presence;
+    if (profile.value("always_active").toBool()) {
+        presence = QVariant("active");
+    }
+    else {
+        presence = QVariant("away");
+    }
 
-        QVariantMap data;
-        data.insert("id", user.value("id").toVariant());
-        const auto name = user.value("name").toString();
-        const auto realName = profile.value("real_name").toString();
-        const auto displayName = profile.value("display_name").toString();
+    QVariantMap data;
+    data.insert("id", user.value("id").toVariant());
+    const auto name = user.value("name").toString();
+    const auto realName = profile.value("real_name").toString();
+    const auto displayName = profile.value("display_name").toString();
 
-        if (displayName == name && !realName.isEmpty()) {
-            data.insert("name", realName);
-        } else if (!displayName.isEmpty()) {
-            data.insert("name", displayName);
-        } else if (!realName.isEmpty()) {
-            data.insert("name", realName);
-        } else {
-            data.insert("name", name);
-        }
-        data.insert("presence", presence);
+    if (displayName == name && !realName.isEmpty()) {
+        data.insert("name", realName);
+    } else if (!displayName.isEmpty()) {
+        data.insert("name", displayName);
+    } else if (!realName.isEmpty()) {
+        data.insert("name", realName);
+    } else {
+        data.insert("name", name);
+    }
+    data.insert("presence", presence);
     return data;
 }
 
@@ -1224,6 +1224,7 @@ void SlackClient::loadUserInfo(QString userId) {
         }
 
         const auto user = data["user"].toObject();
+        storage.saveUser(parseUser(user));
         Q_EMIT loadUserInfoSuccess(userId, user.toVariantMap());
     });
 }
@@ -1274,6 +1275,13 @@ QVariantMap SlackClient::user(const QJsonObject &data) {
 
     QVariantMap userData = storage.user(userId);
 
+    if (userData.isEmpty() && data.value("user_profile").isObject()) {
+        auto userProfile = data.value("user_profile").toObject();
+        userProfile.insert("id", userId);
+        userData = parseUser(userProfile);
+        storage.saveUser(userData);
+    }
+
     if (userData.isEmpty()) {
         userData.insert("id", data.value("user").toVariant());
         userData.insert("name", QVariant("Unknown"));
@@ -1281,7 +1289,7 @@ QVariantMap SlackClient::user(const QJsonObject &data) {
     }
 
     QString username = data.value("username").toString();
-    if (!username.isEmpty()) {
+    if (!username.isEmpty() && userData.value("name").isNull()) {
         QRegularExpression newUserPattern("<@([A-Z0-9]+)\\|([^>]+)>");
         username.replace(newUserPattern, "\\2");
         userData.insert("name", username);
