@@ -1,10 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import QtWebKit 3.0
-import Sailfish.WebView 1.0
 import harbour.sailslack 1.0 as Slack
 
-WebViewPage {
+Page {
     id: page
 
     property string processId: Math.random().toString(36).substring(7)
@@ -25,7 +23,6 @@ WebViewPage {
 
         onAccessTokenFail: {
             console.log('access token failed')
-            webViewF.visible = true
         }
     }
 
@@ -39,7 +36,7 @@ WebViewPage {
 
     onStatusChanged: {
         switch (status) {
-        case PageStatus.Activating:
+        case PageStatus.Active:
             server.listen(3000);
             break;
         case PageStatus.Deactivating:
@@ -48,43 +45,45 @@ WebViewPage {
         }
     }
 
-    WebViewFlickable {
-        id: webViewF
-        anchors.fill: parent
+    Column {
+        id: column
+        width: page.width
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Theme.paddingMedium
 
-        webView {
-            active: true
-            url: page.startUrl + "&state=" + page.processId
+        Label {
+            id: listening;
+            wrapMode: Text.Wrap
+        }
 
-            onUrlChanged: {
-                // This is currently not called for redirects (at least not in sailfish-components-webview 1.1.6.1).
-                // so I just leave this here in case it starts working, otherwise AuthServer is actually listening on 3000.
-                // See also https://git.sailfishos.org/mer-core/qtmozembed/blob/master/src/qmozview_defined_wrapper.h
-                // which is wrapped in RawWebView https://github.com/sailfishos/sailfish-components-webview/blob/jb51257/1.1.6.1/import/webview/rawwebview.h
-                var request = {url: String(webView.url)};
-                if (isReturnUrl(request.url)) {
-                    visible = false
-                    request.action = WebView.IgnoreRequest
+        Label {
+            text: qsTr("Click below to login with your browser")
+        }
 
-                    if (isSuccessUrl(request.url)) {
-                        authenticator.fetchAccessToken(request.url)
-                    }
-                    else {
-                        pageStack.pop(undefined, PageStackAction.Animated)
-                    }
-                }
-                else {
-                    request.action = WebView.AcceptRequest
-                }
+        Button {
+            text: qsTr("Use browser")
+            onClicked: {
+                Qt.openUrlExternally(page.startUrl + "&state=" + page.processId);
+            }
+        }
+
+        Label {
+            text: qsTr("Or use the sailfish WebView\n(Warning: works only from terminal!)")
+        }
+
+        Button {
+            text: qsTr("Use webview")
+            onClicked: {
+                server.close();
+                column.visible = false
+                browserLoadable.setSource ("LoginWebView.qml", { url: page.startUrl + "&state=" + page.processId })
             }
         }
     }
 
-    function isReturnUrl(url) {
-        return url.toString().indexOf('http://localhost:3000/oauth/callback') !== -1
+    Loader {
+        id: browserLoadable
+        anchors.fill: parent
     }
 
-    function isSuccessUrl(url) {
-        return url.toString().indexOf('error=') === -1 && url.toString().indexOf('state=' + page.processId) !== -1
-    }
 }

@@ -219,40 +219,25 @@ Are you sure you wish to leave?</source>
     </message>
 </context>
 <context>
-    <name>LoginLink</name>
+    <name>LoginPage</name>
     <message>
-        <location filename="../qml/pages/LoginLink.qml" line="41"/>
-        <source>Listening on port %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/LoginLink.qml" line="41"/>
-        <source>Not listening on port %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/LoginLink.qml" line="69"/>
-        <source>Sign in with Slack</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/LoginLink.qml" line="78"/>
+        <location filename="../qml/pages/LoginPage.qml" line="60"/>
         <source>Click below to login with your browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginLink.qml" line="82"/>
+        <location filename="../qml/pages/LoginPage.qml" line="64"/>
         <source>Use browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginLink.qml" line="89"/>
+        <location filename="../qml/pages/LoginPage.qml" line="71"/>
         <source>Or use the sailfish WebView
 (Warning: works only from terminal!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginLink.qml" line="93"/>
+        <location filename="../qml/pages/LoginPage.qml" line="75"/>
         <source>Use webview</source>
         <translation type="unfinished"></translation>
     </message>

@@ -1,7 +1,5 @@
 # App config
 TARGET = harbour-sailslack
-CONFIG += link_pkgconfig
-PKGCONFIG += qt5embedwidget
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
@@ -14,6 +12,9 @@ QT += dbus
 PKGCONFIG += nemonotifications-qt5
 
 CONFIG += sailfish-components-webview-qt5
+
+CONFIG += link_pkgconfig
+PKGCONFIG += qt5embedwidget
 
 # Includes
 INCLUDEPATH += ./QtWebsocket
@@ -90,12 +91,12 @@ HEADERS += \
     src/teamsmodel.h
 
 DISTFILES += \
-    qml/pages/LoginLink.qml \
     qml/pages/LoginPage.qml \
     qml/pages/Loader.qml \
     qml/pages/ChannelList.qml \
     qml/pages/ChannelList.js \
     qml/pages/Channel.qml \
+    qml/pages/LoginWebView.qml \
     qml/pages/MessageListItem.qml \
     qml/pages/MessageInput.qml \
     qml/pages/Image.qml \

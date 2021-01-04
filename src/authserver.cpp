@@ -13,7 +13,7 @@ bool AuthServer::listen(quint16 port) {
     bool result = server.listen(QHostAddress::LocalHost, port);
     Q_EMIT listening(server.isListening());
     if (!result) {
-        qDebug("Server error listening: %d", server.serverError());
+        qDebug() << "Server error listening " << server.serverError() << ": " << server.errorString();
     }
     return result;
 }
