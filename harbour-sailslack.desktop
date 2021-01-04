@@ -1,6 +1,10 @@
 [Desktop Entry]
 Type=Application
-X-Nemo-Application-Type=silica-qt5
+# From https://harbour.jolla.com/faq
+# > this will make sure that the application is launched using the right booster, and will make startup faster
+# However this makes the sailfish webview crash when launched from lipstick.
+# See https://forum.sailfishos.org/t/is-the-new-gecko-engine-used-in-silicawebview/2924/7?u=flypig
+#X-Nemo-Application-Type=silica-qt5
 Icon=harbour-sailslack
 Exec=harbour-sailslack
 Name=Sailslack

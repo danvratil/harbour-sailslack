@@ -1,5 +1,8 @@
 # App config
 TARGET = harbour-sailslack
+CONFIG += link_pkgconfig
+PKGCONFIG += qt5embedwidget
+
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
@@ -12,9 +15,6 @@ QT += dbus
 PKGCONFIG += nemonotifications-qt5
 
 CONFIG += sailfish-components-webview-qt5
-
-CONFIG += link_pkgconfig
-PKGCONFIG += qt5embedwidget
 
 # Includes
 INCLUDEPATH += ./QtWebsocket

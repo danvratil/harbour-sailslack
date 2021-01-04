@@ -1,8 +1,10 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.sailslack 1.0 as Slack
+import Sailfish.WebView 1.0
 
-Page {
+// Using WebViewPage allows the WebView to better react to virtual keyboard.
+WebViewPage {
     id: page
 
     property string processId: Math.random().toString(36).substring(7)

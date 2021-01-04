@@ -79,7 +79,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="114"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="112"/>
         <source>Direct messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -227,23 +227,23 @@ Are you sure you wish to leave?</source>
 <context>
     <name>LoginPage</name>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="60"/>
+        <location filename="../qml/pages/LoginPage.qml" line="61"/>
         <source>Click below to login with your browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="64"/>
+        <location filename="../qml/pages/LoginPage.qml" line="65"/>
         <source>Use browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="71"/>
+        <location filename="../qml/pages/LoginPage.qml" line="72"/>
         <source>Or use the sailfish WebView
 (Warning: works only from terminal!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="75"/>
+        <location filename="../qml/pages/LoginPage.qml" line="76"/>
         <source>Use webview</source>
         <translation type="unfinished"></translation>
     </message>
