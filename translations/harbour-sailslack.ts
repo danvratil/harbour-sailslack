@@ -73,13 +73,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-
         <location filename="../qml/pages/ChannelListView.qml" line="111"/>
         <source>Channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="112"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="114"/>
         <source>Direct messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -227,23 +226,52 @@ Are you sure you wish to leave?</source>
 <context>
     <name>LoginPage</name>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="61"/>
-        <source>Click below to login with your browser</source>
+        <location filename="../qml/pages/LoginPage.qml" line="38"/>
+        <source>Listening on port %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="65"/>
+        <location filename="../qml/pages/LoginPage.qml" line="38"/>
+        <source>Not listening on port %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="77"/>
+        <source>You can login with your browser:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="81"/>
         <source>Use browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="72"/>
-        <source>Or use the sailfish WebView
-(Warning: works only from terminal!)</source>
+        <location filename="../qml/pages/LoginPage.qml" line="88"/>
+        <source>Or use the Sailfish WebView:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="76"/>
+        <location filename="../qml/pages/LoginPage.qml" line="103"/>
+        <source>Or copy the link to use it on your desktop:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="108"/>
+        <source>Copy link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="118"/>
+        <source>Paste redirect url here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="124"/>
+        <source>Go</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="92"/>
         <source>Use webview</source>
         <translation type="unfinished"></translation>
     </message>

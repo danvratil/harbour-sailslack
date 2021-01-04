@@ -229,6 +229,59 @@ Are you sure you wish to leave?</source>
     </message>
 </context>
 <context>
+    <name>LoginPage</name>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="38"/>
+        <source>Listening on port %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="38"/>
+        <source>Not listening on port %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="77"/>
+        <source>You can login with your browser:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="81"/>
+        <source>Use browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="88"/>
+        <source>Or use the Sailfish WebView:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="92"/>
+        <source>Use webview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="103"/>
+        <source>Or copy the link to use it on your desktop:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="108"/>
+        <source>Copy link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="118"/>
+        <source>Paste redirect url here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/LoginPage.qml" line="124"/>
+        <source>Go</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MessageListItem</name>
     <message>
         <location filename="../qml/pages/MessageListItem.qml" line="18"/>
