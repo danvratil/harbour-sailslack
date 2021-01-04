@@ -42,8 +42,11 @@ public:
     Q_INVOKABLE void setAppActive(bool active);
     Q_INVOKABLE void setActiveWindow(QString windowId);
 
+    Q_INVOKABLE QVariantList getUsers();
     Q_INVOKABLE QVariantList getChannels();
-    Q_INVOKABLE QVariant getChannel(QString channelId);
+    Q_INVOKABLE QVariant getChannel(const QString& channelId);
+
+    Q_INVOKABLE QVariant getThread(const QString& threadId);
 
     SlackClientConfig *getConfig() const { return this->config; }
     bool getInitialized() const { return initialized; }
@@ -66,7 +69,7 @@ signals:
     void loadUsersSuccess();
     void loadUsersFail();
 
-    void loadMessagesSuccess(QString channelId, QVariantList messages, bool hasMore);
+    void loadMessagesSuccess(QString channelId, QString threadId, QVariantList messages, bool hasMore);
     void loadMessagesFail();
     void loadHistorySuccess(QString channelId, QVariantList messages, bool hasMore);
     void loadHistoryFail();
@@ -81,7 +84,10 @@ signals:
     void reconnectFail();
     void reconnectAccessTokenFail();
 
-    void messageReceived(QVariantMap message);
+    void updateChannelUnreadCountFailed(QString);
+    void updateImUnreadCountFailed(QString);
+
+    void messageReceived(QVariantMap message, bool update);
     void channelUpdated(QVariantMap channel);
     void channelJoined(QVariantMap channel);
     void channelLeft(QVariantMap channel);
@@ -103,19 +109,22 @@ public slots:
     void testLogin();
     void handleTestLoginReply();
 
-    void loadHistory(QString type, QString channelId, QString latest);
-    void loadMessages(QString type, QString channelId);
+    void loadHistory(QString channelId, QString latest);
+    void loadMessages(QString channelId);
     void handleLoadMessagesReply();
+    bool createThread(QString channelId, QString threadId);
+
+    void loadThreadMessages(QString threadId, QString channelId);
 
     void logout();
     void loadUsers(const QString &cursor = {});
-    void markChannel(QString type, QString channelId, QString time);
-    void joinChannel(QString channelId);
+    void markChannel(QString channelId, QString time);
+    void joinChannel(const QString& channelId);
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
     void openChat(QString chatId);
     void closeChat(QString chatId);
-    void postMessage(QString channelId, QString content);
+    void postMessage(QString channelId, QString threadId, QString content);
     void postImage(QString channelId, QString imagePath, QString title, QString comment);
     void loadUserInfo(QString userId);
 
@@ -144,7 +153,7 @@ private:
 
     void loadConversations(QString cursor = QString());
 
-    void parseMessageUpdate(QJsonObject message);
+    void parseMessageUpdate(QJsonObject message, bool update = false);
     void parseChannelUpdate(QJsonObject message);
     void parseChannelJoin(QJsonObject message);
     void parseChannelLeft(QJsonObject message);
@@ -160,6 +169,7 @@ private:
     QString getContent(QJsonObject message);
     QVariantList getAttachments(QJsonObject message);
     QVariantList getImages(QJsonObject message);
+    void getImageData(const QJsonObject &file, QVariantList &list);
     QString getAttachmentColor(QJsonObject attachment);
     QVariantList getAttachmentFields(QJsonObject attachment);
     QVariantList getAttachmentImages(QJsonObject attachment);
@@ -168,18 +178,18 @@ private:
     QVariantMap parseGroup(QJsonObject group);
     QVariantMap parseChat(QJsonObject chat);
 
+    void updateChannelUnreadCount(QString channelId, QString lastRead);
+    void updateImUnreadCount(QString channelId, QString lastRead);
+
     void parseUsers(QJsonObject data);
     void findNewUsers(const QString &message);
 
     void sendNotification(QString channelId, QString title, QString content);
-    void clearNotifications();
+    void clearNotifications(QString channelId);
 
     void updateUnreadCount();
 
     QVariantMap user(const QJsonObject &data);
-
-    QString historyMethod(QString type);
-    QString markMethod(QString type);
 
     QPointer<QNetworkAccessManager> networkAccessManager;
     QPointer<SlackClientConfig> config;

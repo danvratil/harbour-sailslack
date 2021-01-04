@@ -15,6 +15,8 @@ class SlackClientConfig : public QObject
 public:
     explicit SlackClientConfig(const QString &team, QObject *parent = 0);
 
+    static QString lastToken();
+
     void clear();
 
     QString getAccessToken() const;

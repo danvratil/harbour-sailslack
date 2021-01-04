@@ -64,18 +64,18 @@ QString SlackClient::toString(const QJsonObject &data) {
 
 void SlackClient::setAppActive(bool active) {
     appActive = active;
-    clearNotifications();
+    clearNotifications(activeWindow);
 }
 
 void SlackClient::setActiveWindow(QString windowId) {
     activeWindow = windowId;
-    clearNotifications();
+    clearNotifications(activeWindow);
 }
 
-void SlackClient::clearNotifications() {
+void SlackClient::clearNotifications(QString channelId) {
   foreach (QObject* object, Notification::notifications()) {
       Notification* n = qobject_cast<Notification*>(object);
-      if (n->hintValue("x-sailslack-channel").toString() == activeWindow) {
+      if (n->hintValue("x-sailslack-channel").toString() == channelId) {
           n->close();
       }
 
@@ -122,16 +122,13 @@ void SlackClient::updatePresenceSubscription() {
         if (channel.value("type").toString() == "im" && !channel.value("is_user_deleted").toBool()) {
             userIds.insert(channel.value("userId").toString());
         } else if (channel.value("type").toString() == "mpim" || channel.value("type").toString() == "group") {
-            // TODO: Does presence of mpim and group ever makes sense
-            for (const auto &member : channel.value("memberIds").toList()) {
-                userIds.insert(member.toString());
-            }
+            // skip groups
         } else {
             // skip channels
         }
 
         // The upper limit is not documented, but if it's overstepped we get immediately disconnected from Slack.
-        if (userIds.size() > 150) {
+        if (userIds.size() > 100) {
             break;
         }
     }
@@ -164,7 +161,20 @@ void SlackClient::handleStreamMessage(QJsonObject message) {
     QString type = message.value("type").toString();
 
     if (type == "message") {
-        parseMessageUpdate(message);
+        if (message.value("subtype") == QStringLiteral("message_replied")) {
+            QJsonObject innerMessage = message.value("message").toObject();
+            innerMessage.insert("channel", message.value("channel"));
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
+            parseMessageUpdate(innerMessage, true);
+        } else if (message.value("subtype") == QStringLiteral("message_changed")) {
+            QJsonObject innerMessage = message.value("message").toObject();
+            innerMessage.insert("channel", message.value("channel"));
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
+            parseMessageUpdate(innerMessage, true);
+        } else {
+            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(message));
+            parseMessageUpdate(message);
+        }
     }
     else if (type == "group_marked" || type == "channel_marked" || type == "im_marked" || type == "mpim_marked") {
         parseChannelUpdate(message);
@@ -235,21 +245,28 @@ void SlackClient::parseGroupJoin(QJsonObject message) {
 }
 
 void SlackClient::parseChannelUpdate(QJsonObject message) {
+    QString type = message.value("type").toString();
     QString id = message.value("channel").toString();
+    QString lastRead = message.value("ts").toString();
     QVariantMap channel = storage.channel(id);
     channel.insert("lastRead", message.value("ts").toVariant());
-    channel.insert("unreadCount", message.value("unread_count_display").toVariant());
     storage.saveChannel(channel);
     emit channelUpdated(channel);
 
-    updateUnreadCount();
+    clearNotifications(id);
+
+    if (type == "group_marked" || type == "channel_marked") {
+        updateChannelUnreadCount(id, lastRead);
+    } else if (type == "im_marked" || type == "mpim_marked") {
+        updateImUnreadCount(id, lastRead);
+    }
 }
 
-void SlackClient::parseMessageUpdate(QJsonObject message) {
+void SlackClient::parseMessageUpdate(QJsonObject message, bool update) {
     QVariantMap data = getMessageData(message);
 
     QString channelId = message.value("channel").toString();
-    if (storage.channelMessagesExist(channelId)) {
+    if (storage.channelMessagesExist(channelId) && !update) {
         storage.appendChannelMessage(channelId, data);
     }
 
@@ -273,7 +290,7 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
         }
     }
 
-    emit messageReceived(data);
+    emit messageReceived(data, update);
 }
 
 void SlackClient::parsePresenceChange(QJsonObject message) {
@@ -287,7 +304,7 @@ void SlackClient::parsePresenceChange(QJsonObject message) {
     }
 
     foreach (QVariant userId, userIds) {
-        QVariantMap user = storage.user(userId);
+        QVariantMap user = storage.user(userId.toString());
         if (!user.isEmpty()) {
             user.insert("presence", presence);
             storage.saveUser(user);
@@ -307,6 +324,7 @@ void SlackClient::parsePresenceChange(QJsonObject message) {
 }
 
 void SlackClient::parseNotification(QJsonObject message) {
+  QString teamName = config->getTeamName();
   QString channel = message.value("subtitle").toString();
   QString content = message.value("content").toString();
 
@@ -314,10 +332,10 @@ void SlackClient::parseNotification(QJsonObject message) {
   QString title;
 
   if (channelId.startsWith("C") || channelId.startsWith("G")) {
-      title = QString(tr("New message in %1")).arg(channel);
+      title = QString(tr("in %1 @ %2")).arg(channel).arg(teamName);
   }
   else if (channelId.startsWith("D")) {
-      title = QString(tr("New message from %1")).arg(channel);
+      title = QString(tr("from %1 @ %2")).arg(channel).arg(teamName);
   }
   else {
       title = QString(tr("New message"));
@@ -459,6 +477,7 @@ void SlackClient::init() {
 void SlackClient::loadUsers(const QString &cursor) {
   qDebug() << config->getTeamName() << ": Start load users";
   QMap<QString, QString> params;
+  params.insert("team_id", config->getTeamId());
   if (!cursor.isEmpty()) {
       params.insert("cursor", cursor);
   }
@@ -513,22 +532,113 @@ void SlackClient::start() {
     });
 }
 
+// Update unreadCount for im/mpim channels
+void SlackClient::updateImUnreadCount(QString channelId, QString lastRead) {
+    QVariantMap channel = storage.channel(channelId);
+    bool fetchCount = true;
+
+    if (storage.channelMessagesExist(channelId)) {
+        QVariantList messages = storage.channelMessages(channelId);
+        // Check timestamps from end
+        for (int i = messages.size()-1; i >= 0; i--) {
+            if (messages[i].toMap().value("timestamp") <= lastRead) {
+                fetchCount = false;
+                QVariantMap channel = storage.channel(channelId);
+                channel.insert("unreadCount", messages.size() - 1 - i);
+                storage.saveChannel(channel);
+                emit channelUpdated(channel);
+                updateUnreadCount();
+                break;
+            }
+        }
+    }
+
+    // Didn't find any newer timestamps in storage -> fetch "unread_count_display" via API
+    if (fetchCount) {
+        QMap<QString,QString> params;
+        params.insert("channel", channelId);
+        QNetworkReply* reply = executeGet("conversations.info", params);
+        connect(reply, &QNetworkReply::finished, [reply, channelId, this]() {
+            QJsonObject data = Request::getResult(reply);
+
+            if (Request::isError(data)) {
+                qDebug() << config->getTeamName() << ": Channel conversations.info failed" << channelId;
+            } else {
+                QJsonObject chData = data.value("channel").toObject();
+                if (chData.contains("unread_count_display")) {
+                    QVariantMap channel = storage.channel(channelId);
+                    channel.insert("unreadCount", chData.value("unread_count_display").toVariant());
+                    storage.saveChannel(channel);
+                    emit channelUpdated(channel);
+                    updateUnreadCount();
+                }
+            }
+            reply->deleteLater();
+        });
+    }
+}
+
+// Update unreadCount for public/private channels (i.e. channel and group).
+// Slack api doesn't provide an easy way to read number of unread messages in
+// a channel (only available for im) so we only check if we have any unread
+// messages and then set unreadCount to 1 in that case.
+void SlackClient::updateChannelUnreadCount(QString channelId, QString lastRead) {
+  QMap<QString,QString> params;
+  params.insert("channel", channelId);
+  params.insert("limit", "1");
+
+  QNetworkReply* reply = executeGet("conversations.history", params);
+  connect(reply, &QNetworkReply::finished, [reply,channelId, lastRead, this]() {
+      QJsonObject data = Request::getResult(reply);
+
+      if (Request::isError(data)) {
+          reply->deleteLater();
+          emit updateChannelUnreadCountFailed(channelId);
+          return;
+      }
+
+      QVariantList messages = parseMessages(data);
+      if (!messages.isEmpty()) {
+          QVariantMap msg = messages.at(0).toMap();
+          if (msg.contains("timestamp")) {
+              const bool hasUnread = msg["timestamp"] > lastRead;
+              auto channel = storage.channel(channelId);
+              channel.insert("unreadCount", (hasUnread ? 1 : 0));
+              storage.saveChannel(channel);
+              emit channelUpdated(channel);
+              updateUnreadCount();
+          }
+      }
+      reply->deleteLater();
+  });
+}
+
 QVariantMap SlackClient::parseChannel(QJsonObject channel) {
     QVariantMap data;
-    data.insert("id", channel.value("id").toVariant());
+    QString id = channel.value("id").toString();
+    QString lastRead = channel.value("last_read").toString();
+    data.insert("id", id);
     data.insert("type", QVariant("channel"));
     data.insert("category", QVariant("channel"));
     data.insert("name", channel.value("name").toVariant());
     data.insert("presence", QVariant("none"));
     data.insert("isOpen", channel.value("is_member").toVariant());
-    data.insert("lastRead", channel.value("last_read").toVariant());
-    data.insert("unreadCount", channel.value("unread_count_display").toVariant());
+    data.insert("lastRead", lastRead);
     data.insert("userId", QVariant());
+    data.insert("is_starred", channel.value("is_starred").toBool());
+    data.insert("is_private", channel.value("is_private").toBool());
+
+    updateChannelUnreadCount(id, lastRead);
     return data;
 }
 
 QVariantMap SlackClient::parseGroup(QJsonObject group) {
     QVariantMap data;
+    QString id = group.value("id").toString();
+    QString lastRead = group.value("last_read").toString();
+    data.insert("lastRead", lastRead);
+    data.insert("is_starred", group.value("is_starred").toBool());
+    data.insert("is_private", group.value("is_private").toBool());
 
     if (group.value("is_mpim").toBool()) {
         data.insert("type", QVariant("mpim"));
@@ -538,37 +648,41 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
         QVariantList memberIds;
         QJsonArray memberList = group.value("members").toArray();
         foreach (const QJsonValue &member, memberList) {
-            QVariant memberId = member.toVariant();
+            QString memberId = member.toString();
             if (memberId != config->getUserId()) {
                 members << storage.user(memberId).value("name").toString();
-                memberIds << memberId.toString();
+                memberIds << memberId;
             }
         }
-        data.insert("name", QVariant(members.join(", ")));
+        QString name = members.length() ? members.join(", ")
+                                        : group.value("name_normalized").toString().replace("mpdm-", "").replace("--", ", ");
+        if (name.endsWith("-1")) name.chop(2);
+        int unreadCount = group.value("unread_count_display").toInt();
+        data.insert("name", QVariant(name));
         data.insert("memberIds", memberIds);
+        data.insert("unreadCount", unreadCount);
     }
     else {
         data.insert("type", QVariant("group"));
         data.insert("category", QVariant("channel"));
         data.insert("name", group.value("name").toVariant());
+        updateChannelUnreadCount(id, lastRead);
     }
 
-    data.insert("id", group.value("id").toVariant());
+    data.insert("id", id);
     data.insert("presence", QVariant("none"));
     data.insert("isOpen", group.value("is_open").toVariant());
-    data.insert("lastRead", group.value("last_read").toVariant());
-    data.insert("unreadCount", group.value("unread_count_display").toVariant());
     return data;
 }
 
 QVariantMap SlackClient::parseChat(QJsonObject chat) {
   QVariantMap data;
 
-  QVariant userId = chat.value("user").toVariant();
+  QString userId = chat.value("user").toString();
   QVariantMap user = storage.user(userId);
 
   QString name;
-  if (userId.toString() == config->getUserId()) {
+  if (userId == config->getUserId()) {
     name = user.value("name").toString() + " (you)";
   }
   else {
@@ -584,6 +698,10 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
   data.insert("isOpen", chat.value("is_open").toVariant());
   data.insert("lastRead", chat.value("last_read").toVariant());
   data.insert("unreadCount", chat.value("unread_count_display").toVariant());
+
+  data.insert("is_archived", chat.value("is_archived"));
+  data.insert("is_starred", chat.value("is_starred").toBool());
+  data.insert("is_private", chat.value("is_private").toBool());
 
   return data;
 }
@@ -605,10 +723,13 @@ void SlackClient::parseUsers(QJsonObject data) {
         const auto name = user.value("name").toString();
         const auto realName = profile.value("real_name").toString();
         const auto displayName = profile.value("display_name").toString();
+
         if (displayName == name && !realName.isEmpty()) {
             data.insert("name", realName);
         } else if (!displayName.isEmpty()) {
             data.insert("name", displayName);
+        } else if (!realName.isEmpty()) {
+            data.insert("name", realName);
         } else {
             data.insert("name", name);
         }
@@ -617,30 +738,20 @@ void SlackClient::parseUsers(QJsonObject data) {
     }
 }
 
+QVariantList SlackClient::getUsers() {
+    return storage.users();
+}
+
 QVariantList SlackClient::getChannels() {
     return storage.channels();
 }
 
-QVariant SlackClient::getChannel(QString channelId) {
-    return storage.channel(QVariant(channelId));
+QVariant SlackClient::getChannel(const QString& channelId) {
+    return storage.channel(channelId);
 }
 
-QString SlackClient::historyMethod(QString type) {
-    if (type == "channel") {
-        return "channels.history";
-    }
-    else if (type == "group") {
-        return "groups.history";
-    }
-    else if (type == "mpim") {
-        return "mpim.history";
-    }
-    else if (type == "im") {
-        return "im.history";
-    }
-    else {
-        return "";
-    }
+QVariant SlackClient::getThread(const QString& threadId) {
+    return storage.thread(threadId);
 }
 
 void SlackClient::loadConversations(QString cursor) {
@@ -649,6 +760,7 @@ void SlackClient::loadConversations(QString cursor) {
   QMap<QString,QString> params;
   params.insert("types", "public_channel,private_channel,mpim,im");
   params.insert("limit", "1000"); // the API limit
+  params.insert("team_id", config->getTeamId());
 
   if (!cursor.isEmpty()) {
       params.insert("cursor", cursor);
@@ -674,37 +786,45 @@ void SlackClient::loadConversations(QString cursor) {
             continue;
         }
 
-        QString infoMethod;
-        if (channel.value("is_channel").toBool()) {
-          infoMethod = "channels.info";
-        }
-        else if (channel.value("is_group").toBool()) {
-          infoMethod = "groups.info";
-        }
-        else {
-          infoMethod = "conversations.info";
+        if (channel.value("is_archived").toBool()) {
+            continue;
         }
 
+        const QString infoMethod = "conversations.info";
+
         QMap<QString,QString> params;
-        params.insert("channel", channel.value("id").toString());
+        QString channelId = channel.value("id").toString();
+        params.insert("channel", channelId);
         QNetworkReply* infoReply = executeGet(infoMethod, params);
+        infoReply->setProperty("channelId", channelId);
 
         combinator << AsyncFuture::observe(infoReply, &QNetworkReply::finished).future();
         connect(infoReply, &QNetworkReply::finished, [infoReply,infoMethod,this]() {
-            QJsonObject infoData = Request::getResult(infoReply).value(infoMethod == "groups.info" ? "group" : "channel").toObject();
+            QJsonObject infoData = Request::getResult(infoReply).value("channel").toObject();
+
+            QString channelId = infoReply->property("channelId").toString();
             QVariantMap channel;
 
+            bool ignore = false;
             if (infoData.value("is_im").toBool()) {
               channel = parseChat(infoData);
-            }
-            else if (infoData.value("is_channel").toBool()) {
+              // fixme: is_org_shared im conversations come with a not-yet known userId
+              if (channel.value("name").toString().isEmpty()) {
+                  qDebug() << "Ignoring empty named: " << infoData.value("user").toString() << "\n";
+                  ignore = true;
+              }
+            } else if (infoData.value("is_channel").toBool()) {
               channel = parseChannel(infoData);
-            }
-            else {
+            } else if (infoData.value("is_group").toBool()) {
+              channel = parseGroup(infoData);
+            } else {
+              infoData.insert("id", channelId);
               channel = parseGroup(infoData);
             }
 
-            storage.saveChannel(channel);
+            if (!ignore) {
+                storage.saveChannel(channel);
+            }
             infoReply->deleteLater();
         });
       }
@@ -724,13 +844,13 @@ void SlackClient::loadConversations(QString cursor) {
   });
 }
 
-void SlackClient::joinChannel(QString channelId) {
-    QVariantMap channel = storage.channel(QVariant(channelId));
+void SlackClient::joinChannel(const QString& channelId) {
+    QVariantMap channel = storage.channel(channelId);
 
     QMap<QString,QString> params;
     params.insert("name", channel.value("name").toString());
 
-    QNetworkReply* reply = executeGet("channels.join", params);
+    QNetworkReply* reply = executeGet("conversations.join", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -746,7 +866,7 @@ void SlackClient::leaveChannel(QString channelId) {
     QMap<QString,QString> params;
     params.insert("channel", channelId);
 
-    QNetworkReply* reply = executeGet("channels.leave", params);
+    QNetworkReply* reply = executeGet("conversations.leave", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -762,7 +882,7 @@ void SlackClient::leaveGroup(QString groupId) {
     QMap<QString,QString> params;
     params.insert("channel", groupId);
 
-    QNetworkReply* reply = executeGet("groups.leave", params);
+    QNetworkReply* reply = executeGet("conversations.leave", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -775,12 +895,12 @@ void SlackClient::leaveGroup(QString groupId) {
 }
 
 void SlackClient::openChat(QString chatId) {
-    QVariantMap channel = storage.channel(QVariant(chatId));
+    QVariantMap channel = storage.channel(chatId);
 
     QMap<QString,QString> params;
-    params.insert("user", channel.value("userId").toString());
+    params.insert("users", channel.value("userId").toString());
 
-    QNetworkReply* reply = executeGet("im.open", params);
+    QNetworkReply* reply = executeGet("conversations.open", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -796,7 +916,7 @@ void SlackClient::closeChat(QString chatId) {
     QMap<QString,QString> params;
     params.insert("channel", chatId);
 
-    QNetworkReply* reply = executeGet("im.close", params);
+    QNetworkReply* reply = executeGet("conversations.close", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -808,14 +928,14 @@ void SlackClient::closeChat(QString chatId) {
     });
 }
 
-void SlackClient::loadHistory(QString type, QString channelId, QString latest) {
+void SlackClient::loadHistory(QString channelId, QString latest) {
   QMap<QString,QString> params;
   params.insert("channel", channelId);
-  params.insert("count", "20");
+  params.insert("limit", "20");
   params.insert("latest", latest);
   params.insert("inclusive", "0");
 
-  QNetworkReply* reply = executeGet(historyMethod(type), params);
+  QNetworkReply* reply = executeGet("conversations.history", params);
   connect(reply, &QNetworkReply::finished, [reply,channelId,this]() {
       QJsonObject data = Request::getResult(reply);
 
@@ -834,19 +954,37 @@ void SlackClient::loadHistory(QString type, QString channelId, QString latest) {
   });
 }
 
-void SlackClient::loadMessages(QString type, QString channelId) {
+void SlackClient::loadMessages(QString channelId) {
     if (storage.channelMessagesExist(channelId)) {
         QVariantList messages = storage.channelMessages(channelId);
-        emit loadMessagesSuccess(channelId, messages, true);
+        emit loadMessagesSuccess(channelId, QString(), messages, true);
         return;
     }
 
     QMap<QString,QString> params;
     params.insert("channel", channelId);
-    params.insert("count", "20");
+    params.insert("limit", "20");
 
-    QNetworkReply* reply = executeGet(historyMethod(type), params);
+    QNetworkReply* reply = executeGet("conversations.history", params);
     reply->setProperty("channelId", channelId);
+    connect(reply, SIGNAL(finished()), this, SLOT(handleLoadMessagesReply()));
+}
+
+void SlackClient::loadThreadMessages(QString threadId, QString channelId) {
+    if (storage.threadMessagesExist(threadId)) {
+        QVariantList messages = storage.threadMessages(threadId);
+        emit loadMessagesSuccess(threadId, QString(), messages, true);
+        return;
+    }
+
+    QMap<QString,QString> params;
+    params.insert("channel", channelId);
+    params.insert("ts", threadId);
+    params.insert("limit", "1000");
+
+    QNetworkReply* reply = executeGet("conversations.replies", params);
+    reply->setProperty("channelId", channelId);
+    reply->setProperty("thread_ts", threadId);
     connect(reply, SIGNAL(finished()), this, SLOT(handleLoadMessagesReply()));
 }
 
@@ -864,10 +1002,39 @@ void SlackClient::handleLoadMessagesReply() {
     QVariantList messages = parseMessages(data);
     bool hasMore = data.value("has_more").toBool();
     QString channelId = reply->property("channelId").toString();
-    storage.setChannelMessages(channelId, messages);
 
-    emit loadMessagesSuccess(channelId, messages, hasMore);
+    QString threadId = reply->property("thread_ts").toString();
+
+    if (!channelId.isEmpty() && threadId.isEmpty()) {
+        storage.setChannelMessages(channelId, messages);
+    } else if (!threadId.isEmpty()) {
+        storage.setThreadMessages(threadId, messages);
+    }
+
+    emit loadMessagesSuccess(channelId, threadId, messages, hasMore);
     reply->deleteLater();
+}
+
+bool SlackClient::createThread(QString channelId, QString threadId) {
+
+    if (!storage.channelMessagesExist(channelId)) {
+        return false;
+    }
+
+    auto channelMessages = storage.channelMessages(channelId);
+    auto found = storage.findSortedMessages(channelMessages, threadId);
+    if (found != channelMessages.constEnd()) {
+        auto message = found->toMap();
+        if (message.value("timestamp") == threadId) {
+            if (message.value("thread_ts") != threadId) {
+                message.insert("thread_ts", threadId);
+                message.insert("transient", true);
+            }
+            storage.createOrUpdateThread(threadId, message);
+        }
+        return true;
+    }
+    return false;
 }
 
 QVariantList SlackClient::parseMessages(const QJsonObject data) {
@@ -885,30 +1052,12 @@ QVariantList SlackClient::parseMessages(const QJsonObject data) {
     return messages;
 }
 
-QString SlackClient::markMethod(QString type) {
-    if (type == "channel") {
-        return "channels.mark";
-    }
-    else if (type == "group") {
-        return "groups.mark";
-    }
-    else if (type == "mpim") {
-        return "mpim.mark";
-    }
-    else if (type == "im") {
-        return "im.mark";
-    }
-    else {
-        return "";
-    }
-}
-
-void SlackClient::markChannel(QString type, QString channelId, QString time) {
+void SlackClient::markChannel(QString channelId, QString time) {
     QMap<QString,QString> params;
     params.insert("channel", channelId);
     params.insert("ts", time);
 
-    QNetworkReply* reply = executeGet(markMethod(type), params);
+    QNetworkReply* reply = executeGet("conversations.mark", params);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = Request::getResult(reply);
 
@@ -920,7 +1069,7 @@ void SlackClient::markChannel(QString type, QString channelId, QString time) {
     });
 }
 
-void SlackClient::postMessage(QString channelId, QString content) {
+void SlackClient::postMessage(QString channelId, QString threadId, QString content) {
     content.replace(QRegularExpression("&"), "&amp;");
     content.replace(QRegularExpression(">"), "&gt;");
     content.replace(QRegularExpression("<"), "&lt;");
@@ -930,6 +1079,9 @@ void SlackClient::postMessage(QString channelId, QString content) {
     data.insert("text", content);
     data.insert("as_user", "true");
     data.insert("parse", "full");
+    if (!threadId.isEmpty()) {
+        data.insert("thread_ts", threadId);
+    }
 
     QNetworkReply* reply = executePost("chat.postMessage", data);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
@@ -1010,9 +1162,12 @@ QVariantMap SlackClient::getMessageData(const QJsonObject message) {
 
     QVariantMap data;
     data.insert("type", message.value("type").toVariant());
+    data.insert("subtype", message.value("subtype").toVariant());
     data.insert("time", QVariant::fromValue(time));
     data.insert("timegroup", QVariant::fromValue(time.toString("MMMM d, yyyy")));
     data.insert("timestamp", message.value("ts").toVariant());
+    data.insert("thread_ts", message.value("thread_ts").toVariant());
+    data.insert("reply_count", message.value("reply_count").toInt());
     data.insert("channel", message.value("channel").toVariant());
     data.insert("user", user(message));
     data.insert("attachments", getAttachments(message));
@@ -1024,19 +1179,19 @@ QVariantMap SlackClient::getMessageData(const QJsonObject message) {
 
 QVariantMap SlackClient::user(const QJsonObject &data) {
     QString type = data.value("subtype").toString("default");
-    QVariant userId;
+    QString userId;
 
     if (type == "bot_message") {
-        userId = data.value("bot_id").toVariant();
+        userId = data.value("bot_id").toString();
     }
     else if (type == "file_comment") {
-        userId = data.value("comment").toObject().value("user").toVariant();
+        userId = data.value("comment").toObject().value("user").toString();
     }
     else {
-        userId = data.value("user").toVariant();
+        userId = data.value("user").toString();
     }
 
-    if (!userId.isValid()) {
+    if (userId.isEmpty()) {
         qDebug() << config->getTeamName() << ": User not found for message";
     }
 
@@ -1075,39 +1230,56 @@ QString SlackClient::getContent(QJsonObject message) {
 
 QVariantList SlackClient::getImages(QJsonObject message) {
     QVariantList images;
+    QStringList imageTypes;
+    imageTypes << "jpg";
+    imageTypes << "png";
+    imageTypes << "gif";
 
     if (message.value("subtype").toString() == "file_share") {
-        QStringList imageTypes;
-        imageTypes << "jpg";
-        imageTypes << "png";
-        imageTypes << "gif";
-
         QJsonObject file = message.value("file").toObject();
         QString fileType = file.value("filetype").toString();
 
         if (imageTypes.contains(fileType)) {
-            QString thumbItem = file.contains("thumb_480") ? "480" : "360";
+            getImageData(file, images);
+        }
+    } else if (message.contains("files")) {
+        QJsonArray files = message.value("files").toArray();
+        foreach (const QJsonValue &value, files) {
+            QJsonObject file = value.toObject();
+            QString fileType = file.value("filetype").toString();
 
-            QVariantMap thumbSize;
-            thumbSize.insert("width", file.value("thumb_" + thumbItem + "_w").toVariant());
-            thumbSize.insert("height", file.value("thumb_" + thumbItem + "_h").toVariant());
-
-            QVariantMap imageSize;
-            imageSize.insert("width", file.value("original_w").toVariant());
-            imageSize.insert("height", file.value("original_h").toVariant());
-
-            QVariantMap fileData;
-            fileData.insert("name", file.value("name").toVariant());
-            fileData.insert("url", file.value("url_private").toVariant());
-            fileData.insert("size", imageSize);
-            fileData.insert("thumbSize", thumbSize);
-            fileData.insert("thumbUrl", file.value("thumb_" + thumbItem).toVariant());
-
-            images.append(fileData);
+            if (imageTypes.contains(fileType)) {
+                getImageData(file, images);
+            }
         }
     }
 
     return images;
+}
+
+void SlackClient::getImageData(const QJsonObject &file, QVariantList &list) {
+    QString thumbItem = file.contains("thumb_480") ? "480" : "360";
+
+    QVariantMap thumbSize;
+    thumbSize.insert("width", file.value("thumb_" + thumbItem + "_w").toVariant());
+    thumbSize.insert("height", file.value("thumb_" + thumbItem + "_h").toVariant());
+
+    QVariantMap imageSize;
+    imageSize.insert("width", file.value("original_w").toVariant());
+    imageSize.insert("height", file.value("original_h").toVariant());
+
+    QVariantMap fileData;
+    fileData.insert("name", file.value("name").toVariant());
+    fileData.insert("url", file.value("url_private").toVariant());
+    fileData.insert("size", imageSize);
+    fileData.insert("thumbSize", thumbSize);
+    fileData.insert("thumbUrl", file.value("thumb_" + thumbItem).toVariant());
+
+    if (file.contains("title")) {
+        fileData.insert("title", file.value("title").toVariant());
+    }
+
+    list.append(fileData);
 }
 
 QVariantList SlackClient::getAttachments(QJsonObject message) {
@@ -1260,7 +1432,14 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     arguments.append(team);
     arguments.append(channelId);
 
+    QVariantMap channel = storage.channel(channelId);
+    int channelUnreadCount = channel.value("unreadCount").toInt();
+    title = QString::number(channelUnreadCount) + ' ' + title;
+
+    clearNotifications(channelId);
+
     Notification notification;
+
     notification.setAppName("Sailslack");
     notification.setAppIcon("harbour-sailslack");
     notification.setBody(body);
@@ -1269,9 +1448,13 @@ void SlackClient::sendNotification(QString channelId, QString title, QString tex
     notification.setCategory("chat");
     notification.setHintValue("x-sailslack-team", team);
     notification.setHintValue("x-sailslack-channel", channelId);
-    notification.setHintValue("x-nemo-feedback", "chat_exists");
     notification.setHintValue("x-nemo-priority", 100);
     notification.setHintValue("x-nemo-display-on", true);
+    notification.setHintValue("x-nemo-item-count", channelUnreadCount);
+    notification.setHintValue("x-nemo-feedback", "chat,chat_exists");
+    if (channelUnreadCount > 1) {
+        notification.setHintValue("suppress-sound", true);
+    }
     notification.setRemoteAction(Notification::remoteAction("default", "", "harbour.sailslack", "/", "harbour.sailslack", "activate", arguments));
     notification.publish();
 }

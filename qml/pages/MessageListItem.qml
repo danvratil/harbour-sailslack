@@ -4,8 +4,16 @@ import Sailfish.Silica 1.0
 ListItem {
     id: item
     contentHeight: column.height + Theme.paddingMedium
+    signal openThread(string threadId)
 
     menu: ContextMenu {
+        MenuItem {
+            visible: !page.threadId
+            text: qsTr("Reply in thread")
+            onClicked: {
+                openThread(timestamp)
+            }
+        }
         MenuItem {
             text: qsTr("User Details")
             onClicked: showUserDetails(user.id)
@@ -50,6 +58,20 @@ ListItem {
             onLinkActivated: handleLink(link)
         }
 
+        Item {
+            width: parent.width
+            height: childrenRect.height
+            visible: reply_count > 0
+
+            Label {
+                text: qsTr("Replies: %1").arg(reply_count)
+                anchors.left: parent.left
+                font.italic: true
+                font.pixelSize: Theme.fontSizeTiny
+                color: infoColor
+            }
+        }
+
         Spacer {
             height: Theme.paddingMedium
             visible: contentLabel.visible && (imageRepeater.count > 0 || attachmentRepeater.count > 0)
@@ -58,19 +80,25 @@ ListItem {
         Repeater {
             id: imageRepeater
             model: images
+            Column {
+                spacing: Theme.paddingSmall
+                Text {
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: textColor
+                    visible: text.length > 0
+                    text: model.title
+                }
+                AnimatedImage {
+                    width: parent.width
+                    height: model.thumbSize.height
+                    fillMode: Image.PreserveAspectFit
+                    source: model.thumbUrl
 
-            Image {
-                width: parent.width
-                height: model.thumbSize.height
-                fillMode: Image.PreserveAspectFit
-                source: model.thumbUrl
-                sourceSize.width: model.thumbSize.width
-                sourceSize.height: model.thumbSize.height
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        pageStack.push(Qt.resolvedUrl("Image.qml"), {"model": model})
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            pageStack.push(Qt.resolvedUrl("Image.qml"), {"model": model})
+                        }
                     }
                 }
             }
@@ -103,4 +131,5 @@ ListItem {
     function showUserDetails(userId) {
         pageStack.push(Qt.resolvedUrl("UserView.qml"), {"slackClient": slackClient, "userId": userId})
     }
+
 }

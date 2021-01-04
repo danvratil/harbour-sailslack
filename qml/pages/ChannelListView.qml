@@ -103,7 +103,9 @@ SilicaListView {
     function getSectionName(section) {
         switch (section) {
             case "unread":
-                return qsTr("Unreads")
+                return qsTr("Unread");
+            case "starred":
+                return qsTr("Starred")
 
             case "channel":
                 return qsTr("Channels")

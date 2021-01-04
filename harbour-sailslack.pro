@@ -41,6 +41,10 @@ DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
 
 DBUS_ADAPTORS += src/harbour.sailslack.xml
 
+TRANSLATIONS += translations/harbour-sailslack.ts \
+                translations/harbour-sailslack-sv.ts \
+                translations/harbour-sailslack-bg.ts
+
 SOURCES += src/harbour-sailslack.cpp \
     src/authserver.cpp \
     src/slackclient.cpp \
@@ -66,7 +70,6 @@ OTHER_FILES += qml/harbour-sailslack.qml \
     rpm/harbour-sailslack.changes.in \
     rpm/harbour-sailslack.spec \
     rpm/harbour-sailslack.yaml \
-    translations/*.ts \
     harbour-sailslack.desktop \
     harbour-sailslack.png
 
@@ -117,6 +120,7 @@ DISTFILES += \
     data/emoji.json \
     qml/pages/TeamList.qml \
     qml/pages/TeamList.js \
+    qml/pages/Thread.qml \
     qml/pages/UserView.qml
 
 RESOURCES += \

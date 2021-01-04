@@ -5,7 +5,7 @@ import harbour.sailslack 1.0
 Page {
     id: page
 
-    property Client slackclient
+    property Client slackClient
 
     property variant channelId
     property double padding: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
@@ -92,7 +92,7 @@ Page {
         }
     }
 
-    onSlackclientChanged: {
+    onSlackClientChanged: {
         if (slackClient) {
             slackClient.onPostImageFail.connect(handleImagePostFail)
             slackClient.onPostImageSuccess.connect(handleImagePostSuccess)

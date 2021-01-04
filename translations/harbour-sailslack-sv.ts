@@ -64,16 +64,21 @@
     </message>
     <message>
         <location filename="../qml/pages/ChannelListView.qml" line="106"/>
-        <source>Unreads</source>
-        <translation>Olästa</translation>
+        <source>Unread</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="109"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="108"/>
+        <source>Starred</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ChannelListView.qml" line="111"/>
         <source>Channels</source>
         <translation>Kanaler</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ChannelListView.qml" line="112"/>
+        <location filename="../qml/pages/ChannelListView.qml" line="114"/>
         <source>Direct messages</source>
         <translation>Direktmeddelanden</translation>
     </message>
@@ -226,38 +231,58 @@ Vill du verkligen lämna?</translation>
 <context>
     <name>MessageListItem</name>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="10"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="18"/>
         <source>User Details</source>
         <translation>Användarinformation</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListItem.qml" line="67"/>
+        <source>Replies: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListItem.qml" line="12"/>
+        <source>Reply in thread</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MessageListView</name>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="38"/>
+        <location filename="../qml/pages/MessageListView.qml" line="39"/>
         <source>User Details</source>
         <translation>Användarinformation</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="100"/>
+        <location filename="../qml/pages/MessageListView.qml" line="82"/>
+        <source>Thread in #%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
         <source>Message %1%2</source>
         <translation>Meddelande %1%2</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
+        <source>Message thread in %1%2</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="317"/>
-        <source>New message in %1</source>
-        <translation>Nytt meddelande i %1</translation>
+        <location filename="../src/slackclient.cpp" line="335"/>
+        <source>in %1 @ %2</source>
+        <translation>i %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="320"/>
-        <source>New message from %1</source>
-        <translation>Nytt meddelande från %1</translation>
+        <location filename="../src/slackclient.cpp" line="338"/>
+        <source>from %1 @ %2</source>
+        <translation>från %1 @ %2</translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="323"/>
+        <location filename="../src/slackclient.cpp" line="341"/>
         <source>New message</source>
         <translation>Nytt meddelande</translation>
     </message>

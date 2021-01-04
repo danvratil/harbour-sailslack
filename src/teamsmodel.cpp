@@ -1,6 +1,9 @@
 #include "teamsmodel.h"
 
 #include <QQmlEngine>
+#include <functional>
+
+#include <functional>
 
 Q_DECLARE_METATYPE(SlackClient*)
 
@@ -68,7 +71,7 @@ SlackClient *TeamsModel::addTeam(const QString &userId, const QString &teamId, c
 
 namespace {
 
-auto findTeam(const QString &teamId) {
+std::function<bool(const TeamsModel::Team &team)> findTeam(const QString &teamId) {
     return [teamId](const TeamsModel::Team &team) {
         return team.uuid == teamId;
     };

@@ -99,7 +99,7 @@ void MessageFormatter::replaceEmoji(QString &message) {
 
         if (MessageFormatter::emojis.contains(name)) {
             QString image = MessageFormatter::emojis.value(name);
-            QString emoji = "<img src=\"http://emojistatic.github.io/images/32/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"64\" height=\"64\" />";
+            QString emoji = "<img src=\"https://a.slack-edge.com/production-standard-emoji-assets/10.2/google-large/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"64\" height=\"64\" />";
             message.replace(":" + name + ":", emoji);
         }
         else {
