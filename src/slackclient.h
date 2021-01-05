@@ -47,9 +47,9 @@ public:
 
     Q_INVOKABLE QVariantList getUsers();
     Q_INVOKABLE QVariantList getChannels();
-    Q_INVOKABLE QVariant getChannel(const QString& channelId);
+    Q_INVOKABLE QVariant getChannel(const QString& channelId) const;
 
-    Q_INVOKABLE QVariant getThread(const QString& threadId);
+    Q_INVOKABLE QVariant getThread(const QString &channelId, const QString& threadId) const;
 
     SlackClientConfig *getConfig() const { return this->config; }
     EmojiProvider *getEmojiProvider() { return &this->emojiProvider; }

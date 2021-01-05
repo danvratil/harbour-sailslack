@@ -47,7 +47,7 @@ Page {
 
     Component.onCompleted: {
         page.channel = slackClient.getChannel(page.channelId)
-        page.thread = slackClient.getThread(page.threadId)
+        page.thread = slackClient.getThread(page.channelId, page.threadId)
     }
 
     onStatusChanged: {

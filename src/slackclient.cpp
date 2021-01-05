@@ -269,7 +269,7 @@ void SlackClient::parseMessageUpdate(QJsonObject message, bool update) {
     QVariantMap data = getMessageData(message);
 
     QString channelId = message.value("channel").toString();
-    if (storage.channelMessagesExist(channelId) && !update) {
+    if (storage.channelHasMessages(channelId) && !update) {
         storage.appendChannelMessage(channelId, data);
     }
 
@@ -594,7 +594,7 @@ void SlackClient::updateImUnreadCount(QString channelId, QString lastRead) {
     QVariantMap channel = storage.channel(channelId);
     bool fetchCount = true;
 
-    if (storage.channelMessagesExist(channelId)) {
+    if (storage.channelHasMessages(channelId)) {
         QVariantList messages = storage.channelMessages(channelId);
         // Check timestamps from end
         for (int i = messages.size()-1; i >= 0; i--) {
@@ -857,12 +857,12 @@ QVariantList SlackClient::getChannels() {
     return storage.channels();
 }
 
-QVariant SlackClient::getChannel(const QString& channelId) {
+QVariant SlackClient::getChannel(const QString& channelId) const {
     return storage.channel(channelId);
 }
 
-QVariant SlackClient::getThread(const QString& threadId) {
-    return storage.thread(threadId);
+QVariant SlackClient::getThread(const QString &channelId, const QString& threadId) const {
+    return storage.thread(channelId, threadId);
 }
 
 void SlackClient::loadConversations(QString cursor) {
@@ -1113,7 +1113,7 @@ void SlackClient::loadHistory(QString channelId, QString latest) {
 }
 
 void SlackClient::loadMessages(QString channelId) {
-    if (storage.channelMessagesExist(channelId)) {
+    if (storage.channelHasMessages(channelId)) {
         QVariantList messages = storage.channelMessages(channelId);
         emit loadMessagesSuccess(channelId, QString(), messages, true);
         return;
@@ -1123,15 +1123,16 @@ void SlackClient::loadMessages(QString channelId) {
     params.insert("channel", channelId);
     params.insert("limit", "20");
 
+
     QNetworkReply* reply = executeGet("conversations.history", params);
     reply->setProperty("channelId", channelId);
     connect(reply, SIGNAL(finished()), this, SLOT(handleLoadMessagesReply()));
 }
 
 void SlackClient::loadThreadMessages(QString threadId, QString channelId) {
-    if (storage.threadMessagesExist(threadId)) {
-        QVariantList messages = storage.threadMessages(threadId);
-        emit loadMessagesSuccess(threadId, QString(), messages, true);
+    if (storage.threadHasMessages(channelId, threadId)) {
+        QVariantList messages = storage.threadMessages(channelId, threadId);
+        emit loadMessagesSuccess(channelId, threadId, messages, true);
         return;
     }
 
@@ -1167,7 +1168,7 @@ void SlackClient::handleLoadMessagesReply() {
     if (!channelId.isEmpty() && threadId.isEmpty()) {
         storage.setChannelMessages(channelId, messages);
     } else if (!threadId.isEmpty()) {
-        storage.setThreadMessages(threadId, messages);
+        storage.setThreadMessages(channelId, threadId, messages);
     }
 
     emit loadMessagesSuccess(channelId, threadId, messages, hasMore);
@@ -1176,7 +1177,7 @@ void SlackClient::handleLoadMessagesReply() {
 
 bool SlackClient::createThread(QString channelId, QString threadId) {
 
-    if (!storage.channelMessagesExist(channelId)) {
+    if (!storage.channelHasMessages(channelId)) {
         return false;
     }
 
@@ -1189,7 +1190,7 @@ bool SlackClient::createThread(QString channelId, QString threadId) {
                 message.insert("thread_ts", threadId);
                 message.insert("transient", true);
             }
-            storage.createOrUpdateThread(threadId, message);
+            storage.createOrUpdateThread(channelId, threadId, message);
         }
         return true;
     }
