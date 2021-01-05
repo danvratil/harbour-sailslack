@@ -323,27 +323,27 @@ Are you sure you wish to leave?</source>
         <translation>Директни съобщения</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="61"/>
+        <location filename="../qml/pages/UserView.qml" line="70"/>
         <source>Display Name</source>
         <translation>Показвано име</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="68"/>
+        <location filename="../qml/pages/UserView.qml" line="77"/>
         <source>Email</source>
         <translation>Е-поща</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="75"/>
+        <location filename="../qml/pages/UserView.qml" line="84"/>
         <source>Timezone</source>
         <translation>Часова зона</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="82"/>
+        <location filename="../qml/pages/UserView.qml" line="91"/>
         <source>Phone</source>
         <translation>Телефон</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="89"/>
+        <location filename="../qml/pages/UserView.qml" line="98"/>
         <source>Skype</source>
         <translation>Skype</translation>
     </message>

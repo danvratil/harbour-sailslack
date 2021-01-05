@@ -123,9 +123,11 @@ public slots:
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
     void openChat(QString chatId);
+    void openUserChat(QStringList users);
     void closeChat(QString chatId);
     void postMessage(QString channelId, QString threadId, QString content);
     void postImage(QString channelId, QString imagePath, QString title, QString comment);
+    void loadUserForChat(QString userId, QJsonObject chat);
     void loadUserInfo(QString userId);
 
     void handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
@@ -181,6 +183,7 @@ private:
     void updateChannelUnreadCount(QString channelId, QString lastRead);
     void updateImUnreadCount(QString channelId, QString lastRead);
 
+    QVariantMap parseUser(const QJsonObject& user);
     void parseUsers(QJsonObject data);
     void findNewUsers(const QString &message);
 

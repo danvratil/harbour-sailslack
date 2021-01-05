@@ -323,27 +323,27 @@ Vill du verkligen lämna?</translation>
         <translation>Direktmeddelanden</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="61"/>
+        <location filename="../qml/pages/UserView.qml" line="70"/>
         <source>Display Name</source>
         <translation>Skärmnamn</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="68"/>
+        <location filename="../qml/pages/UserView.qml" line="77"/>
         <source>Email</source>
         <translation>E-post</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="75"/>
+        <location filename="../qml/pages/UserView.qml" line="84"/>
         <source>Timezone</source>
         <translation>Tidszon</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="82"/>
+        <location filename="../qml/pages/UserView.qml" line="91"/>
         <source>Phone</source>
         <translation>Telefon</translation>
     </message>
     <message>
-        <location filename="../qml/pages/UserView.qml" line="89"/>
+        <location filename="../qml/pages/UserView.qml" line="98"/>
         <source>Skype</source>
         <translation>Skype</translation>
     </message>
