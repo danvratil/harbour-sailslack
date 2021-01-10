@@ -23,7 +23,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void clientConnected();
 
-signals:
+Q_SIGNALS:
     void resultUrlAvailable(const QString& url);
     bool listening(bool isListening);
 

@@ -12,12 +12,12 @@ WebViewFlickable {
         active: true
         url: webViewF.url
         onUrlChanged: {
-            // OLD INCORRECT COMMENT LEFT FOR THE LINKS:
             // This is currently not called for redirects (at least not in sailfish-components-webview 1.1.6.1).
             // so I just leave this here in case it starts working, otherwise AuthServer is actually listening on 3000.
             // See also https://git.sailfishos.org/mer-core/qtmozembed/blob/master/src/qmozview_defined_wrapper.h
             // which is wrapped in RawWebView https://github.com/sailfishos/sailfish-components-webview/blob/jb51257/1.1.6.1/import/webview/rawwebview.h
             if (isReturnUrl(url)) {
+                console.log("Webview onUrlChanged called");
                 visible = false
 
                 if (isSuccessUrl(url)) {

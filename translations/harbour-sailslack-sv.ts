@@ -241,42 +241,42 @@ Vill du verkligen lämna?</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="77"/>
+        <location filename="../qml/pages/LoginPage.qml" line="75"/>
         <source>You can login with your browser:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="81"/>
+        <location filename="../qml/pages/LoginPage.qml" line="79"/>
         <source>Use browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="88"/>
+        <location filename="../qml/pages/LoginPage.qml" line="86"/>
         <source>Or use the Sailfish WebView:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="92"/>
+        <location filename="../qml/pages/LoginPage.qml" line="90"/>
         <source>Use webview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="103"/>
+        <location filename="../qml/pages/LoginPage.qml" line="98"/>
         <source>Or copy the link to use it on your desktop:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="108"/>
+        <location filename="../qml/pages/LoginPage.qml" line="102"/>
         <source>Copy link</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="118"/>
+        <location filename="../qml/pages/LoginPage.qml" line="112"/>
         <source>Paste redirect url here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/LoginPage.qml" line="124"/>
+        <location filename="../qml/pages/LoginPage.qml" line="118"/>
         <source>Go</source>
         <translation type="unfinished"></translation>
     </message>

@@ -8,7 +8,7 @@ WebViewPage {
     id: page
 
     property string processId: Math.random().toString(36).substring(7)
-    property string startUrl: "https://slack.com/oauth/authorize?scope=client&client_id=" + slackClientId + "&redirect_uri=https%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
+    property string startUrl: "https://slack.com/oauth/authorize?scope=client&client_id=" + slackClientId + "&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
 
     signal loginSuccess(string userId, string teamId, string teamName, string accessToken)
 
@@ -43,9 +43,8 @@ WebViewPage {
         switch (status) {
         case PageStatus.Active:
             server.listen(3000);
-            Qt.openUrlExternally(page.startUrl + "&state=" + page.processId);
             break;
-        case PageStatus.Deactivating:
+        case PageStatus.Deactivated:
             server.close();
             break;
         }
@@ -90,9 +89,6 @@ WebViewPage {
             Button {
                 text: qsTr("Use webview")
                 onClicked: {
-                    // Closing the 3000 port as even though the webview would successfully connect to it, the timing it navigates away from this page makes
-                    // the webview crash (at onResultUrlAvailable signal).
-                    server.close();
                     column.visible = false
                     browserLoadable.setSource ("LoginWebView.qml", { url: page.startUrl + "&state=" + page.processId })
                 }
