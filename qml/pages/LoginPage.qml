@@ -39,6 +39,17 @@ WebViewPage {
         }
     }
 
+    function switchToWebView() {
+        silicaFlickable.visible = false
+        webViewFlickable.visible = true;
+        webViewFlickable.url = page.startUrl + "&state=" + page.processId
+    }
+
+    function switchToAdvanced() {
+        silicaFlickable.visible = true
+        webViewFlickable.visible = false;
+    }
+
     onStatusChanged: {
         switch (status) {
         case PageStatus.Active:
@@ -51,6 +62,8 @@ WebViewPage {
     }
 
     SilicaFlickable {
+        id: silicaFlickable
+        visible: false
         anchors.fill: parent
 
         contentWidth: column.width
@@ -88,10 +101,7 @@ WebViewPage {
 
             Button {
                 text: qsTr("Use webview")
-                onClicked: {
-                    column.visible = false
-                    browserLoadable.setSource ("LoginWebView.qml", { url: page.startUrl + "&state=" + page.processId })
-                }
+                onClicked: switchToWebView()
             }
 
             Label {
@@ -123,11 +133,25 @@ WebViewPage {
                 }
             }
         }
+
     }
 
-    Loader {
-        id: browserLoadable
+    LoginWebView {
+        id: webViewFlickable
         anchors.fill: parent
+        url: page.startUrl + "&state=" + page.processId
+
+        header: PageHeader {
+            id: header
+            title: "Sign in with Slack"
+        }
+
+        PullDownMenu {
+            MenuItem {
+                text: qsTr("Advanced login options")
+                onClicked: switchToAdvanced()
+            }
+        }
     }
 
 }

@@ -40,7 +40,7 @@ void AuthServer::clientConnected() {
 
     socket->write(QStringLiteral("HTTP/1.0 200 OK\r\nContent-type:text/html\r\nContent-Length:%1\r\n\r\n%2").arg(replyHTML.length()).arg(replyHTML).toUtf8());
     socket->flush();
-
+    socket->close();
     emit resultUrlAvailable(QStringLiteral("http://localhost:%1%2").arg(server.serverPort()).arg(urlWithoutHost));
 }
 
