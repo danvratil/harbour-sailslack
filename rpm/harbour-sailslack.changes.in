@@ -8,6 +8,14 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sat Jan 23 2021 Daniel Vrátil <me@dvratil.cz> 0.2-1
+- Fix login (thanks to b100dian)
+- Initial support for threads (thanks to b100dian)
+- Improve displaying of images (thanks to Decon)
+- Fix detecting and displaying some emojis (thanks to s.marinov)
+- Improved notifications (thanks to s.marinov)
+- Small fixes and improvements
+
 * Tue Apr 16 2019 Daniel Vrátil <me@dvratil.cz> 0.1-1
 - Forked from harbour-slackfish
 - Fixed connecting to Slack
