@@ -1,5 +1,8 @@
 # App config
 TARGET = harbour-sailslack
+CONFIG += link_pkgconfig
+PKGCONFIG += qt5embedwidget
+
 CONFIG += sailfishapp
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 
@@ -10,6 +13,8 @@ CONFIG += sailfishapp_i18n
 # Notifications
 QT += dbus
 PKGCONFIG += nemonotifications-qt5
+
+CONFIG += sailfish-components-webview-qt5
 
 # Includes
 INCLUDEPATH += ./QtWebsocket
@@ -41,6 +46,7 @@ TRANSLATIONS += translations/harbour-sailslack.ts \
                 translations/harbour-sailslack-bg.ts
 
 SOURCES += src/harbour-sailslack.cpp \
+    src/authserver.cpp \
     src/slackclient.cpp \
     src/QtWebsocket/QWsSocket.cpp \
     src/QtWebsocket/QWsFrame.cpp \
@@ -68,6 +74,7 @@ OTHER_FILES += qml/harbour-sailslack.qml \
     harbour-sailslack.png
 
 HEADERS += \
+    src/authserver.h \
     src/slackclient.h \
     src/QtWebsocket/QWsSocket.h \
     src/QtWebsocket/QWsFrame.h \
@@ -92,6 +99,7 @@ DISTFILES += \
     qml/pages/ChannelList.qml \
     qml/pages/ChannelList.js \
     qml/pages/Channel.qml \
+    qml/pages/LoginWebView.qml \
     qml/pages/MessageListItem.qml \
     qml/pages/MessageInput.qml \
     qml/pages/Image.qml \

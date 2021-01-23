@@ -1,6 +1,7 @@
 #include <QtQuick>
 #include <sailfishapp.h>
 
+#include "authserver.h"
 #include "slackconfig.h"
 #include "slackclient.h"
 #include "slackclientconfig.h"
@@ -33,11 +34,11 @@ int main(int argc, char *argv[])
         return new SlackConfig();
     });
 
+    qmlRegisterType<AuthServer>("harbour.sailslack", 1, 0, "AuthServer");
     qmlRegisterType<SlackAuthenticator>("harbour.sailslack", 1, 0, "Authenticator");
     qmlRegisterType<SlackClient>("harbour.sailslack", 1, 0, "Client");
     qmlRegisterType<TeamsModel>("harbour.sailslack", 1, 0, "TeamsModel");
     qmlRegisterUncreatableType<SlackClientConfig>("harbour.sailslack", 1, 0, "ClientConfig", "Use Client.config to access current config");
-
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
     view->rootContext()->setContextProperty("slackClientId", SLACK_CLIENT_ID);
