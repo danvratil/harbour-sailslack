@@ -68,7 +68,6 @@ Page {
         }
         else if (status === PageStatus.Deactivating) {
             slackClient.setActiveWindow("")
-            listView.markLatest()
         }
     }
 }
