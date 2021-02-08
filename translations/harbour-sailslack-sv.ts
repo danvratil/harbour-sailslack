@@ -312,22 +312,22 @@ Vill du verkligen lämna?</translation>
 <context>
     <name>MessageListView</name>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="73"/>
+        <location filename="../qml/pages/MessageListView.qml" line="64"/>
         <source>User Details</source>
         <translation>Användarinformation</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="121"/>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
         <source>Thread in #%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="156"/>
+        <location filename="../qml/pages/MessageListView.qml" line="152"/>
         <source>Message %1%2</source>
         <translation>Meddelande %1%2</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="156"/>
+        <location filename="../qml/pages/MessageListView.qml" line="152"/>
         <source>Message thread in %1%2</source>
         <translation type="unfinished"></translation>
     </message>

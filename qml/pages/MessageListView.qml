@@ -29,17 +29,8 @@ SilicaListView {
         return -1
     }
 
-    function setLastRead(timestamp, index) {
+    function setLastRead(timestamp) {
         console.log("Setting lastRead to", timestamp)
-        if (typeof index === "number") {
-            // If we're passing an index it means that the _previous_ message needs to be marked.
-            if (index > 0) {
-                var firstUnreadMessage = messageListModel.get(index - 1);
-                timestamp = firstUnreadMessage.timestamp;
-            } else {
-                timestamp = "0000000000.000000"
-            }
-        }
 
         slackClient.markChannel(page.channelId, timestamp)
 
@@ -139,7 +130,12 @@ SilicaListView {
             }
         }
         onMarkUnread: {
-            setLastRead(timestamp, index)
+            if (index > 0) {
+                var firstUnreadMessage = messageListModel.get(index - 1);
+                setLastRead(firstUnreadMessage.timestamp);
+            } else {
+                setLastRead("0000000000.000000")
+            }
         }
     }
 
@@ -204,7 +200,6 @@ SilicaListView {
 
     function markLatest() {
         if (furthestRead != "") {
-            slackClient.markChannel(channel.id, furthestRead)
             setLastRead(furthestRead)
             furthestRead = ""
         }
@@ -248,8 +243,7 @@ SilicaListView {
         var isForThisThread = threadId && thread && threadId === thread.thread_ts;
         var isForThisChannel = !threadId && !thread && channelId === channel.id;
         if (isForThisChannel || isForThisThread) {
-            console.log("handleLoadSuccess", "lastRead", channel.lastRead)
-            setLastRead(channel.lastRead)
+            currentLastRead = channel.lastRead
             hasMoreMessages = hasMore
             loader.sendMessage({
                 op: 'replace',
