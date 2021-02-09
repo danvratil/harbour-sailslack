@@ -226,9 +226,9 @@ SilicaListView {
 
     function handleMessageReceived(message, update) {
         if (message.type === "message" && message.channel === channel.id) {
-            if ((message.thread_ts) && (message.thread_ts !== message.timestamp)) {
+            if (message.thread_ts && (message.thread_ts !== message.timestamp)) {
                 // A message received a reply. Is it for this thread?
-                if (message.thread_ts !== thread.thread_ts) {
+                if (thread === undefined || message.thread_ts !== thread.thread_ts) {
                     return;
                 }
             }
