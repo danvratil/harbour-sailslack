@@ -164,15 +164,12 @@ void SlackClient::handleStreamMessage(QJsonObject message) {
         if (message.value("subtype") == QStringLiteral("message_replied")) {
             QJsonObject innerMessage = message.value("message").toObject();
             innerMessage.insert("channel", message.value("channel"));
-            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
             parseMessageUpdate(innerMessage, true);
         } else if (message.value("subtype") == QStringLiteral("message_changed")) {
             QJsonObject innerMessage = message.value("message").toObject();
             innerMessage.insert("channel", message.value("channel"));
-            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(innerMessage));
             parseMessageUpdate(innerMessage, true);
         } else {
-            storage.appendChannelMessage(message.value("channel").toString(), getMessageData(message));
             parseMessageUpdate(message);
         }
     }

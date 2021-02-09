@@ -72,10 +72,11 @@ auto Storage::findChannelMessage(const QString &channelId, const QString &messag
         return {false, {}};
     }
 
-    auto msgIt = std::lower_bound(channelIt->messages.begin(), channelIt->messages.end(), messageId,
-                                  [](const auto &msg, const auto &msgId) {
-                                    return msg.toMap().value(QStringLiteral("timestamp")) == msgId;
-                                  });
+    auto msgIt = std::find_if(channelIt->messages.begin(), channelIt->messages.end(),
+                              [messageId](const auto &msg) {
+                                   return msg.toMap().value(QStringLiteral("timestamp")) == messageId;
+                              });
+
     if (msgIt == channelIt->messages.end() || msgIt->toMap().value(QStringLiteral("timestamp")) != messageId) {
         return {false, {}};
     }
@@ -206,7 +207,9 @@ QVariantList::iterator Storage::findSortedMessages(QVariantList& messages, const
 void Storage::appendChannelMessage(const QString &channelId, const QVariantMap &message) {
     auto &channel = channelMap[channelId];
     auto threadId = messageThreadId(message);
-    if (threadId.isEmpty() || isThreadStarter(message)) {
+    if (threadId.isEmpty()) {
+        channel.messages.push_back(message);
+    } else if (isThreadStarter(message)) {
         // append or update
         auto msgIt = findSortedMessages(channel.messages, threadId);
         if (msgIt != channel.messages.end()) {
@@ -238,9 +241,12 @@ void Storage::appendThreadMessage(const QString &channelId, const QString &threa
     auto &channel = channelMap[channelId];
     auto &thread = channel.threadMessages[threadId];
     if (thread.empty()) {
-        qWarning("Thread without a thread starter?");
-        Q_ASSERT(false);
-        return;
+        auto [found, threadLeader] = findChannelMessage(channelId, threadId);
+        if (!found) {
+            // Thread without a thread-leader, the thread-leader is probably too far in the history
+            return;
+        }
+        thread.push_back(*threadLeader);
     }
 
     if (isThreadStarter(message)) {
