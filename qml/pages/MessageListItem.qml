@@ -1,10 +1,15 @@
 import QtQuick 2.1
 import Sailfish.Silica 1.0
+import harbour.sailslack 1.0
 
 ListItem {
     id: item
     contentHeight: column.height + Theme.paddingMedium
     signal openThread(string threadId)
+    signal markUnread(string timestamp)
+
+    property Client slackClient
+    property bool isUnread
 
     menu: ContextMenu {
         MenuItem {
@@ -14,6 +19,13 @@ ListItem {
                 openThread(timestamp)
             }
         }
+        MenuItem {
+            text: qsTr("Mark unread")
+            onClicked: {
+                markUnread(timestamp)
+            }
+        }
+
         MenuItem {
             text: qsTr("User Details")
             onClicked: showUserDetails(user.id)
@@ -52,6 +64,7 @@ ListItem {
             id: contentLabel
             width: parent.width
             font.pixelSize: Theme.fontSizeSmall
+            font.weight: isUnread ? Font.Bold : Font.Normal
             color: textColor
             visible: text.length > 0
             value: content

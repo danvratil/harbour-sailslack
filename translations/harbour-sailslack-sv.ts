@@ -289,17 +289,22 @@ Vill du verkligen lämna?</translation>
 <context>
     <name>MessageListItem</name>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="18"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="23"/>
+        <source>Mark unread</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MessageListItem.qml" line="30"/>
         <source>User Details</source>
         <translation>Användarinformation</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="67"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="80"/>
         <source>Replies: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListItem.qml" line="12"/>
+        <location filename="../qml/pages/MessageListItem.qml" line="17"/>
         <source>Reply in thread</source>
         <translation type="unfinished"></translation>
     </message>
@@ -307,22 +312,22 @@ Vill du verkligen lämna?</translation>
 <context>
     <name>MessageListView</name>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="39"/>
+        <location filename="../qml/pages/MessageListView.qml" line="64"/>
         <source>User Details</source>
         <translation>Användarinformation</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="82"/>
+        <location filename="../qml/pages/MessageListView.qml" line="112"/>
         <source>Thread in #%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="112"/>
+        <location filename="../qml/pages/MessageListView.qml" line="152"/>
         <source>Message %1%2</source>
         <translation>Meddelande %1%2</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="112"/>
+        <location filename="../qml/pages/MessageListView.qml" line="152"/>
         <source>Message thread in %1%2</source>
         <translation type="unfinished"></translation>
     </message>

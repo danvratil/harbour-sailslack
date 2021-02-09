@@ -14,7 +14,32 @@ SilicaListView {
     property bool hasMoreMessages: false
     property bool loading: false
     property bool canLoadMore: hasMoreMessages && !loading
-    property string latestRead: ""
+    // TODO update this based on scroll
+    property string furthestRead: ""
+    property string currentLastRead: channel.lastRead
+
+    // C++-ify this
+    function timestampToIndex(timestamp) {
+        // TODO: better than linear search for message to be updated
+        for (var i = 0; i < messageListModel.count; i++) {
+            if (messageListModel.get(i).timestamp === timestamp) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    function setLastRead(timestamp) {
+        console.log("Setting lastRead to", timestamp)
+
+        slackClient.markChannel(page.channelId, timestamp)
+
+        currentLastRead = channel.lastRead = timestamp
+        if (messageListModel.count) {
+            furthestRead = messageListModel.get(messageListModel.count - 1).timestamp
+        }
+        readTimer.restart()
+    }
 
     signal loadCompleted()
     signal loadStarted()
@@ -62,13 +87,18 @@ SilicaListView {
 
         onMessage: {
             if (messageObject.op === 'replace') {
-                listView.positionViewAtEnd()
+                var unreadIndex = timestampToIndex(channel.lastRead);
+                if (unreadIndex > -1) {
+                    listView.positionViewAtIndex(unreadIndex, ListView.Center)
+                } else {
+                    listView.positionViewAtBeginning()
+                }
                 inputEnabled = true
                 loading = false
                 loadCompleted()
 
                 if (messageListModel.count) {
-                    latestRead = messageListModel.get(messageListModel.count - 1).timestamp
+                    furthestRead = messageListModel.get(messageListModel.count - 1).timestamp
                     readTimer.restart()
                 }
             }
@@ -87,6 +117,8 @@ SilicaListView {
     }
 
     delegate: MessageListItem {
+        slackClient: listView.slackClient
+        isUnread: timestamp > currentLastRead
         onClicked: {
             if (reply_count > 0 && !thread) {
                 showThread(thread_ts)
@@ -95,6 +127,14 @@ SilicaListView {
         onOpenThread: {
             if (slackClient.createThread(channel.id, threadId, messageListModel.get(index))) {
                 showThread(threadId)
+            }
+        }
+        onMarkUnread: {
+            if (index > 0) {
+                var firstUnreadMessage = messageListModel.get(index - 1);
+                setLastRead(firstUnreadMessage.timestamp);
+            } else {
+                setLastRead("0000000000.000000")
             }
         }
     }
@@ -118,7 +158,7 @@ SilicaListView {
 
     onAppActiveChanged: {
         if (appActive && atBottom && messageListModel.count) {
-            latestRead = messageListModel.get(messageListModel.count - 1).timestamp
+            furthestRead = messageListModel.get(messageListModel.count - 1).timestamp
             readTimer.restart()
         }
     }
@@ -133,7 +173,7 @@ SilicaListView {
 
     onMovementEnded: {
         if (atBottom && messageListModel.count) {
-            latestRead = messageListModel.get(messageListModel.count - 1).timestamp
+            furthestRead = messageListModel.get(messageListModel.count - 1).timestamp
             readTimer.restart()
         }
     }
@@ -159,9 +199,9 @@ SilicaListView {
     }
 
     function markLatest() {
-        if (latestRead != "") {
-            slackClient.markChannel(channel.id, latestRead)
-            latestRead = ""
+        if (furthestRead != "") {
+            setLastRead(furthestRead)
+            furthestRead = ""
         }
     }
 
@@ -203,6 +243,7 @@ SilicaListView {
         var isForThisThread = threadId && thread && threadId === thread.thread_ts;
         var isForThisChannel = !threadId && !thread && channelId === channel.id;
         if (isForThisChannel || isForThisThread) {
+            currentLastRead = channel.lastRead
             hasMoreMessages = hasMore
             loader.sendMessage({
                 op: 'replace',
@@ -233,12 +274,9 @@ SilicaListView {
             }
 
             if (update) {
-                // TODO: better than linear search for message to be updated
-                for (var i = 0; i < messageListModel.count; i++) {
-                    if (messageListModel.get(i).timestamp === message.timestamp) {
-                        messageListModel.set(i, message);
-                        break;
-                    }
+                var index = timestampToIndex(message.timestamp)
+                if (index >= 0) {
+                    messageListModel.set(index, message)
                 }
             } else {
                 messageListModel.append(message)
@@ -249,7 +287,7 @@ SilicaListView {
                 listView.positionViewAtEnd()
 
                 if (appActive) {
-                    latestRead = message.timestamp
+                    furthestRead = message.timestamp
                     readTimer.restart()
                 }
             }
