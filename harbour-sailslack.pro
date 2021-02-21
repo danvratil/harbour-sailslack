@@ -1,4 +1,5 @@
 # App config
+TEMPLATE = subdirs
 TARGET = harbour-sailslack
 CONFIG += link_pkgconfig
 PKGCONFIG += qt5embedwidget
@@ -124,3 +125,5 @@ DISTFILES += \
 
 RESOURCES += \
     data.qrc
+
+SUBDIRS += tests
