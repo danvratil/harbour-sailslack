@@ -10,6 +10,8 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128 256x256
 CONFIG += sailfishapp_i18n
 #TRANSLATIONS += translations/harbour-sailslack-fi.ts
 
+QMAKE_CXXFLAGS += --std=c++17
+
 # Notifications
 QT += dbus
 PKGCONFIG += nemonotifications-qt5 connman-qt5
@@ -44,6 +46,9 @@ TRANSLATIONS += translations/harbour-sailslack.ts \
 
 SOURCES += src/harbour-sailslack.cpp \
     src/authserver.cpp \
+    src/models/channellistmodel.cpp \
+    src/models/channelmessagesmodel.cpp \
+    src/models/messagemodel.cpp \
     src/slackclient.cpp \
     src/networkaccessmanagerfactory.cpp \
     src/networkaccessmanager.cpp \
@@ -68,6 +73,10 @@ OTHER_FILES += qml/harbour-sailslack.qml \
 
 HEADERS += \
     src/authserver.h \
+    src/models/channellistmodel.h \
+    src/models/channelmessagesmodel.h \
+    src/models/lru.h \
+    src/models/messagemodel.h \
     src/slackclient.h \
     src/networkaccessmanagerfactory.h \
     src/networkaccessmanager.h \
@@ -80,7 +89,8 @@ HEADERS += \
     src/requestutils.h \
     src/slackclientconfig.h \
     src/slackconfig.h \
-    src/teamsmodel.h
+    src/teamsmodel.h \
+    src/utils.h
 
 DISTFILES += \
     qml/pages/LoginPage.qml \
