@@ -147,8 +147,10 @@ private:
 
     //! Helper structure to call \c MessageModel::cleanupCache() when \c NodePtr is destroyed.
     struct CacheCleanerHelper {
-        MessageModel *model;
+        inline explicit CacheCleanerHelper(MessageModel *model): model{model} {}
         void operator()(Node *node);
+    private:
+        MessageModel *model;
     };
 
     using NodePtr = std::unique_ptr<Node, CacheCleanerHelper>;

@@ -25,6 +25,7 @@ PkgConfigBR:
   - Qt5Quick
   - Qt5WebSockets
   - Qt5DBus                         # Notifications
+  - Qt5Test
   - nemonotifications-qt5 >= 1.0.4  # Notifications
 
 # Runtime dependencies which are not automatically detected

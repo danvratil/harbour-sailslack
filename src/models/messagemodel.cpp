@@ -23,10 +23,16 @@ void MessageModel::CacheCleanerHelper::operator()(Node *node)
 
 MessageModel::MessageModel(QObject *parent)
     : QAbstractItemModel{parent}
-    , mRootNode{NodePtr{new Node, CacheCleanerHelper{this}}}
+    , mCacheCleaner{this}
+    , mRootNode{NodePtr{new Node, mCacheCleaner}}
 {}
 
-MessageModel::~MessageModel() = default;
+MessageModel::~MessageModel()
+{
+    // Explicitly release the the node tree here, before all other structures
+    // are auto-destroyed
+    mRootNode.reset();
+}
 
 int MessageModel::rowCount(const QModelIndex &parent) const
 {
@@ -117,7 +123,7 @@ QModelIndex MessageModel::nodeIndex(const Node *node) const
 
 void MessageModel::doAppendChannel(const QVariantMap &channel)
 {
-    NodePtr channelNode{new Node, CacheCleanerHelper{this}};
+    NodePtr channelNode{new Node, mCacheCleaner};
     channelNode->type = EntityType::Channel;
     channelNode->parent = mRootNode.get();
     channelNode->data = channel;
@@ -178,7 +184,7 @@ void MessageModel::clearChannelMessages(Node *channelNode, const QModelIndex &ch
 
 void MessageModel::doAppendMessage(Node *channelNode, const QVariantMap &message)
 {
-    NodePtr node{new Node, CacheCleanerHelper{this}};
+    NodePtr node{new Node, mCacheCleaner};
     node->type = EntityType::Message;
     node->parent = channelNode;
     node->data = message;
