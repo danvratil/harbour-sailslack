@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2021 Daniel Vrátil <me@dvratil.cz>
  */
 
-#include "models/messagemodel.h"
+#include "messagemodel.h"
 
 #include <QTest>
 
@@ -32,4 +32,4 @@ private Q_SLOTS:
 
 QTEST_GUILESS_MAIN(MessageModelTest)
 
-#include "messagemodeltest.moc"
+#include "tst_messagemodel.moc"

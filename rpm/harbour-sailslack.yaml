@@ -30,6 +30,14 @@ PkgConfigBR:
 # Runtime dependencies which are not automatically detected
 Requires:
   - sailfishsilica-qt5 >= 0.10.9
+  - sailfish-components-webview-qt5
+
+SubPackages:
+  - Name: tests
+    Group: Development
+    Summary: Sailslack Tests
+    Files:
+      - '/opt/tests/%{name}/'
 
 # All installed files
 Files:

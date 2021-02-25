@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testdefinition version="1.0">
+    <suite name="harbour-sailslack-tests" domain="ui">
+        <description>Sailslack automatic tests</description>
+        <set name="unit-tests" feature="Sailslack">
+            <description>Sailslack unit tests</description>
+            <case manual="false" name="ChannelListModelTest">
+                <step>cd /opt/tests/harbour-sailslack/ &amp;&amp; ./tst_channellistmodel</step>
+            </case>
+            <case manual="false" name="ChannelMessagesModelTest">
+                <step>cd /opt/tests/harbour-sailslack/ &amp;&amp; ./tst_channelmessagemodel</step>
+            </case>
+            <case manual="false" name="LRUTest">
+                <step>cd /opt/tests/harbour-sailslack/ &amp;&amp; ./tst_lru</step>
+            </case>
+            <case manual="false" name="MessageModelTest">
+                <step>cd /opt/tests/harbour-sailslack/ &amp;&amp; ./tst_messagemodel</step>
+            </case>
+            <case manual="false" name="ThreadMessagesModelTest">
+                <step>cd /opt/tests/harbour-sailslack/ &amp;&amp; ./tst_threadmessagesmodel</step>
+            </case>
+        </set>
+    </suite>
+</testdefinition>

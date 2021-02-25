@@ -33,6 +33,15 @@ BuildRequires:  desktop-file-utils
 Sailslack is an unoffical Slack client for Sailfish
 
 
+%package tests
+Summary:    Sailslack Tests
+Group:      Development
+Requires:   %{name} = %{version}-%{release}
+BuildRequires:  pkgconfig(Qt5Test)
+
+%description tests
+%{summary}.
+
 %prep
 %setup -q -n %{name}-%{version}
 
@@ -71,3 +80,9 @@ desktop-file-install --delete-original       \
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 # >> files
 # << files
+
+%files tests
+%defattr(-,root,root,-)
+/opt/tests/%{name}/
+# >> files tests
+# << files tests
