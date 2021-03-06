@@ -1,7 +1,7 @@
-TARGET = tst_messagemodel
+TARGET = tst_lru
 
 include(../test_common.pri)
 include(../../src/models/models.pri)
 
 SOURCES += \
-    tst_messagemodel.cpp
+    tst_lru.cpp

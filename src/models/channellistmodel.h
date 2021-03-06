@@ -4,7 +4,7 @@
 #ifndef CHANNELLISTMODEL_H
 #define CHANNELLISTMODEL_H
 
-#include <QIdentityProxyModel>
+#include <QAbstractProxyModel>
 
 //! Proxy model for MessageModel that only displays channels
 /*! This model is designed to be placed on top of the \c MessageModel
@@ -12,7 +12,7 @@
  *
  * \todo Add support for section (read/unread/etc.)
  */
-class ChannelListModel : public QIdentityProxyModel
+class ChannelListModel : public QAbstractProxyModel
 {
     Q_OBJECT
 public:
@@ -21,14 +21,23 @@ public:
     //! Destructor.
     ~ChannelListModel() override = default;
 
-    //! \copydoc QIdentityProxyModel::rowCount()
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    //! \copydoc QIdentityProxyModel::hasChildren()
+    //! \copydoc QAbstractProxyModel::setSourceModel()
+    void setSourceModel(QAbstractItemModel *sourceModel) override;
+
+    //! \copydoc QAbstractProxyModel::rowCount()
+    int rowCount(const QModelIndex &parent = {}) const override;
+    //! \copydoc QAbstractProxyModel::columnCount()
+    int columnCount(const QModelIndex &parent = {}) const override;
+    //! \copydoc QAbstractProxyModel::hasChildren()
     bool hasChildren(const QModelIndex &parent) const override;
-    //! \copydoc QIdentityProxyModel::parent()
+    //! \copydoc QAbstractProxyMode::parent()
     QModelIndex parent(const QModelIndex &child) const override;
-    //! \copydoc QIdentityProxyModel::index()
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    //! \copydoc QAbstractProxyModel::index()
+    QModelIndex index(int row, int column, const QModelIndex &parent = {}) const override;
+    //! \copydoc QAbstractProxyModel::mapToSource()
+    QModelIndex mapToSource(const QModelIndex &proxyIndex) const override;
+    //! \copydoc QAbstractProxyModel::mapFromSource()
+    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const override;
 };
 
 #endif // CHANNELLISTMODEL_H

@@ -13,6 +13,7 @@ Q_LOGGING_CATEGORY(logMM, "harbour-sailslack.MessageModel")
 namespace {
     static const QString fieldChannelId = QStringLiteral("id");
     static const QString fieldMessageId = QStringLiteral("ts");
+    static const QString fieldThreadId = QStringLiteral("thread_ts");
 } // namespace
 
 void MessageModel::CacheCleanerHelper::operator()(Node *node)
@@ -182,15 +183,20 @@ void MessageModel::clearChannelMessages(Node *channelNode, const QModelIndex &ch
     }
 }
 
-void MessageModel::doAppendMessage(Node *channelNode, const QVariantMap &message)
+void MessageModel::doAppendMessage(Node *parentNode, const QVariantMap &message)
 {
     NodePtr node{new Node, mCacheCleaner};
     node->type = EntityType::Message;
-    node->parent = channelNode;
+    node->parent = parentNode;
     node->data = message;
 
-    auto &ref = channelNode->children.emplace_back(std::move(node));
-    const auto channelId = channelNode->data.value(fieldChannelId).toString();
+    auto &ref = parentNode->children.emplace_back(std::move(node));
+    // We might be appending a thread reply.
+    if (parentNode->type == EntityType::Message) {
+        parentNode = parentNode->parent;
+    }
+    Q_ASSERT(parentNode->type == EntityType::Channel);
+    const auto channelId = parentNode->data.value(fieldChannelId).toString();
     mMessageLookup.insert(channelId + message[fieldMessageId].toString(), ref.get());
 }
 
@@ -219,10 +225,27 @@ void MessageModel::appendChannelMessage(const ChannelID &channelId, const QVaria
         return;
     }
 
-    const auto channelIndex = nodeIndex(channelNode);
-    beginInsertRows(channelIndex, channelNode->children.size(), channelNode->children.size());
-    doAppendMessage(channelNode, message);
-    endInsertRows();
+    auto threadId = message.find(fieldThreadId);
+    if (threadId == message.cend()) {
+        const auto channelIndex = nodeIndex(channelNode);
+        beginInsertRows(channelIndex, channelNode->children.size(), channelNode->children.size());
+        doAppendMessage(channelNode, message);
+        endInsertRows();
+    } else {
+        auto *tlNode = mMessageLookup.value(channelId + threadId->toString());
+        if (tlNode == nullptr) {
+            // That's OK, we may receive a reply for a message that we don't currently track
+            return;
+        }
+
+        const auto tlIndex = nodeIndex(tlNode);
+        beginInsertRows(tlIndex, tlNode->children.size(), tlNode->children.size());
+        doAppendMessage(tlNode, message);
+        endInsertRows();
+
+        // The thread-leader message has changed
+        Q_EMIT dataChanged(tlIndex, tlIndex);
+    }
 }
 
 void MessageModel::updateChannelMessage(const ChannelID &channelId, const QVariantMap &message)
@@ -250,9 +273,14 @@ void MessageModel::removeChannelMessage(const ChannelID &channelId, const Messag
     Q_ASSERT(messageIt != parentNode->children.end());
     const auto messageIdx = std::distance(parentNode->children.begin(), messageIt);
 
-    beginRemoveRows(nodeIndex(parentNode), messageIdx, messageIdx);
+    const auto parentIdx = nodeIndex(parentNode);
+    beginRemoveRows(parentIdx, messageIdx, messageIdx);
     parentNode->children.erase(messageIt);
     endRemoveRows();
+
+    if (parentNode->type == EntityType::Message) {
+       Q_EMIT dataChanged(parentIdx, parentIdx);
+    }
 }
 
 void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, const QVariantList &messages)
@@ -268,8 +296,17 @@ void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID 
 
     beginInsertRows(tlIndex, 0, messages.size() - 1);
     tlNode->children.reserve(messages.size());
-    std::for_each(messages.cbegin(), messages.cend(), [this, tlNode](const auto &m) { doAppendMessage(tlNode, m.toMap()); });
+    std::for_each(messages.cbegin(), messages.cend(), [this, tlNode, &channelId, &threadId](const auto &m) {
+        const auto msg = m.toMap();
+        if (msg["thread_ts"].toString() != threadId) {
+            qCWarning(logMM) << "Thread message" << msg["ts"].toString() << "doesn't belong to current thread (channelId=" << channelId << ", threadId=" << threadId;
+            return;
+        }
+        doAppendMessage(tlNode, m.toMap()); });
     endInsertRows();
+
+    // Update the thread-leader message, since it has become a thread leader now
+    dataChanged(tlIndex, tlIndex);
 }
 
 void MessageModel::clearThreadMessages(Node *tlNode, const QModelIndex &tlIndex)

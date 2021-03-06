@@ -143,7 +143,7 @@ private:
     //! Appends given channel to the model.
     void doAppendChannel(const QVariantMap &channel);
     //! Appends given messages to the model.
-    void doAppendMessage(Node *channelNode, const QVariantMap &message);
+    void doAppendMessage(Node *parentNode, const QVariantMap &message);
 
     //! Helper structure to call \c MessageModel::cleanupCache() when \c NodePtr is destroyed.
     struct CacheCleanerHelper {

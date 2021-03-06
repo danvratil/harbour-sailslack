@@ -70,4 +70,8 @@ private:
     Q_DISABLE_COPY_MOVE(LRU)
 };
 
+
+
+
+
 #endif // LRU_H

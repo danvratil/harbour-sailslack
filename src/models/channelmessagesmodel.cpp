@@ -4,6 +4,7 @@
 
 #include "channelmessagesmodel.h"
 #include "messagemodel.h"
+#include "signalfilter.h"
 
 #include <QLoggingCategory>
 
@@ -11,8 +12,7 @@ Q_LOGGING_CATEGORY(logModel, "harbour-sailslack.ChannelMessageModel")
 
 ChannelMessagesModel::ChannelMessagesModel(QObject *parent)
     : QAbstractProxyModel{parent}
-{
-}
+{}
 
 void ChannelMessagesModel::setChannelId(const QString &channelId)
 {
@@ -20,11 +20,8 @@ void ChannelMessagesModel::setChannelId(const QString &channelId)
         return;
     }
 
-    beginResetModel();
     mChannelId = channelId;
-    mSourceRootIndex = QPersistentModelIndex{};
     updateTopLevelIndex();
-    endResetModel();
     Q_EMIT channelIdChanged(mChannelId);
 }
 
@@ -35,7 +32,6 @@ QString ChannelMessagesModel::channelId() const
 
 void ChannelMessagesModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
-    beginResetModel();
     if (auto *oldSourceModel = this->sourceModel()) {
         disconnect(oldSourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, nullptr);
         disconnect(oldSourceModel, &QAbstractItemModel::rowsInserted, this, nullptr);
@@ -44,40 +40,64 @@ void ChannelMessagesModel::setSourceModel(QAbstractItemModel *sourceModel)
         disconnect(oldSourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, nullptr);
         disconnect(oldSourceModel, &QAbstractItemModel::rowsRemoved, this, nullptr);
         disconnect(oldSourceModel, &QAbstractItemModel::dataChanged, this, nullptr);
+        disconnect(oldSourceModel, &QAbstractItemModel::modelAboutToBeReset, this, nullptr);
+        disconnect(oldSourceModel, &QAbstractItemModel::modelReset, this, nullptr);
     }
 
-    if (sourceModel && !mChannelId.isEmpty()) {
+    const auto filter = [this](const QModelIndex &index) {
+        return index == mSourceRootIndex;
+    };
+    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeInserted, filter});
+    connect(sourceModel, &QAbstractItemModel::rowsInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsInserted, filter});
+    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeMoved, filter});
+    connect(sourceModel, &QAbstractItemModel::rowsMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsMoved, filter});
+    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeRemoved, filter});
+    connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsRemoved, filter});
+    connect(sourceModel, &QAbstractItemModel::dataChanged, this, SignalFilter{this, &ChannelMessagesModel::dataChanged, filter, FilterBy::Parent});
+    connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &ChannelMessagesModel::modelAboutToBeReset);
+    connect(sourceModel, &QAbstractItemModel::modelReset, this, &ChannelMessagesModel::modelReset);
+
+    if (!mChannelId.isEmpty()) {
         updateTopLevelIndex();
     }
 
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, &ChannelMessagesModel::onRowsAboutToBeInserted);
-    connect(sourceModel, &QAbstractItemModel::rowsInserted, this, &ChannelMessagesModel::onRowsInserted);
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, &ChannelMessagesModel::onRowsAboutToBeMoved);
-    connect(sourceModel, &QAbstractItemModel::rowsMoved, this, &ChannelMessagesModel::onRowsMoved);
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, &ChannelMessagesModel::onRowsAboutToBeRemoved);
-    connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, &ChannelMessagesModel::onRowsRemoved);
-    connect(sourceModel, &QAbstractItemModel::dataChanged, this, &ChannelMessagesModel::onDataChanged);
-
     QAbstractProxyModel::setSourceModel(sourceModel);
-    endResetModel();
 }
 
 void ChannelMessagesModel::updateTopLevelIndex()
 {
-    auto srcModel = sourceModel();
-    for (int i = 0; i < srcModel->rowCount(); ++i) {
-        const auto index = srcModel->index(i, 0);
-        const auto channel = srcModel->data(index, static_cast<int>(MessageModel::Role::Channel)).toMap();
-        if (channel[QStringLiteral("id")].toString() == mChannelId) {
-            mSourceRootIndex = index;
-            return;
+    beginResetModel();
+
+    mSourceRootIndex = QPersistentModelIndex{};
+    if (!mChannelId.isEmpty()) {
+        // FIXME: We should be able to do a much faster lookup than two scan using the MessageModel's internal lookup tables
+        auto *model = sourceModel();
+        for (int i = 0, count = model->rowCount(); i < count; ++i) {
+            const auto index = model->index(i, 0);
+            const auto channel = sourceModel()->data(index, static_cast<int>(MessageModel::Role::Channel)).toMap();
+            if (channel[QStringLiteral("id")].toString() == mChannelId) {
+                mSourceRootIndex = index;
+                break;
+            }
         }
     }
+    endResetModel();
 
-    qCWarning(logModel) << "Failed to find channel" << mChannelId << "in the source model";
+    if (!mSourceRootIndex.isValid() && !mChannelId.isEmpty()) {
+        qCWarning(logModel) << "Failed to find channel" << mChannelId << "in the source model";
+    }
 }
 
 int ChannelMessagesModel::rowCount(const QModelIndex &parent) const
+{
+    if (!mSourceRootIndex.isValid() || parent.isValid()) {
+        return 0;
+    }
+
+    return sourceModel()->rowCount(mSourceRootIndex);
+}
+
+int ChannelMessagesModel::columnCount(const QModelIndex &parent) const
 {
     if (!mSourceRootIndex.isValid() || parent.isValid()) {
         return 0;
@@ -111,71 +131,19 @@ QModelIndex ChannelMessagesModel::index(int row, int column, const QModelIndex &
 
 QModelIndex ChannelMessagesModel::mapToSource(const QModelIndex &proxyIndex) const
 {
+    if (!proxyIndex.isValid()) {
+        return {};
+    }
+
     return sourceModel()->index(proxyIndex.row(), proxyIndex.column(), mSourceRootIndex);
 }
 
 QModelIndex ChannelMessagesModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
-    if (sourceIndex.parent() != mSourceRootIndex) {
+    if (sourceIndex.parent() != mSourceRootIndex || !sourceIndex.isValid()) {
         return {};
     }
 
     return createIndex(sourceIndex.row(), sourceIndex.column());
 }
 
-void ChannelMessagesModel::onRowsAboutToBeInserted(const QModelIndex &sourceParent, int first, int last)
-{
-    if (sourceParent == mSourceRootIndex) {
-        Q_EMIT rowsAboutToBeInserted({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onRowsInserted(const QModelIndex &sourceParent, int first, int last)
-{
-    if (sourceParent == mSourceRootIndex) {
-        Q_EMIT rowsInserted({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onRowsAboutToBeMoved(const QModelIndex &sourceParent, int first, int last, const QModelIndex &sourceDestination)
-{
-    if (sourceParent == mSourceRootIndex && sourceDestination != mSourceRootIndex) {
-        Q_EMIT rowsAboutToBeRemoved({}, first, last, {});
-    } else if (sourceParent != mSourceRootIndex && sourceDestination == mSourceRootIndex) {
-        Q_EMIT rowsAboutToBeInserted({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onRowsMoved(const QModelIndex &sourceParent, int first, int last, const QModelIndex &sourceDestination)
-{
-    if (sourceParent == mSourceRootIndex && sourceDestination != mSourceRootIndex) {
-        Q_EMIT rowsRemoved({}, first, last, {});
-    } else if (sourceParent != mSourceRootIndex && sourceDestination == mSourceRootIndex) {
-        Q_EMIT rowsInserted({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onRowsAboutToBeRemoved(const QModelIndex &sourceParent, int first, int last)
-{
-    if (sourceParent == mSourceRootIndex) {
-        Q_EMIT rowsAboutToBeRemoved({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onRowsRemoved(const QModelIndex &sourceParent, int first, int last)
-{
-    if (sourceParent == mSourceRootIndex) {
-        Q_EMIT rowsRemoved({}, first, last, {});
-    }
-}
-
-void ChannelMessagesModel::onDataChanged(const QModelIndex &sourceTopLeft, const QModelIndex &sourceBottomRight, const QVector<int> &roles)
-{
-    if (sourceTopLeft.parent() == mSourceRootIndex) {
-        Q_ASSERT(sourceBottomRight.parent() == mSourceRootIndex);
-
-        Q_EMIT dataChanged(index(sourceTopLeft.row(), sourceTopLeft.column(), {}),
-                           index(sourceBottomRight.row(), sourceBottomRight.column(), {}),
-                           roles);
-    }
-}

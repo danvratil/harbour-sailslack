@@ -1,7 +1,11 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    tst_messagemodel
+    tst_channellistmodel \
+    tst_channelmessagesmodel \
+    tst_messagemodel \
+    tst_lru \
+    tst_threadmessagesmodel
 
 
 OTHER_FILES += \
