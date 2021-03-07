@@ -19,7 +19,7 @@ CONFIG += sailfish-components-webview-qt5
 # Includes
 INCLUDEPATH += ./QtWebsocket
 
-QT += concurrent dbus
+QT += concurrent dbus websockets
 
 include(vendor/vendor.pri)
 

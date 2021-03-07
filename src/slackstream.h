@@ -7,8 +7,7 @@
 #include <QUrl>
 #include <QTimer>
 #include <QAtomicInteger>
-
-#include "QtWebsocket/QWsSocket.h"
+#include <QWebSocket>
 
 class SlackStream : public QObject
 {
@@ -32,9 +31,10 @@ public slots:
     void handleListerEnd();
     void handleMessage(QString message);
     void handleError(QAbstractSocket::SocketError error);
-
+    void pong(quint64 elapsedTime, const QByteArray &payload);
 private:
-    QPointer<QtWebsocket::QWsSocket> webSocket;
+    void initSocket(const QUrl& url);
+    QPointer<QWebSocket> webSocket;
     QPointer<QTimer> checkTimer;
 
     bool isConnected;
