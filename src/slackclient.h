@@ -16,6 +16,9 @@
 #include "storage.h"
 #include "messageformatter.h"
 
+class NetworkManager;
+class NetworkService;
+
 class SlackClient : public QObject
 {
     Q_OBJECT
@@ -131,6 +134,7 @@ public slots:
     void loadUserInfo(QString userId);
 
     void handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
+    void defaultRouteChanged(NetworkService* defaultRoute);
 
     void handleStreamStart();
     void handleStreamEnd();
@@ -145,6 +149,7 @@ private:
     QString activeWindow;
 
     void setConnectionStatus(ConnectionStatus status);
+    void scheduleReconnect();
 
     QNetworkReply* executePost(QString method, const QMap<QString, QString> &data);
     QNetworkReply *executePostWithFile(QString method, const QMap<QString, QString>&, QFile *file);
@@ -195,6 +200,7 @@ private:
     QVariantMap user(const QJsonObject &data);
 
     QPointer<QNetworkAccessManager> networkAccessManager;
+    QPointer<NetworkManager> connManager;
     QPointer<SlackClientConfig> config;
     QPointer<SlackStream> stream;
     QPointer<QTimer> reconnectTimer;
@@ -202,6 +208,7 @@ private:
     MessageFormatter messageFormatter;
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible = QNetworkAccessManager::UnknownAccessibility;
+    QString networkDefaultRoute;
 
     bool initialized = false;
     ConnectionStatus connectionStatus = Disconnected;

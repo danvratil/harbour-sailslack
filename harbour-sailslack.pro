@@ -12,7 +12,7 @@ CONFIG += sailfishapp_i18n
 
 # Notifications
 QT += dbus
-PKGCONFIG += nemonotifications-qt5
+PKGCONFIG += nemonotifications-qt5 connman-qt5
 
 CONFIG += sailfish-components-webview-qt5
 
