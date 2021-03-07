@@ -557,7 +557,7 @@ void SlackClient::start() {
             storage.clearChannelMessages();
             initialized = true;
             Q_EMIT initializedChanged();
-            emit initSuccess();
+            emit initSuccess(this);
         }
 
         reply->deleteLater();

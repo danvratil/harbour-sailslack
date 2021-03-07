@@ -68,6 +68,14 @@ Page {
         initLoading()
     }
 
+    Component.onDestruction: {
+        slackClient.onTestLoginSuccess.disconnect(handleLoginTestSuccess)
+        slackClient.onTestLoginFail.disconnect(handleLoginTestFail)
+        slackClient.onInitSuccess.disconnect(handleInitSuccess)
+        slackClient.onInitFail.disconnect(handleInitFail)
+        slackClient.onTestConnectionFail.disconnect(handleConnectionFail)
+    }
+
     function initLoading() {
         loading = true
         slackClient.testLogin()
@@ -101,7 +109,7 @@ Page {
     }
 
     function handleInitSuccess() {
-        pageStack.replace(Qt.resolvedUrl("ChannelList.qml"), { "slackClient": page.slackClient })
+        pageStack.replace(Qt.resolvedUrl("ChannelList.qml"), { "slackClient": slackClient })
     }
 
     function handleInitFail() {
