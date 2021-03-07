@@ -16,9 +16,6 @@ PKGCONFIG += nemonotifications-qt5 connman-qt5
 
 CONFIG += sailfish-components-webview-qt5
 
-# Includes
-INCLUDEPATH += ./QtWebsocket
-
 QT += concurrent dbus websockets
 
 include(vendor/vendor.pri)
@@ -48,10 +45,6 @@ TRANSLATIONS += translations/harbour-sailslack.ts \
 SOURCES += src/harbour-sailslack.cpp \
     src/authserver.cpp \
     src/slackclient.cpp \
-    src/QtWebsocket/QWsSocket.cpp \
-    src/QtWebsocket/QWsFrame.cpp \
-    src/QtWebsocket/functions.cpp \
-    src/QtWebsocket/QWsHandshake.cpp \
     src/networkaccessmanagerfactory.cpp \
     src/networkaccessmanager.cpp \
     src/slackstream.cpp \
@@ -76,10 +69,6 @@ OTHER_FILES += qml/harbour-sailslack.qml \
 HEADERS += \
     src/authserver.h \
     src/slackclient.h \
-    src/QtWebsocket/QWsSocket.h \
-    src/QtWebsocket/QWsFrame.h \
-    src/QtWebsocket/functions.h \
-    src/QtWebsocket/QWsHandshake.h \
     src/networkaccessmanagerfactory.h \
     src/networkaccessmanager.h \
     src/slackstream.h \
