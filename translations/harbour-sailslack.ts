@@ -208,17 +208,17 @@ Are you sure you wish to leave?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/Loader.qml" line="95"/>
+        <location filename="../qml/pages/Loader.qml" line="103"/>
         <source>Loading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/Loader.qml" line="109"/>
+        <location filename="../qml/pages/Loader.qml" line="117"/>
         <source>Error loading team information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/Loader.qml" line="115"/>
+        <location filename="../qml/pages/Loader.qml" line="123"/>
         <source>No network connection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -330,17 +330,17 @@ Are you sure you wish to leave?</source>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="335"/>
+        <location filename="../src/slackclient.cpp" line="365"/>
         <source>in %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="338"/>
+        <location filename="../src/slackclient.cpp" line="368"/>
         <source>from %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="341"/>
+        <location filename="../src/slackclient.cpp" line="371"/>
         <source>New message</source>
         <translation type="unfinished"></translation>
     </message>
