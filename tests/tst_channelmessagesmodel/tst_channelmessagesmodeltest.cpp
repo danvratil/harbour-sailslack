@@ -2,7 +2,8 @@
  * SPDX-FileCopyrightText: 2021 Daniel Vrátil <me@dvratil.cz>
  */
 
-#include <QtTest>
+#include <QTest>
+
 #include "modeltest.h"
 #include "modelwatcher.h"
 #include "channelmessagesmodel.h"

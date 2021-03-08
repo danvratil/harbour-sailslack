@@ -231,6 +231,7 @@ void ModelTest::populateThreadMessages(int channelRow, int messageRow, int threa
         QCOMPARE(msg["text"].toString(), QStringLiteral("ThreadMessage %1").arg(i));
     }
 
+    QVERIFY(watcher.rowsAddedSpy.empty());
     QVERIFY(watcher.modelResetSpy.empty());
     QVERIFY(watcher.rowsMovedSpy.empty());
     QVERIFY(watcher.rowsRemovedSpy.empty());

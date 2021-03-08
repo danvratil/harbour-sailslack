@@ -25,7 +25,7 @@ void ChannelListModel::setSourceModel(QAbstractItemModel *sourceModel)
     }
 
     if (sourceModel) {
-        static constexpr auto filter = [](const QModelIndex &index) { return index.parent().isValid(); };
+        static constexpr auto filter = [](const QModelIndex &index) { return !index.isValid(); };
         connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, SignalFilter{this, &ChannelListModel::rowsAboutToBeInserted, filter});
         connect(sourceModel, &QAbstractItemModel::rowsInserted, this, SignalFilter{this, &ChannelListModel::rowsInserted, filter});
         connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, SignalFilter{this, &ChannelListModel::rowsAboutToBeMoved, filter});
