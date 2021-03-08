@@ -23,6 +23,7 @@ PkgConfigBR:
   - Qt5Core
   - Qt5Qml
   - Qt5Quick
+  - Qt5WebSockets
   - Qt5DBus                         # Notifications
   - nemonotifications-qt5 >= 1.0.4  # Notifications
 
