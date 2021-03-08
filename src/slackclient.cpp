@@ -100,9 +100,10 @@ void SlackClient::handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkA
 
 void SlackClient::defaultRouteChanged(NetworkService* defaultRoute) {
     qDebug() << "Name: " << defaultRoute->name()
+             << "Valid:" << defaultRoute->isValid()
              << "Path: " << defaultRoute->path();
 
-    if (networkDefaultRoute != defaultRoute->path() && defaultRoute->path() != "/") {
+    if (networkDefaultRoute != defaultRoute->path() && defaultRoute->isValid()) {
         // We disconnect when the default route changes from a valid one to another valid one.
         // This triggers reconnection.
         stream->disconnectFromHost();
@@ -113,7 +114,8 @@ void SlackClient::defaultRouteChanged(NetworkService* defaultRoute) {
         networkAccessManager = new QNetworkAccessManager(this);
         connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
         // Sometimes NAM is stuck at "Network access is disabled" on reconnection, this makes the calls go through if they can.
-        networkAccessManager->setNetworkAccessible(QNetworkAccessManager::NetworkAccessibility::Accessible);
+        networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+        networkAccessible = QNetworkAccessManager::Accessible;
     }
     networkDefaultRoute = defaultRoute->path();
 }
