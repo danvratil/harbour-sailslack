@@ -13,6 +13,7 @@
 #include <QHttpMultiPart>
 #include <QtNetwork/QNetworkConfigurationManager>
 #include <nemonotifications-qt5/notification.h>
+#include <connman-qt5/networkmanager.h>
 
 #include "asyncfuture.h"
 #include "requestutils.h"
@@ -31,6 +32,7 @@ SlackClient::SlackClient(const QString &team, QObject *parent)
     , appActive(true)
     , activeWindow("init")
     , networkAccessManager(new QNetworkAccessManager(this))
+    , connManager(new NetworkManager(this))
     , config(new SlackClientConfig(team, this))
     , stream(new SlackStream(this))
     , reconnectTimer(new QTimer(this))
@@ -40,8 +42,10 @@ SlackClient::SlackClient(const QString &team, QObject *parent)
     qDebug() << "Creating SlackClient for" << config->getTeamName();
 
     networkAccessible = networkAccessManager->networkAccessible();
+    networkDefaultRoute = connManager->defaultRoute()->path();
 
     connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
+    connect(connManager, SIGNAL(defaultRouteChanged(NetworkService*)), this, SLOT(defaultRouteChanged(NetworkService*)));
     connect(reconnectTimer, SIGNAL(timeout()), this, SLOT(reconnect()));
 
     connect(stream, SIGNAL(connected()), this, SLOT(handleStreamStart()));
@@ -94,6 +98,28 @@ void SlackClient::handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkA
     }
 }
 
+void SlackClient::defaultRouteChanged(NetworkService* defaultRoute) {
+    qDebug() << "Name: " << defaultRoute->name()
+             << "Valid:" << defaultRoute->isValid()
+             << "Path: " << defaultRoute->path();
+
+    if (networkDefaultRoute != defaultRoute->path() && defaultRoute->isValid()) {
+        // We disconnect when the default route changes from a valid one to another valid one.
+        // This triggers reconnection.
+        stream->disconnectFromHost();
+        // Also, the NetworkAccessManager caches the start() GET of the previous connection
+        // so we need to re-create it.
+        disconnect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
+        networkAccessManager.clear();
+        networkAccessManager = new QNetworkAccessManager(this);
+        connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
+        // Sometimes NAM is stuck at "Network access is disabled" on reconnection, this makes the calls go through if they can.
+        networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
+        networkAccessible = QNetworkAccessManager::Accessible;
+    }
+    networkDefaultRoute = defaultRoute->path();
+}
+
 void SlackClient::setConnectionStatus(ConnectionStatus status) {
     if (connectionStatus != status) {
         connectionStatus = status;
@@ -144,14 +170,18 @@ void SlackClient::updatePresenceSubscription() {
     this->stream->send(message);
 }
 
+void SlackClient::scheduleReconnect() {
+    qDebug() << config->getTeamName() << ": Stream reconnect scheduled";
+    setConnectionStatus(Connecting);
+    reconnectTimer->setSingleShot(true);
+    reconnectTimer->start(1000);
+}
+
 void SlackClient::handleStreamEnd() {
     qDebug() << config->getTeamName() << ": Stream ended";
 
     if (!config->getAccessToken().isEmpty()) {
-        qDebug() << config->getTeamName() << ": Stream reconnect scheduled";
-        setConnectionStatus(Connecting);
-        reconnectTimer->setSingleShot(true);
-        reconnectTimer->start(1000);
+        scheduleReconnect();
     } else {
         setConnectionStatus(Disconnected);
     }
@@ -515,7 +545,11 @@ void SlackClient::start() {
         if (Request::isError(data)) {
             qDebug() << config->getTeamName() << ": Connect result error";
             setConnectionStatus(Disconnected);
-            emit initFail();
+            if (initialized) {
+                scheduleReconnect();
+            } else {
+                emit initFail();
+            }
         }
         else {
             QUrl url(data.value("url").toString());
@@ -525,7 +559,7 @@ void SlackClient::start() {
             storage.clearChannelMessages();
             initialized = true;
             Q_EMIT initializedChanged();
-            emit initSuccess();
+            emit initSuccess(this);
         }
 
         reply->deleteLater();

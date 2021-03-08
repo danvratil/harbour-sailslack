@@ -4,42 +4,41 @@
 #include <QJsonObject>
 
 SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false), helloReceived(false), lastMessageId(1) {
-    webSocket = new QtWebsocket::QWsSocket(this);
     checkTimer = new QTimer(this);
 
+    connect(checkTimer, SIGNAL(timeout()), this, SLOT(checkConnection()));
+}
+
+void SlackStream::initSocket(const QUrl& url) {
+    webSocket = new QWebSocket("app.slack.com", QWebSocketProtocol::VersionLatest, this);
     connect(webSocket, SIGNAL(connected()), this, SLOT(handleListerStart()));
     connect(webSocket, SIGNAL(disconnected()), this, SLOT(handleListerEnd()));
-    connect(webSocket, SIGNAL(frameReceived(QString)), this, SLOT(handleMessage(QString)));
+    connect(webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(handleMessage(QString)));
     connect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleError(QAbstractSocket::SocketError)));
-    connect(checkTimer, SIGNAL(timeout()), this, SLOT(checkConnection()));
+    connect(webSocket, SIGNAL(pong(quint64, QByteArray)), this, SLOT(pong(quint64, QByteArray)));
+
+    webSocket->open(url);
 }
 
 SlackStream::~SlackStream() {
     disconnect(webSocket, SIGNAL(disconnected()), this, SLOT(handleListerEnd()));
 
     if (!webSocket.isNull()) {
-        webSocket->disconnectFromHost();
+        webSocket->close();
     }
 }
 
 void SlackStream::disconnectFromHost() {
-    qDebug() << "Disconnecting socket";
-    webSocket->disconnectFromHost();
+    if (!webSocket.isNull()) {
+        qDebug() << "Disconnecting socket which is valid: " << webSocket->isValid();
+        webSocket->close();
+        webSocket->deleteLater();
+    }
 }
 
 void SlackStream::listen(QUrl url) {
     helloReceived = false;
-    QString socketUrl = url.scheme() + "://" + url.host();
-    QString resource = url.path();
-
-    if (url.hasQuery()) {
-        resource += "?" + url.query();
-    }
-
-    qDebug() << "Socket URL" << socketUrl << resource;
-
-    webSocket->setResourceName(resource);
-    webSocket->connectToHost(socketUrl);
+    initSocket(url);
 }
 
 void SlackStream::send(QJsonObject message) {
@@ -48,20 +47,27 @@ void SlackStream::send(QJsonObject message) {
     QByteArray data = document.toJson(QJsonDocument::Compact);
     qDebug() << "Send" << data;
 
-    webSocket->write(QString(data));
+    webSocket->sendTextMessage(QString(data));
 }
 
 void SlackStream::checkConnection() {
     if (isConnected) {
         QJsonObject values;
         values.insert("type", QJsonValue(QString("ping")));
-
-        qDebug() << "Check connection" << lastMessageId;
-        send(values);
+        values.insert("lastMessageId", QJsonValue(lastMessageId));
+        lastMessageId.fetchAndAddRelaxed(1);
+        qDebug() << "Check connection" << lastMessageId << " state: " << webSocket->state() << "valid: " << webSocket->isValid();
+        QJsonDocument document(values);
+        QByteArray data = document.toJson(QJsonDocument::Compact);
+        webSocket->ping(data);
     }
     else {
         qDebug() << "Socket not connected, skiping connection check";
     }
+}
+
+void SlackStream::pong(quint64 elapsedTime, const QByteArray &payload) {
+    qDebug() << elapsedTime << payload;
 }
 
 void SlackStream::handleListerStart() {
