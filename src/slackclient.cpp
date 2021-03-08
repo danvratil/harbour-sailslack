@@ -115,7 +115,7 @@ void SlackClient::defaultRouteChanged(NetworkService* defaultRoute) {
         connect(networkAccessManager, SIGNAL(networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)), this, SLOT(handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility)));
         // Sometimes NAM is stuck at "Network access is disabled" on reconnection, this makes the calls go through if they can.
         networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
-        networkAccessible = QNetworkAccessManager::Accessible;
+        handleNetworkAccessibleChanged(QNetworkAccessManager::Accessible);
     }
     networkDefaultRoute = defaultRoute->path();
 }
