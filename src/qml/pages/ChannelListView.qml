@@ -2,7 +2,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.sailslack 1.0
 
-import "ChannelList.js" as ChannelList
 import "Channel.js" as Channel
 
 SilicaListView {
@@ -18,8 +17,10 @@ SilicaListView {
         title: slackClient === null ? "" : slackClient.config.teamName
     }
 
-    model: ListModel {
-        id: channelListModel
+    model: ChannelSortModel {
+        sourceModel: ChannelListModel {
+            sourceModel: slackClient.model
+        }
     }
 
     section {
@@ -35,7 +36,7 @@ SilicaListView {
         contentHeight: row.height + Theme.paddingLarge
         property color infoColor: delegate.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
         property color textColor: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
-        property color currentColor: model.unreadCount > 0 ? textColor : infoColor
+        property color currentColor: channel.unreadCount > 0 ? textColor : infoColor
 
         Row {
             id: row
@@ -46,7 +47,7 @@ SilicaListView {
 
             Image {
                 id: icon
-                source: "image://theme/" + Channel.getIcon(model) + "?" + (delegate.highlighted ? currentColor : Channel.getIconColor(model, currentColor))
+                source: "image://theme/" + Channel.getIcon(channel) + "?" + (delegate.highlighted ? currentColor : Channel.getIconColor(channel, currentColor))
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -56,48 +57,39 @@ SilicaListView {
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: Theme.fontSizeMedium
                 font.bold: model.unreadCount > 0
-                text: model.name
+                text: channel.name
                 color: currentColor
             }
         }
 
         onClicked: {
-            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": model.id})
+            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": channel.id})
         }
 
         menu: ContextMenu {
-            hasContent: model.category === "channel" || model.type === "im"
+            hasContent: channel.category === "channel" || channel.type === "im"
 
             MenuItem {
-                text: model.category === "channel" ? qsTr("Leave") : qsTr("Close")
+                text: channel.category === "channel" ? qsTr("Leave") : qsTr("Close")
                 onClicked: {
-                    switch (model.type) {
+                    switch (channel.type) {
                         case "channel":
-                            slackClient.leaveChannel(model.id)
+                            slackClient.leaveChannel(channel.id)
                             break
 
                         case "group":
-                            var dialog = pageStack.push(Qt.resolvedUrl("GroupLeaveDialog.qml"), {"name": model.name})
+                            var dialog = pageStack.push(Qt.resolvedUrl("GroupLeaveDialog.qml"), {"name": channel.name})
                             dialog.accepted.connect(function() {
-                                slackClient.leaveGroup(model.id)
+                                slackClient.leaveGroup(channel.id)
                             })
                             break
 
                         case "im":
-                            slackClient.closeChat(model.id)
+                            slackClient.closeChat(channel.id)
                     }
                 }
             }
         }
-    }
-
-    Component.onCompleted: {
-
-        ChannelList.init(slackClient)
-    }
-
-    Component.onDestruction: {
-        ChannelList.disconnect(slackClient)
     }
 
     function getSectionName(section) {
@@ -106,10 +98,8 @@ SilicaListView {
                 return qsTr("Unread");
             case "starred":
                 return qsTr("Starred")
-
             case "channel":
                 return qsTr("Channels")
-
             case "chat":
                 return qsTr("Direct messages")
         }

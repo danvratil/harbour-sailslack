@@ -1,9 +1,5 @@
 .pragma library
 
-function compareByName(a, b) {
-    return a.name.localeCompare(b.name)
-}
-
 function isOpen(channel) {
     return channel.isOpen
 }

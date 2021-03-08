@@ -55,6 +55,7 @@ public:
         Message, //!< QVariantMap describing the current message
 
         // TODO: Expose more entity properties
+        _User
     };
     Q_ENUM(Role);
 

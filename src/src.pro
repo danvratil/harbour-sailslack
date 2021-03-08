@@ -80,7 +80,6 @@ DISTFILES += \
     qml/pages/LoginPage.qml \
     qml/pages/Loader.qml \
     qml/pages/ChannelList.qml \
-    qml/pages/ChannelList.js \
     qml/pages/Channel.qml \
     qml/pages/LoginWebView.qml \
     qml/pages/MessageListItem.qml \

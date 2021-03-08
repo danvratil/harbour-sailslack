@@ -11,6 +11,7 @@ ChannelListModel::ChannelListModel(QObject *parent):
 
 void ChannelListModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
+    beginResetModel();
     if (auto *oldSourceModel = this->sourceModel(); oldSourceModel != nullptr) {
         disconnect(oldSourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, nullptr);
         disconnect(oldSourceModel, &QAbstractItemModel::rowsInserted, this, nullptr);
@@ -37,6 +38,19 @@ void ChannelListModel::setSourceModel(QAbstractItemModel *sourceModel)
     }
 
     QAbstractProxyModel::setSourceModel(sourceModel);
+    resetInternalData();
+    endResetModel();
+}
+
+QHash<int, QByteArray> ChannelListModel::roleNames() const
+{
+    if (sourceModel() == nullptr) {
+        return {};
+    }
+
+    auto roles = sourceModel()->roleNames();
+    roles[static_cast<int>(Role::Section)] = "section";
+    return roles;
 }
 
 int ChannelListModel::rowCount(const QModelIndex &parent) const
@@ -67,6 +81,33 @@ QModelIndex ChannelListModel::index(int row, int column, const QModelIndex &pare
     }
 
     return createIndex(row, column);
+}
+
+namespace {
+
+static const QString fieldIsStarred = QStringLiteral("is_starred");
+static const QString fieldCategory = QStringLiteral("category");
+
+static const QString categoryStarred = QStringLiteral("starred");
+
+QString channelSection(const QVariantMap &channel)
+{
+    if (channel[fieldIsStarred].toBool()) {
+        return categoryStarred;
+    }
+
+    return channel[fieldCategory].toString();
+}
+
+} // namespace
+
+QVariant ChannelListModel::data(const QModelIndex &proxyIndex, int role) const
+{
+    if (role == static_cast<int>(ChannelListModel::Role::Section)) {
+        return channelSection(data(proxyIndex, static_cast<int>(MessageModel::Role::Channel)).toMap());
+    }
+
+    return QAbstractProxyModel::data(proxyIndex, role);
 }
 
 QModelIndex ChannelListModel::mapToSource(const QModelIndex &index) const

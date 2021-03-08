@@ -236,6 +236,7 @@ void SlackClient::parseChatOpen(QJsonObject message) {
     QString id = message.value("channel").toString();
     QVariantMap channel = storage.channel(id);
     channel.insert("isOpen", QVariant(true));
+    messageModel.updateChannel(channel);
     storage.saveChannel(channel);
     emit channelJoined(channel);
 
@@ -246,6 +247,7 @@ void SlackClient::parseChatClose(QJsonObject message) {
     QString id = message.value("channel").toString();
     QVariantMap channel = storage.channel(id);
     channel.insert("isOpen", QVariant(false));
+    messageModel.updateChannel(channel);
     storage.saveChannel(channel);
     emit channelLeft(channel);
 
@@ -254,6 +256,7 @@ void SlackClient::parseChatClose(QJsonObject message) {
 
 void SlackClient::parseChannelJoin(QJsonObject message) {
     QVariantMap data = parseChannel(message.value("channel").toObject());
+    messageModel.addChannel(data);
     storage.saveChannel(data);
     emit channelJoined(data);
 }
@@ -262,12 +265,14 @@ void SlackClient::parseChannelLeft(QJsonObject message) {
     QString id = message.value("channel").toString();
     QVariantMap channel = storage.channel(id);
     channel.insert("isOpen", QVariant(false));
+    messageModel.updateChannel(channel);
     storage.saveChannel(channel);
     emit channelLeft(channel);
 }
 
 void SlackClient::parseGroupJoin(QJsonObject message) {
     QVariantMap data = parseGroup(message.value("channel").toObject());
+    messageModel.addChannel(data);
     storage.saveChannel(data);
     emit channelJoined(data);
 
@@ -280,6 +285,7 @@ void SlackClient::parseChannelUpdate(QJsonObject message) {
     QString lastRead = message.value("ts").toString();
     QVariantMap channel = storage.channel(id);
     channel.insert("lastRead", message.value("ts").toVariant());
+    messageModel.updateChannel(channel);
     storage.saveChannel(channel);
     emit channelUpdated(channel);
 
@@ -308,6 +314,7 @@ void SlackClient::parseMessageUpdate(QJsonObject message, bool update) {
     if (messageTime > latestRead) {
         int channelUnreadCount = channel.value("unreadCount").toInt() + 1;
         channel.insert("unreadCount", channelUnreadCount);
+        messageModel.updateChannel(channel);
         storage.saveChannel(channel);
         emit channelUpdated(channel);
 
@@ -341,11 +348,12 @@ void SlackClient::parsePresenceChange(QJsonObject message) {
             emit userUpdated(user);
         }
 
-        foreach (QVariant item, storage.channels()) {
-            QVariantMap channel = item.toMap();
+        for (int i = 0; i < messageModel.rowCount(); ++i) {
+            auto channel = messageModel.data(messageModel.index(i, 0), static_cast<int>(MessageModel::Role::Channel)).toMap();
 
             if (channel.value("type") == QVariant("im") && channel.value("userId") == userId) {
                 channel.insert("presence", presence);
+                messageModel.updateChannel(channel);
                 storage.saveChannel(channel);
                 emit channelUpdated(channel);
             }
@@ -580,6 +588,7 @@ void SlackClient::updateImUnreadCount(QString channelId, QString lastRead) {
                 QVariantMap channel = storage.channel(channelId);
                 channel.insert("unreadCount", messages.size() - 1 - i);
                 storage.saveChannel(channel);
+                messageModel.updateChannel(channel);
                 emit channelUpdated(channel);
                 updateUnreadCount();
                 break;
@@ -603,6 +612,7 @@ void SlackClient::updateImUnreadCount(QString channelId, QString lastRead) {
                     QVariantMap channel = storage.channel(channelId);
                     channel.insert("unreadCount", chData.value("unread_count_display").toVariant());
                     storage.saveChannel(channel);
+                    messageModel.updateChannel(channel);
                     emit channelUpdated(channel);
                     updateUnreadCount();
                 }
@@ -639,6 +649,7 @@ void SlackClient::updateChannelUnreadCount(QString channelId, QString lastRead) 
               auto channel = storage.channel(channelId);
               channel.insert("unreadCount", (hasUnread ? 1 : 0));
               storage.saveChannel(channel);
+              messageModel.updateChannel(channel);
               emit channelUpdated(channel);
               updateUnreadCount();
           }
@@ -749,6 +760,7 @@ void SlackClient::loadUserForChat(QString userId, QJsonObject chat) {
         auto chat = parseChat(chatJson.object());
 
         storage.saveChannel(chat);
+        messageModel.addChannel(chat);
         if (chat.value("isOpen").toBool()) {
             emit channelJoined(chat);
         }
@@ -911,6 +923,7 @@ void SlackClient::loadConversations(QString cursor) {
             }
 
             if (!async) {
+                messageModel.addChannel(channel);
                 storage.saveChannel(channel);
             }
             infoReply->deleteLater();
@@ -1014,6 +1027,7 @@ void SlackClient::openUserChat(QStringList users) {
             qDebug() << config->getTeamName() << ": Chat open failed";
         } else {
             auto channel = parseChat(data.value("channel").toObject());
+            messageModel.addChannel(channel);
             storage.saveChannel(channel);
             emit channelJoined(channel);
         }

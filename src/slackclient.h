@@ -15,6 +15,7 @@
 #include "slackstream.h"
 #include "storage.h"
 #include "messageformatter.h"
+#include "models/messagemodel.h"
 
 class NetworkManager;
 class NetworkService;
@@ -29,6 +30,7 @@ class SlackClient : public QObject
     Q_PROPERTY(ConnectionStatus connectionStatus READ getConnectionStatus NOTIFY connectionStatusChanged)
     Q_PROPERTY(bool networkAccessible READ getNetworkAccessible NOTIFY networkAccessibleChanged)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged)
+    Q_PROPERTY(MessageModel *model READ getModel CONSTANT)
 
 public:
     enum ConnectionStatus {
@@ -62,6 +64,7 @@ public:
     ConnectionStatus getConnectionStatus() const { return connectionStatus; }
     bool getNetworkAccessible() const { return networkAccessible == QNetworkAccessManager::Accessible; }
 
+    MessageModel *getModel() { return &messageModel; }
 signals:
     void teamChanged();
 
@@ -205,6 +208,7 @@ private:
     QPointer<SlackStream> stream;
     QPointer<QTimer> reconnectTimer;
     Storage storage;
+    MessageModel messageModel;
     MessageFormatter messageFormatter;
 
     QNetworkAccessManager::NetworkAccessibility networkAccessible = QNetworkAccessManager::UnknownAccessibility;

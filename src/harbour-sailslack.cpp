@@ -12,6 +12,11 @@
 #include "storage.h"
 #include "filemodel.h"
 #include "teamsmodel.h"
+#include "models/messagemodel.h"
+#include "models/channellistmodel.h"
+#include "models/channelmessagesmodel.h"
+#include "models/channelsortmodel.h"
+#include "models/threadmessagesmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +43,12 @@ int main(int argc, char *argv[])
     qmlRegisterType<SlackAuthenticator>("harbour.sailslack", 1, 0, "Authenticator");
     qmlRegisterType<SlackClient>("harbour.sailslack", 1, 0, "Client");
     qmlRegisterType<TeamsModel>("harbour.sailslack", 1, 0, "TeamsModel");
+    qmlRegisterType<ChannelListModel>("harbour.sailslack", 1, 0, "ChannelListModel");
+    qmlRegisterType<ChannelMessagesModel>("harbour.sailslack", 1, 0, "ChannelMessagesModel");
+    qmlRegisterType<ChannelSortModel>("harbour.sailslack", 1, 0, "ChannelSortModel");
+    qmlRegisterType<ThreadMessagesModel>("harbour.sailslack", 1, 0, "ThreadMessagesModel");
     qmlRegisterUncreatableType<SlackClientConfig>("harbour.sailslack", 1, 0, "ClientConfig", "Use Client.config to access current config");
+    qmlRegisterUncreatableType<MessageModel>("harbour.sailslack", 1, 0, "MessageModel", "Obtain current MessageModel from SlackClient");
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
     view->rootContext()->setContextProperty("slackClientId", SLACK_CLIENT_ID);
