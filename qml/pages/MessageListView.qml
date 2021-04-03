@@ -90,8 +90,6 @@ SilicaListView {
                 var unreadIndex = timestampToIndex(channel.lastRead);
                 if (unreadIndex > -1) {
                     listView.positionViewAtIndex(unreadIndex, ListView.Center)
-                } else {
-                    listView.positionViewAtBeginning()
                 }
                 inputEnabled = true
                 loading = false
