@@ -317,17 +317,17 @@ Vill du verkligen lämna?</translation>
         <translation>Användarinformation</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="112"/>
+        <location filename="../qml/pages/MessageListView.qml" line="110"/>
         <source>Thread in #%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="152"/>
+        <location filename="../qml/pages/MessageListView.qml" line="150"/>
         <source>Message %1%2</source>
         <translation>Meddelande %1%2</translation>
     </message>
     <message>
-        <location filename="../qml/pages/MessageListView.qml" line="152"/>
+        <location filename="../qml/pages/MessageListView.qml" line="150"/>
         <source>Message thread in %1%2</source>
         <translation type="unfinished"></translation>
     </message>
