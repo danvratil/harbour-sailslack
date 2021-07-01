@@ -353,6 +353,7 @@ QVariantMap ModelTest::createMessage(const QString &channelId, const QString &me
         {QStringLiteral("type"), QStringLiteral("message")},
         {QStringLiteral("user"), QStringLiteral("@sender0")},
         {QStringLiteral("text"), msgText},
+        {QStringLiteral("id"), messageId},
         {QStringLiteral("ts"), messageId},
         {QStringLiteral("channel"), channelId}
     };

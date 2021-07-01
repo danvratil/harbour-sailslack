@@ -63,7 +63,6 @@ class ChannelSortModelTest : public QObject
     }
 
     void addScenario(const char *name, const QStringList &scenario) {
-        int i = 0;
         QStringList perm = scenario;
         std::sort(perm.begin(), perm.end());
         std::mt19937 rand;

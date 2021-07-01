@@ -16,19 +16,19 @@ ListItem {
             visible: !page.threadId
             text: qsTr("Reply in thread")
             onClicked: {
-                openThread(timestamp)
+                openThread(message.timestamp)
             }
         }
         MenuItem {
             text: qsTr("Mark unread")
             onClicked: {
-                markUnread(timestamp)
+                markUnread(message.timestamp)
             }
         }
 
         MenuItem {
             text: qsTr("User Details")
-            onClicked: showUserDetails(user.id)
+            onClicked: showUserDetails(message.user.id)
         }
     }
 
@@ -46,7 +46,7 @@ ListItem {
             height: childrenRect.height
 
             Label {
-                text: user.name
+                text: message.user.name
                 anchors.left: parent.left
                 font.pixelSize: Theme.fontSizeTiny
                 color: infoColor
@@ -54,7 +54,7 @@ ListItem {
 
             Label {
                 anchors.right: parent.right
-                text: time.toLocaleString(Qt.locale(), "H:mm")
+                text: message.time.toLocaleString(Qt.locale(), "H:mm")
                 font.pixelSize: Theme.fontSizeTiny
                 color: infoColor
             }
@@ -67,17 +67,17 @@ ListItem {
             font.weight: isUnread ? Font.Bold : Font.Normal
             color: textColor
             visible: text.length > 0
-            value: content
+            value: message.content
             onLinkActivated: handleLink(link)
         }
 
         Item {
             width: parent.width
             height: childrenRect.height
-            visible: reply_count > 0
+            visible: message.reply_count > 0
 
             Label {
-                text: qsTr("Replies: %1").arg(reply_count)
+                text: qsTr("Replies: %1").arg(message.reply_count)
                 anchors.left: parent.left
                 font.italic: true
                 font.pixelSize: Theme.fontSizeTiny
@@ -92,8 +92,9 @@ ListItem {
 
         Repeater {
             id: imageRepeater
-            model: images
+            model: message.images
             Column {
+                Component.onCompleted: console.log(model);
                 spacing: Theme.paddingSmall
                 Text {
                     font.pixelSize: Theme.fontSizeSmall
@@ -119,7 +120,7 @@ ListItem {
 
         Repeater {
             id: attachmentRepeater
-            model: attachments
+            model: message.attachments
 
             Attachment {
                 width: column.width

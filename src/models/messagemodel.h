@@ -77,6 +77,10 @@ public:
     // TODO: itemData()
     //!@}
 
+    //! Returns a channel matching the given \c id.
+    /*! \param[in] ID of the channel to find.
+     * \return Returns empty QVariantMap if no such channel exists in the model. */
+    QVariantMap channel(const ChannelID &id) const;
     //! Clears the entire model and sets given \c channels.
     /*! \param[in] channels Channels to populate the model with. */
     void setChannels(const QVariantList &channels);
@@ -109,6 +113,10 @@ public:
      * \param[in] channelId ID of the channel the messages belongs to
      * \param[in] message Message to update. */
     void updateChannelMessage(const ChannelID &channelId, const QVariantMap &message);
+    //! Prepends given messages to the channel
+    /*! \param[in] channelID ID of the channel to prepend \c messages to
+     * \param[in] messages messages to prepend */
+    void prependChannelMessages(const ChannelID &channelId, const QVariantList &messages);
     //! Removes specified message from the model.
     /*! If the message doesn't exist in the model, it's silently ignored.
      * \param[in] channelId ID of the channel to remove the message from
@@ -128,7 +136,23 @@ public:
      * \param[in] threadId ID of the message that is the thread-leader of the opened thread */
     void openThread(const ChannelID &channelId, const ThreadID &threadId);
 
+    //! Returns QModelIndex for a channel with given \c channelId.
+    /*! \param[in] channelId ID of the channel to find
+     * \returns QModelIndex of the channel in the message model. */
+    QModelIndex channelIndex(const ChannelID &channelId) const;
+
+    //! Returns QModelIndex for a message \c messageID in channel \c channelID
+    /*! \param[in] channelId ID of the channel the message belongs to
+     * \param[in] messageId ID of the message being looked up
+     * \returns QModelIndex of the message in the message model. */
+    QModelIndex messageIndex(const ChannelID &channelId, const MessageID &messageId) const;
+
 private:
+    enum class InsertMode {
+        Append,
+        Prepend
+    };
+
     //! Returns QModelIndex representing the given \c node
     QModelIndex nodeIndex(const Node *node) const;
     //! Removes references to \c node from \c mChannelLookup and \c mMessageLookup caches.
@@ -143,8 +167,8 @@ private:
 
     //! Appends given channel to the model.
     void doAppendChannel(const QVariantMap &channel);
-    //! Appends given messages to the model.
-    void doAppendMessage(Node *parentNode, const QVariantMap &message);
+    //! Inserts given messages to the model.
+    void doInsertMessage(Node *parentNode, const QVariantMap &message, InsertMode insertMode = InsertMode::Append);
 
     //! Helper structure to call \c MessageModel::cleanupCache() when \c NodePtr is destroyed.
     struct CacheCleanerHelper {

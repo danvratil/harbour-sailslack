@@ -63,7 +63,7 @@ SilicaListView {
         }
 
         onClicked: {
-            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channelId": channel.id})
+            pageStack.push(Qt.resolvedUrl("Channel.qml"), {"slackClient": slackClient, "channel": channel})
         }
 
         menu: ContextMenu {

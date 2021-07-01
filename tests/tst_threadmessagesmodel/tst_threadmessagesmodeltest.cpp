@@ -36,7 +36,7 @@ struct Test
     {
         model.setChannelId(channelId);
         model.setThreadId(threadId);
-        QTest::qWait(20);
+        QTest::qWait(100);
         // Setting both properties should still compress into a single model reset
         QCOMPARE(watcher.modelResetSpy.size(), 1);
         QVERIFY(watcher.emptyExcept(ModelWatcher::ModelReset));

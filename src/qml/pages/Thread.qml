@@ -7,10 +7,8 @@ Page {
 
     property Client slackClient
 
-    property string channelId
     property variant channel
     property string threadId
-    property variant thread
     property bool initialized: false
 
     SilicaFlickable {
@@ -26,10 +24,15 @@ Page {
 
         MessageListView {
             id: listView
-            thread: page.thread
+            threadId: page.threadId
             channel: page.channel
             anchors.fill: parent
             slackClient: page.slackClient
+            model: ThreadMessagesModel {
+                channelId: page.channel.id
+                threadId: page.threadId
+                sourceModel: slackClient.model
+            }
 
             onLoadCompleted: {
                 loader.visible = false
@@ -45,18 +48,13 @@ Page {
         slackClient: parent.slackClient
     }
 
-    Component.onCompleted: {
-        page.channel = slackClient.getChannel(page.channelId)
-        page.thread = slackClient.getThread(page.threadId)
-    }
-
     onStatusChanged: {
         if (status === PageStatus.Active) {
             slackClient.setActiveWindow(page.threadId)
 
             if (!initialized) {
                 initialized = true
-                listView.loadMessages()
+                //listView.loadMessages()
             }
         }
         else if (status === PageStatus.Deactivating) {

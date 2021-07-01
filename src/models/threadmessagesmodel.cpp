@@ -137,6 +137,13 @@ QModelIndex ThreadMessagesModel::index(int row, int column, const QModelIndex &p
     return createIndex(row, column);
 }
 
+QVariant ThreadMessagesModel::data(const QModelIndex &proxyIndex, int role) const
+{
+    const auto r = QAbstractProxyModel::data(proxyIndex, role);
+    qDebug() << "THREAD MSG" << proxyIndex << r;
+    return r;
+}
+
 QModelIndex ThreadMessagesModel::parent(const QModelIndex &) const
 {
     return QModelIndex{};
@@ -144,7 +151,7 @@ QModelIndex ThreadMessagesModel::parent(const QModelIndex &) const
 
 QModelIndex ThreadMessagesModel::mapToSource(const QModelIndex &proxyIndex) const
 {
-    if (proxyIndex.parent().isValid()) {
+    if (!proxyIndex.isValid() || proxyIndex.parent().isValid()) {
         return {};
     }
 
@@ -170,40 +177,14 @@ QModelIndex ThreadMessagesModel::mapFromSource(const QModelIndex &sourceIndex) c
 
 void ThreadMessagesModel::updateTopLevelIndex()
 {
-    const auto findIdx = [](QAbstractItemModel *model, const QModelIndex &parent, auto match) -> QModelIndex {
-        for (int i = 0, count = model->rowCount(parent); i < count; ++i) {
-            const auto index = model->index(i, 0, parent);
-            if (match(index)) {
-                return index;
-            }
-        }
+    if (!mChannelId.isEmpty() &&!mThreadId.isEmpty()) {
+        beginResetModel();
+        auto *model = static_cast<MessageModel*>(sourceModel());
+        mSourceRootIndex = model->messageIndex(mChannelId, mThreadId);
 
-        return {};
-    };
-
-    beginResetModel();
-    if (!mChannelId.isEmpty()) {
-        // FIXME: We should be able to do a much faster lookup than two linear scan using the MessageModel's internal lookup tables
-        mSourceRootIndex = findIdx(sourceModel(), QModelIndex{}, [this](const QModelIndex &index) {
-            const auto channel = sourceModel()->data(index, static_cast<int>(MessageModel::Role::Channel)).toMap();
-            return channel[QStringLiteral("id")].toString() == mChannelId;
-        });
-
-        if (mSourceRootIndex.isValid() && !mThreadId.isEmpty()) {
-            mSourceRootIndex = findIdx(sourceModel(), mSourceRootIndex, [this](const QModelIndex &index) {
-                const auto msg = sourceModel()->data(index, static_cast<int>(MessageModel::Role::Message)).toMap();
-                return msg[QStringLiteral("ts")].toString() == mThreadId;
-            });
+        if (!mSourceRootIndex.isValid()) {
+            qCWarning(logTM) << "Failed to find message" << mThreadId << ", channel" << mChannelId << "in the source model";
         }
-    }
-    endResetModel();
-
-    if (!mSourceRootIndex.isValid()) {
-        if (!mChannelId.isEmpty()) {
-            qCWarning(logTM) << "Failed to find channel" << mChannelId << "in the source model";
-        }
-        if (!mThreadId.isEmpty()) {
-            qCWarning(logTM) << "Failed to find message" << mThreadId << "in the source model";
-        }
+        endResetModel();
     }
 }

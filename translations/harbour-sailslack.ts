@@ -32,7 +32,7 @@
 <context>
     <name>Channel</name>
     <message>
-        <location filename="../src/qml/pages/Channel.qml" line="43"/>
+        <location filename="../src/qml/pages/Channel.qml" line="46"/>
         <source>Upload image</source>
         <translation type="unfinished"></translation>
     </message>
@@ -53,32 +53,32 @@
 <context>
     <name>ChannelListView</name>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="72"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="73"/>
         <source>Leave</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="72"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="73"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="106"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="98"/>
         <source>Unread</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="108"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="100"/>
         <source>Starred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="111"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="102"/>
         <source>Channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/ChannelListView.qml" line="114"/>
+        <location filename="../src/qml/pages/ChannelListView.qml" line="104"/>
         <source>Direct messages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -312,35 +312,35 @@ Are you sure you wish to leave?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/MessageListView.qml" line="112"/>
+        <location filename="../src/qml/pages/MessageListView.qml" line="85"/>
         <source>Thread in #%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/MessageListView.qml" line="152"/>
-        <source>Message %1%2</source>
+        <location filename="../src/qml/pages/MessageListView.qml" line="122"/>
+        <source>Message thread in %1%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/pages/MessageListView.qml" line="152"/>
-        <source>Message thread in %1%2</source>
+        <location filename="../src/qml/pages/MessageListView.qml" line="122"/>
+        <source>Message %1%2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SlackClient</name>
     <message>
-        <location filename="../src/slackclient.cpp" line="373"/>
+        <location filename="../src/slackclient.cpp" line="364"/>
         <source>in %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="376"/>
+        <location filename="../src/slackclient.cpp" line="367"/>
         <source>from %1 @ %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/slackclient.cpp" line="379"/>
+        <location filename="../src/slackclient.cpp" line="370"/>
         <source>New message</source>
         <translation type="unfinished"></translation>
     </message>

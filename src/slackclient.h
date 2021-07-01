@@ -48,8 +48,7 @@ public:
     Q_INVOKABLE void setActiveWindow(QString windowId);
 
     Q_INVOKABLE QVariantList getUsers();
-    Q_INVOKABLE QVariantList getChannels();
-    Q_INVOKABLE QVariant getChannel(const QString& channelId);
+    Q_DECL_DEPRECATED Q_INVOKABLE QVariantList getChannels();
 
     Q_INVOKABLE QVariant getThread(const QString& threadId);
 
@@ -128,6 +127,7 @@ public slots:
     void joinChannel(const QString& channelId);
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
+    void openChannel(const QString &channelId);
     void openChat(QString chatId);
     void openUserChat(QStringList users);
     void closeChat(QString chatId);

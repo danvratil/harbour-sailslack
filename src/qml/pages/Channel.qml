@@ -7,7 +7,6 @@ Page {
 
     property Client slackClient
 
-    property string channelId
     property variant channel
     property bool initialized: false
 
@@ -27,6 +26,10 @@ Page {
             channel: page.channel
             anchors.fill: parent
             slackClient: page.slackClient
+            model: ChannelMessagesModel {
+                channelId: channel.id
+                sourceModel: slackClient.model
+            }
 
             onLoadCompleted: {
                 loader.visible = false
@@ -54,7 +57,7 @@ Page {
     }
 
     Component.onCompleted: {
-        page.channel = slackClient.getChannel(page.channelId)
+        slackClient.openChannel(page.channel.id)
     }
 
     onStatusChanged: {
@@ -63,7 +66,6 @@ Page {
 
             if (!initialized) {
                 initialized = true
-                listView.loadMessages()
             }
         }
         else if (status === PageStatus.Deactivating) {

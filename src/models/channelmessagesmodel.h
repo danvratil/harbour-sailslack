@@ -12,11 +12,18 @@ class ChannelMessagesModel : public QAbstractProxyModel
     Q_OBJECT
 
     Q_PROPERTY(QString channelId READ channelId WRITE setChannelId NOTIFY channelIdChanged)
+
 public:
     //! Constructor.
     explicit ChannelMessagesModel(QObject *parent = nullptr);
     //! Destructor.
     ~ChannelMessagesModel() override = default;
+
+    //! Gets element on given index
+    Q_INVOKABLE QVariant get(int index) const;
+
+    //! Equivalent to rowCount(QModelIndex{})
+    Q_INVOKABLE int count() const;
 
     //! Sets the channel to display messages from
     void setChannelId(const QString &channelId);

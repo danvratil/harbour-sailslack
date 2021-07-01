@@ -38,6 +38,7 @@ public:
     //! \copydoc QAbstractProxyModel::setSourceModel()
     void setSourceModel(QAbstractItemModel *sourceModel) override;
 
+    QVariant data(const QModelIndex &proxyIndex, int role = Qt::DisplayRole) const override;
     //! \copydoc QAbstractProxyModel::rowCount()
     int rowCount(const QModelIndex &parent = {}) const override;
     //! \copydoc QAbstractProxyModel::columnCount()

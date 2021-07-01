@@ -14,6 +14,18 @@ ChannelMessagesModel::ChannelMessagesModel(QObject *parent)
     : QAbstractProxyModel{parent}
 {}
 
+QVariant ChannelMessagesModel::get(int index) const {
+    if (index < 0 || index >= rowCount()) {
+        return {};
+    }
+
+    return data(this->index(index, 0), static_cast<int>(MessageModel::Role::Message));
+}
+
+int ChannelMessagesModel::count() const {
+    return rowCount();
+}
+
 void ChannelMessagesModel::setChannelId(const QString &channelId)
 {
     if (mChannelId == channelId) {
@@ -44,34 +56,36 @@ void ChannelMessagesModel::setSourceModel(QAbstractItemModel *sourceModel)
         disconnect(oldSourceModel, &QAbstractItemModel::modelReset, this, nullptr);
     }
 
-    const auto filter = [this](const QModelIndex &index) {
-        return index == mSourceRootIndex;
-    };
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeInserted, filter});
-    connect(sourceModel, &QAbstractItemModel::rowsInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsInserted, filter});
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeMoved, filter});
-    connect(sourceModel, &QAbstractItemModel::rowsMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsMoved, filter});
-    connect(sourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeRemoved, filter});
-    connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsRemoved, filter});
-    connect(sourceModel, &QAbstractItemModel::dataChanged, this, SignalFilter{this, &ChannelMessagesModel::dataChanged, filter, FilterBy::Parent});
-    connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &ChannelMessagesModel::modelAboutToBeReset);
-    connect(sourceModel, &QAbstractItemModel::modelReset, this, &ChannelMessagesModel::modelReset);
+    if (sourceModel) {
+        const auto filter = [this](const QModelIndex &index) {
+            return index == mSourceRootIndex;
+        };
+        connect(sourceModel, &QAbstractItemModel::rowsAboutToBeInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeInserted, filter});
+        connect(sourceModel, &QAbstractItemModel::rowsInserted, this, SignalFilter{this, &ChannelMessagesModel::rowsInserted, filter});
+        connect(sourceModel, &QAbstractItemModel::rowsAboutToBeMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeMoved, filter});
+        connect(sourceModel, &QAbstractItemModel::rowsMoved, this, SignalFilter{this, &ChannelMessagesModel::rowsMoved, filter});
+        connect(sourceModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsAboutToBeRemoved, filter});
+        connect(sourceModel, &QAbstractItemModel::rowsRemoved, this, SignalFilter{this, &ChannelMessagesModel::rowsRemoved, filter});
+        connect(sourceModel, &QAbstractItemModel::dataChanged, this, SignalFilter{this, &ChannelMessagesModel::dataChanged, filter, FilterBy::Parent});
+        connect(sourceModel, &QAbstractItemModel::modelAboutToBeReset, this, &ChannelMessagesModel::modelAboutToBeReset);
+        connect(sourceModel, &QAbstractItemModel::modelReset, this, &ChannelMessagesModel::modelReset);
+    }
+
+    QAbstractProxyModel::setSourceModel(sourceModel);
 
     if (!mChannelId.isEmpty()) {
         updateTopLevelIndex();
     }
 
-    QAbstractProxyModel::setSourceModel(sourceModel);
 }
 
 void ChannelMessagesModel::updateTopLevelIndex()
 {
+    auto *model = sourceModel();
     beginResetModel();
-
     mSourceRootIndex = QPersistentModelIndex{};
-    if (!mChannelId.isEmpty()) {
+    if (model != nullptr && !mChannelId.isEmpty()) {
         // FIXME: We should be able to do a much faster lookup than two scan using the MessageModel's internal lookup tables
-        auto *model = sourceModel();
         for (int i = 0, count = model->rowCount(); i < count; ++i) {
             const auto index = model->index(i, 0);
             const auto channel = sourceModel()->data(index, static_cast<int>(MessageModel::Role::Channel)).toMap();
@@ -80,12 +94,13 @@ void ChannelMessagesModel::updateTopLevelIndex()
                 break;
             }
         }
+
+
+        if (!mSourceRootIndex.isValid() && !mChannelId.isEmpty()) {
+            qCWarning(logModel) << "Failed to find channel" << mChannelId << "in the source model";
+        }
     }
     endResetModel();
-
-    if (!mSourceRootIndex.isValid() && !mChannelId.isEmpty()) {
-        qCWarning(logModel) << "Failed to find channel" << mChannelId << "in the source model";
-    }
 }
 
 int ChannelMessagesModel::rowCount(const QModelIndex &parent) const

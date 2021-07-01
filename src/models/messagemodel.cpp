@@ -7,12 +7,13 @@
 #include <QLoggingCategory>
 
 #include <vector>
+#include <iterator>
 
 Q_LOGGING_CATEGORY(logMM, "harbour-sailslack.MessageModel")
 
 namespace {
     static const QString fieldChannelId = QStringLiteral("id");
-    static const QString fieldMessageId = QStringLiteral("ts");
+    static const QString fieldMessageId = QStringLiteral("id");
     static const QString fieldThreadId = QStringLiteral("thread_ts");
 } // namespace
 
@@ -133,6 +134,16 @@ void MessageModel::doAppendChannel(const QVariantMap &channel)
     mChannelLookup.insert(channel.value(fieldChannelId).toString(), ref.get());
 }
 
+QVariantMap MessageModel::channel(const ChannelID &id) const
+{
+    const auto node = mChannelLookup.constFind(id);
+    if (node == mChannelLookup.cend()) {
+        return {};
+    }
+
+    return node.value()->data;
+}
+
 void MessageModel::setChannels(const QVariantList &channels)
 {
     beginResetModel();
@@ -183,28 +194,39 @@ void MessageModel::clearChannelMessages(Node *channelNode, const QModelIndex &ch
     }
 }
 
-void MessageModel::doAppendMessage(Node *parentNode, const QVariantMap &message)
+void MessageModel::doInsertMessage(Node *parentNode, const QVariantMap &message, InsertMode insertMode)
 {
     NodePtr node{new Node, mCacheCleaner};
     node->type = EntityType::Message;
     node->parent = parentNode;
     node->data = message;
 
-    auto &ref = parentNode->children.emplace_back(std::move(node));
+    Node *nodePtr = nullptr;
+    if (insertMode == InsertMode::Append) {
+        nodePtr = parentNode->children.emplace_back(std::move(node)).get();
+    } else {
+        nodePtr = parentNode->children.emplace(parentNode->children.begin(), std::move(node))->get();
+    }
+
     // We might be appending a thread reply.
     if (parentNode->type == EntityType::Message) {
         parentNode = parentNode->parent;
     }
     Q_ASSERT(parentNode->type == EntityType::Channel);
     const auto channelId = parentNode->data.value(fieldChannelId).toString();
-    mMessageLookup.insert(channelId + message[fieldMessageId].toString(), ref.get());
+    const auto messageId = message[fieldMessageId].toString();
+    mMessageLookup.insert(channelId + messageId, nodePtr);
+    qCDebug(logMM).nospace() << "channelId=" << channelId << ", messageId=" << messageId
+                             << ((insertMode == InsertMode::Append) ? " Appended" : " Prepended")
+                             << " new message to model.";
 }
 
 void MessageModel::setChannelMessages(const ChannelID &channelId, const QVariantList &messages)
 {
     auto *channelNode = mChannelLookup.value(channelId);
     if (channelNode == nullptr) {
-        qCWarning(logMM) << "Received channel messages for channel" << channelId << ", which is not in the model!";
+        qCWarning(logMM).nospace() << "channelId=" << channelId << ", messageCount=" << messages.size()
+                                   << " Received messages for channel which is not in the model!";
         return;
     }
 
@@ -213,7 +235,7 @@ void MessageModel::setChannelMessages(const ChannelID &channelId, const QVariant
 
     beginInsertRows(channelIndex, 0, messages.size() - 1);
     std::for_each(messages.cbegin(), messages.cend(),
-                  [this, channelNode](const auto &m) { doAppendMessage(channelNode, m.toMap()); });
+                  [this, channelNode](const auto &m) { doInsertMessage(channelNode, m.toMap()); });
     endInsertRows();
 }
 
@@ -221,26 +243,30 @@ void MessageModel::appendChannelMessage(const ChannelID &channelId, const QVaria
 {
     auto *channelNode = mChannelLookup.value(channelId);
     if (channelNode == nullptr) {
-        qCWarning(logMM) << "Received channel message for channel" << channelId << ", which is not in the model!";
+        qCWarning(logMM).nospace() << "channelId=" << channelId << ", messageId=" << message[fieldMessageId].toString()
+                                   << " Received channel message for channel which is not in the model!";
         return;
     }
 
     auto threadId = message.find(fieldThreadId);
-    if (threadId == message.cend()) {
+    if (threadId == message.cend() || threadId->isNull()) {
         const auto channelIndex = nodeIndex(channelNode);
         beginInsertRows(channelIndex, channelNode->children.size(), channelNode->children.size());
-        doAppendMessage(channelNode, message);
+        doInsertMessage(channelNode, message);
         endInsertRows();
     } else {
         auto *tlNode = mMessageLookup.value(channelId + threadId->toString());
         if (tlNode == nullptr) {
             // That's OK, we may receive a reply for a message that we don't currently track
+            qCDebug(logMM).nospace() << "channelId=" << channelId << ", threadId=" << threadId->toString()
+                                     << ", messageId=" << message[fieldMessageId].toString()
+                                     << " Received message for a currently untracked thread.";
             return;
         }
 
         const auto tlIndex = nodeIndex(tlNode);
         beginInsertRows(tlIndex, tlNode->children.size(), tlNode->children.size());
-        doAppendMessage(tlNode, message);
+        doInsertMessage(tlNode, message);
         endInsertRows();
 
         // The thread-leader message has changed
@@ -252,12 +278,30 @@ void MessageModel::updateChannelMessage(const ChannelID &channelId, const QVaria
 {
     auto *messageNode = mMessageLookup.value(channelId + message[fieldMessageId].toString());
     if (!messageNode) {
+        qCDebug(logMM).nospace() << "channelId=" << channelId << ", messageId=" << message[fieldMessageId].toString()
+                                 << " Ignoring update for an untracked message.";
         return; // That's OK, we may receive update for a message we don't currently track.
     }
 
     const auto messageIndex = nodeIndex(messageNode);
     messageNode->data = message;
     Q_EMIT dataChanged(messageIndex, messageIndex);
+}
+
+void MessageModel::prependChannelMessages(const ChannelID &channelId, const QVariantList &messages)
+{
+    auto *channelNode = mChannelLookup.value(channelId);
+    if (channelNode == nullptr) {
+        qCWarning(logMM).nospace() << "channelId=" << channelId << " Received messages to prepend to an unknown channel.";
+        return;
+    }
+
+    const auto channelIndex = nodeIndex(channelNode);
+    beginInsertRows(channelIndex, 0, messages.count() - 1);
+    for (auto it = std::make_reverse_iterator(messages.cend()), end = std::make_reverse_iterator(messages.cbegin()); it != end; ++it) {
+        doInsertMessage(channelNode, it->toMap(), InsertMode::Prepend);
+    }
+    endInsertRows();
 }
 
 void MessageModel::removeChannelMessage(const ChannelID &channelId, const MessageID &messageId)
@@ -302,7 +346,7 @@ void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID 
             qCWarning(logMM) << "Thread message" << msg["ts"].toString() << "doesn't belong to current thread (channelId=" << channelId << ", threadId=" << threadId;
             return;
         }
-        doAppendMessage(tlNode, m.toMap()); });
+        doInsertMessage(tlNode, m.toMap()); });
     endInsertRows();
 
     // Update the thread-leader message, since it has become a thread leader now
@@ -325,6 +369,26 @@ void MessageModel::openThread(const ChannelID &channelId, const ThreadID &thread
         Q_ASSERT(tlNode);
         clearThreadMessages(tlNode, nodeIndex(tlNode));
     }
+}
+
+QModelIndex MessageModel::channelIndex(const ChannelID &channelId) const
+{
+    const auto node = mChannelLookup.constFind(channelId);
+    if (node == mChannelLookup.cend()) {
+        return {};
+    }
+
+    return nodeIndex(*node);
+}
+
+QModelIndex MessageModel::messageIndex(const ChannelID &channelId, const MessageID &messageId) const
+{
+    const auto node = mMessageLookup.constFind(channelId + messageId);
+    if (node == mMessageLookup.cend()) {
+        return {};
+    }
+
+    return nodeIndex(*node);
 }
 
 void MessageModel::cleanupCache(Node *node)
