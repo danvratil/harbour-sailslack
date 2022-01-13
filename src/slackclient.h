@@ -50,8 +50,6 @@ public:
     Q_INVOKABLE QVariantList getUsers();
     Q_DECL_DEPRECATED Q_INVOKABLE QVariantList getChannels();
 
-    Q_INVOKABLE QVariant getThread(const QString& threadId);
-
     SlackClientConfig *getConfig() const { return this->config; }
     bool getInitialized() const { return initialized; }
 
@@ -128,6 +126,7 @@ public slots:
     void leaveChannel(QString channelId);
     void leaveGroup(QString groupId);
     void openChannel(const QString &channelId);
+    void openThread(const QString &channelId, const QString &threadId);
     void openChat(QString chatId);
     void openUserChat(QStringList users);
     void closeChat(QString chatId);
