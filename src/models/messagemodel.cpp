@@ -329,6 +329,7 @@ void MessageModel::removeChannelMessage(const ChannelID &channelId, const Messag
 
 void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, const QVariantList &messages)
 {
+    if (!messages.size()) return;
     auto *tlNode = mMessageLookup.value(channelId + threadId);
     if (tlNode == nullptr) {
         qCDebug(logMM) << "Received thread messages for channel" << channelId << ", thread leader" << threadId << ", which is not part of the model!";
@@ -338,15 +339,27 @@ void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID 
     const auto tlIndex = nodeIndex(tlNode);
     clearThreadMessages(tlNode, tlIndex);
 
-    beginInsertRows(tlIndex, 0, messages.size() - 1);
-    tlNode->children.reserve(messages.size());
+    bool listContainsLeader = false;
+    if (messages.first().toMap()[fieldMessageId].toString() == threadId) {
+        listContainsLeader = true;
+    }
+
+    beginInsertRows(tlIndex, 0, messages.size() - 1 - (listContainsLeader?1:0));
+    tlNode->children.reserve(messages.size() - (listContainsLeader?1:0));
     std::for_each(messages.cbegin(), messages.cend(), [this, tlNode, &channelId, &threadId](const auto &m) {
         const auto msg = m.toMap();
+
+        if (msg[fieldMessageId].toString() == threadId) {
+            // Do not insert the thread leader into the thread.
+            return;
+        }
+
         if (msg["thread_ts"].toString() != threadId) {
             qCWarning(logMM) << "Thread message" << msg["ts"].toString() << "doesn't belong to current thread (channelId=" << channelId << ", threadId=" << threadId;
             return;
         }
-        doInsertMessage(tlNode, m.toMap()); });
+        doInsertMessage(tlNode, m.toMap());
+    });
     endInsertRows();
 
     // Update the thread-leader message, since it has become a thread leader now

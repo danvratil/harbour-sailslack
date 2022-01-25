@@ -19,7 +19,11 @@ slack_client_id=xxxxxxxxxxx.xxxxxxxxxxxx
 slack_client_secret=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-* In Sailfish IDE go to `Tools` → `Options` → `Sailfish OS` → `Build Engine` → `Manage Build Targets` and install `sailfish-components-webview-qt5` for all targets you want to build for.
+* In Sailfish IDE go to `Tools` → `Options` → `Sailfish OS` → `Build Engine` → `Manage Build Targets` and install for all targets you want to build for:
+- `sailfish-components-webview-qt5-devel`
+- `nemo-qml-plugin-notifications-qt5-devel`
+- `qt5-qttest-devel`
+- `qt5-qtwebsockets-devel`
 
 * Connect to Mer SDK via ssh and, go to Sailslack project directory and build it:
 ```bash

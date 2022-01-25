@@ -48,6 +48,10 @@ Page {
         slackClient: parent.slackClient
     }
 
+    Component.onCompleted: {
+        slackClient.openThread(page.channel.id, page.threadId)
+    }
+
     onStatusChanged: {
         if (status === PageStatus.Active) {
             slackClient.setActiveWindow(page.threadId)

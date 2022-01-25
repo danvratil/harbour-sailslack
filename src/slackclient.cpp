@@ -837,10 +837,6 @@ QVariantList SlackClient::getChannels() {
     return storage.channels();
 }
 
-QVariant SlackClient::getThread(const QString& threadId) {
-    return storage.thread(threadId);
-}
-
 void SlackClient::loadConversations(QString cursor) {
   qDebug() << config->getTeamName() << ": Conversation load start" << cursor;
 
@@ -987,6 +983,11 @@ void SlackClient::openChannel(const QString &channelId) {
     loadMessages(channelId);
 }
 
+void SlackClient::openThread(const QString &channelId, const QString &threadId) {
+    messageModel.openThread(channelId, threadId);
+    loadThreadMessages(threadId, channelId);
+}
+
 void SlackClient::openChat(QString chatId) {
     QVariantMap channel = storage.channel(chatId);
 
@@ -1091,11 +1092,13 @@ void SlackClient::loadMessages(QString channelId) {
 }
 
 void SlackClient::loadThreadMessages(QString threadId, QString channelId) {
+    /*
     if (storage.threadMessagesExist(threadId)) {
         QVariantList messages = storage.threadMessages(threadId);
         emit loadMessagesSuccess(threadId, QString(), messages, true);
         return;
     }
+    */
 
     QMap<QString,QString> params;
     params.insert("channel", channelId);
