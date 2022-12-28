@@ -127,7 +127,7 @@ public:
     /*! \param[in] channelId ID of the channel the thread belongs to
      * \param[in] threadID ID of the thread leader message
      * \param[in] messages The thread replies, excluding the thread-leader message. */
-    void setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, const QVariantList &messages);
+    void setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, QVariantList &messages);
 
     //! Notifies the model that a thread has been opened in the GUI.
     /*! Ensures that the messages in the opened thread are not evicted from the cache

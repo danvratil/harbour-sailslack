@@ -12,7 +12,8 @@ Q_LOGGING_CATEGORY(logModel, "harbour-sailslack.ChannelMessageModel")
 
 ChannelMessagesModel::ChannelMessagesModel(QObject *parent)
     : QAbstractProxyModel{parent}
-{}
+{
+}
 
 QVariant ChannelMessagesModel::get(int index) const {
     if (index < 0 || index >= rowCount()) {
@@ -118,7 +119,7 @@ int ChannelMessagesModel::columnCount(const QModelIndex &parent) const
         return 0;
     }
 
-    return sourceModel()->rowCount(mSourceRootIndex);
+    return sourceModel()->columnCount(mSourceRootIndex);
 }
 
 bool ChannelMessagesModel::hasChildren(const QModelIndex &parent) const
