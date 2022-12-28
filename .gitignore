@@ -1,2 +1,3 @@
 harbour-sailslack.pro.user
 .qmake.conf
+build/
