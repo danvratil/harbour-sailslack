@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - master
-      - patchmanager3
 
 env:
   RELEASE: 4.3.0.12
@@ -20,13 +19,21 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Prepare
-      run: mkdir output
+      env:
+        SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
+        SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
+      run: |
+        git submodule init
+        git submodule update
+        echo slack_client_id=${SLACK_CLIENT_ID} > .qmake.conf
+        echo slack_client_secret=${SLACK_CLIENT_SECRET} >> .qmake.conf
+        mkdir output
 
     - name: Build armv7hl
       run: docker run --rm --privileged -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/bash -c "
             mkdir -p build ;
             cd build ;
-            cp -r /share/* . ;
+            cp -r /share/. . ;
             mb2 -t SailfishOS-$RELEASE-armv7hl build --enable-debug ;
             sudo cp -r RPMS/*.rpm /share/output"
 
@@ -34,7 +41,7 @@ jobs:
       run: docker run --rm --privileged -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/bash -c "
             mkdir -p build ;
             cd build ;
-            cp -r /share/* . ;
+            cp -r /share/. . ;
             mb2 -t SailfishOS-$RELEASE-aarch64 build --enable-debug ;
             sudo cp -r RPMS/*.rpm /share/output"
 
@@ -42,7 +49,7 @@ jobs:
       run: docker run --rm --privileged -v $PWD:/share coderus/sailfishos-platform-sdk:$RELEASE /bin/bash -c "
             mkdir -p build ;
             cd build ;
-            cp -r /share/* . ;
+            cp -r /share/. . ;
             mb2 -t SailfishOS-$RELEASE-i486 build --enable-debug ;
             sudo cp -r RPMS/*.rpm /share/output"
 
