@@ -6,10 +6,10 @@ This is a fork of [Slackfish](https://github.com/markussammallahti/harbour-slack
 
 ## Development
 
-* Install [qpm](https://www.qpm.io/)
 * download dependencies ([Qt AsyncFuture](https://github.com/benlau/asyncfuture))
 ```
-qpm install
+git submodule init
+git submodule update
 ```
 
 * Create [new Slack application](https://api.slack.com/apps?new_app=1)
