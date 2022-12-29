@@ -24,6 +24,7 @@ PkgConfigBR:
   - Qt5Qml
   - Qt5Quick
   - Qt5WebSockets
+  - qt5embedwidget                  # Webview
   - Qt5DBus                         # Notifications
   - nemonotifications-qt5 >= 1.0.4  # Notifications
 
