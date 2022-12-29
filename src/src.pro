@@ -16,7 +16,7 @@ CONFIG += sailfish-components-webview-qt5
 
 QT += concurrent dbus websockets
 
-VERSION = "0.2"
+VERSION = "0.3"
 DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 
 include(../defaults.pri)

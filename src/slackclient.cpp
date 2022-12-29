@@ -1281,7 +1281,8 @@ QVariantMap SlackClient::getMessageData(const QJsonObject message) {
     QString timePart = timeParts.value(0);
     QString indexPart = timeParts.value(1);
 
-    qlonglong timestamp = timePart.toLongLong() * multiplier + indexPart.toLongLong();
+    // The ts parts are like 1672172273.123456 (seconds) - we transform them to 1672172273123 (milliseconds)
+    qlonglong timestamp = timePart.toLongLong() * multiplier + indexPart.toLongLong() / multiplier;
     QDateTime time = QDateTime::fromMSecsSinceEpoch(timestamp);
 
     QVariantMap data;

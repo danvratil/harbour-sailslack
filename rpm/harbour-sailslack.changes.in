@@ -8,6 +8,11 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Mon May 03 2021 Daniel Vrátil <me@dvratil.cz> 0.3-1
+- Automatically scroll to last unread message (b100dian)
+- Port to Qt QWebSocket (b100dian)
+- Fix reconnecting when switching between Wifi/GSM (b100dian)
+
 * Sat Jan 23 2021 Daniel Vrátil <me@dvratil.cz> 0.2-1
 - Fix login (thanks to b100dian)
 - Initial support for threads (thanks to b100dian)

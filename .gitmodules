@@ -1,0 +1,4 @@
+[submodule "vendor/async/future/pri"]
+	path = vendor/async/future/pri
+	url = https://github.com/benlau/asyncfuture.git
+	branch = qpm/0.3.6.5
