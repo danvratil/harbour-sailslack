@@ -212,8 +212,7 @@ void MessageModel::doInsertMessage(Node *parentNode, const QVariantMap &message,
     if (parentNode->type == EntityType::Message) {
         parentNode = parentNode->parent;
     }
-    Q_ASSERT(parentNode->type == EntityType::Channel ||
-             parentNode->type == EntityType::Message);
+    Q_ASSERT(parentNode->type == EntityType::Channel);
     const auto channelId = parentNode->data.value(fieldChannelId).toString();
     const auto messageId = message[fieldMessageId].toString();
     mMessageLookup.insert(channelId + messageId, nodePtr);
@@ -328,7 +327,7 @@ void MessageModel::removeChannelMessage(const ChannelID &channelId, const Messag
     }
 }
 
-void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, QVariantList &messages)
+void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID &threadId, const QVariantList &messages)
 {
     if (!messages.size()) return;
     auto *tlNode = mMessageLookup.value(channelId + threadId);
@@ -339,12 +338,6 @@ void MessageModel::setThreadMessages(const ChannelID &channelId, const ThreadID 
 
     const auto tlIndex = nodeIndex(tlNode);
     clearThreadMessages(tlNode, tlIndex);
-
-    if (messages.first().toMap()[fieldMessageId].toString() == threadId) {
-        qDebug() << "Found a thread leader in thread message, size was " << messages.size();
-        messages.removeFirst();
-    }
-    qDebug() << "Message size is now " << messages.size();
 
     beginInsertRows(tlIndex, 0, messages.size() - 1);
     tlNode->children.reserve(messages.size());

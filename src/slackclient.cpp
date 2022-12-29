@@ -1131,6 +1131,10 @@ void SlackClient::handleLoadMessagesReply() {
     if (!channelId.isEmpty() && threadId.isEmpty()) {
         messageModel.setChannelMessages(channelId, messages);
     } else if (!threadId.isEmpty()) {
+        // Exclude the thread leader.
+        if (messages.first().toMap()["id"].toString() == threadId) {
+            messages.removeFirst();
+        }
         messageModel.setThreadMessages(channelId, threadId, messages);
     }
 
