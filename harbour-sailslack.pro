@@ -20,7 +20,7 @@ QT += concurrent dbus websockets
 
 include(vendor/vendor.pri)
 
-VERSION = "0.3"
+VERSION = "0.3.1"
 DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 
 # Check slack config
