@@ -8,6 +8,11 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Wed Dec 28 2022 0.3.1-1 Vlad G. <b100dian@gmail.com>
+- Fix longstanding milliseconds bug
+- asyncfuture as submodule
+- CI build
+
 * Mon May 03 2021 Daniel Vrátil <me@dvratil.cz> 0.3-1
 - Automatically scroll to last unread message (b100dian)
 - Port to Qt QWebSocket (b100dian)
